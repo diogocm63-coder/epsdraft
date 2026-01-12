@@ -195,10 +195,10 @@ const GestaoPage = () => {
               </div>
 
               {/* Distribuição de Produtos */}
-              <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col items-center justify-center min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1 self-start">Distribuição de Produtos</h3>
-                <div className="flex-1 flex items-center justify-center w-full">
-                  <DonutChart data={stockPorTipo} height={140} />
+              <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Distribuição de Produtos</h3>
+                <div className="flex-1 w-full min-h-0">
+                  <DonutChart data={stockPorTipo} height="100%" />
                 </div>
               </div>
             </div>
