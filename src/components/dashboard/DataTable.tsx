@@ -12,6 +12,7 @@ interface Column {
   key: string;
   header: string;
   align?: 'left' | 'center' | 'right';
+  width?: string;
 }
 
 interface DataTableProps {
@@ -30,6 +31,7 @@ export const DataTable = ({ columns, data, maxHeight = "200px" }: DataTableProps
               <TableHead 
                 key={col.key} 
                 className={`text-xs font-semibold ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
+                style={col.width ? { width: col.width } : undefined}
               >
                 {col.header}
               </TableHead>

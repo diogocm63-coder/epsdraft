@@ -143,9 +143,9 @@ const LojasPage = () => {
             <h3 className="text-sm font-semibold mb-2 text-foreground">Clientes</h3>
             <DataTable 
               columns={[
-                { key: 'nome', header: 'Cliente' },
-                { key: 'cultura', header: 'Cultura' },
-                { key: 'reservas', header: 'Reservas', align: 'right' }
+                { key: 'nome', header: 'Cliente', width: '55%' },
+                { key: 'cultura', header: 'Cultura', width: '25%' },
+                { key: 'reservas', header: 'Reservas', align: 'right', width: '20%' }
               ]}
               data={clientesReservas}
               maxHeight="130px"
