@@ -183,7 +183,7 @@ const LojasPage = () => {
               </div>
 
               {/* Inventário por Tipo */}
-              <div className="bg-card rounded-xl border p-2 h-[120px] flex flex-col">
+              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Tipo</h3>
                 <div className="flex-1 flex items-center justify-center min-h-0">
                   <DonutChart data={inventarioPorTipo} height="100%" />
@@ -203,9 +203,9 @@ const LojasPage = () => {
 
               {/* Clientes */}
               <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0 overflow-hidden">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Clientes</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Clientes</h3>
                 <div className="flex-1 min-h-0 overflow-auto">
-                  <table className="w-full text-[10px]">
+                  <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-card">
                       <tr className="text-muted-foreground border-b">
                         <th className="text-left py-1">Cliente</th>
@@ -222,7 +222,7 @@ const LojasPage = () => {
                               <span className="text-foreground">{cliente.nome.substring(0, 12)}...</span>
                               <Badge 
                                 variant={cliente.status === 'ativo' ? 'default' : 'secondary'}
-                                className={`text-[8px] px-1 py-0 ${cliente.status === 'ativo' ? 'bg-secondary text-secondary-foreground' : 'bg-amber-500 text-white'}`}
+                                className={`text-[9px] px-1 py-0 ${cliente.status === 'ativo' ? 'bg-secondary text-secondary-foreground' : 'bg-amber-500 text-white'}`}
                               >
                                 {cliente.status}
                               </Badge>
@@ -243,9 +243,9 @@ const LojasPage = () => {
             <div className="col-span-4 flex flex-col gap-2 h-full">
               {/* Inventário por Produto */}
               <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Produto</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Inventário por Produto</h3>
                 <ScrollArea className="flex-1">
-                  <table className="w-full text-[10px]">
+                  <table className="w-full text-sm">
                     <thead>
                       <tr className="text-muted-foreground border-b">
                         <th className="text-left py-0.5">Produto</th>
@@ -260,7 +260,7 @@ const LojasPage = () => {
                           <td className="py-0.5">
                             <Badge 
                               variant="outline"
-                              className={`text-[8px] px-1 py-0 ${produto.tipo === 'Fertilizante' ? 'border-primary text-primary' : 'border-secondary text-secondary'}`}
+                              className={`text-[9px] px-1 py-0 ${produto.tipo === 'Fertilizante' ? 'border-primary text-primary' : 'border-secondary text-secondary'}`}
                             >
                               {produto.tipo}
                             </Badge>
@@ -275,7 +275,7 @@ const LojasPage = () => {
 
               {/* Resumo por Cliente */}
               <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Resumo por Cliente</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Resumo por Cliente</h3>
                 <ScrollArea className="flex-1">
                   <div className="space-y-1.5">
                     {clientes.slice(0, 3).map((cliente, idx) => {
@@ -284,21 +284,21 @@ const LojasPage = () => {
                       return (
                         <div key={idx} className="bg-muted/30 rounded p-1.5">
                           <div className="flex justify-between items-center">
-                            <span className="font-medium text-[10px] text-foreground">{cliente.nome.substring(0, 18)}</span>
-                            <span className="text-[9px] text-muted-foreground">{cliente.tipo}</span>
+                            <span className="font-medium text-sm text-foreground">{cliente.nome.substring(0, 18)}</span>
+                            <span className="text-xs text-muted-foreground">{cliente.tipo}</span>
                           </div>
                           <div className="grid grid-cols-3 gap-1 text-center mt-1">
                             <div>
-                              <div className="text-[8px] text-muted-foreground">Reservas</div>
-                              <div className="font-semibold text-[10px] text-primary">{reservas.toLocaleString()}</div>
+                              <div className="text-xs text-muted-foreground">Reservas</div>
+                              <div className="font-semibold text-sm text-primary">{reservas.toLocaleString()}</div>
                             </div>
                             <div>
-                              <div className="text-[8px] text-muted-foreground">Vendas</div>
-                              <div className="font-semibold text-[10px] text-secondary">{vendas.toLocaleString()}</div>
+                              <div className="text-xs text-muted-foreground">Vendas</div>
+                              <div className="font-semibold text-sm text-secondary">{vendas.toLocaleString()}</div>
                             </div>
                             <div>
-                              <div className="text-[8px] text-muted-foreground">Taxa</div>
-                              <div className="font-semibold text-[10px] text-foreground">{Math.floor((vendas / reservas) * 100)}%</div>
+                              <div className="text-xs text-muted-foreground">Taxa</div>
+                              <div className="font-semibold text-sm text-foreground">{Math.floor((vendas / reservas) * 100)}%</div>
                             </div>
                           </div>
                         </div>
@@ -310,22 +310,22 @@ const LojasPage = () => {
 
               {/* Resumo de Conversão */}
               <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Resumo de Conversão</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Resumo de Conversão</h3>
                 <div className="flex-1 flex items-center">
                   <div className="grid grid-cols-3 gap-1.5 w-full">
                     <div className="text-center p-1.5 bg-muted/30 rounded">
-                      <div className="text-xs font-bold text-primary">{totalReservas.toLocaleString()}</div>
-                      <div className="text-[8px] text-muted-foreground">Reservas</div>
+                      <div className="text-sm font-bold text-primary">{totalReservas.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">Reservas</div>
                     </div>
                     <div className="text-center p-1.5 bg-muted/30 rounded">
-                      <div className="text-xs font-bold text-secondary">{totalVendas.toLocaleString()}</div>
-                      <div className="text-[8px] text-muted-foreground">Vendas</div>
+                      <div className="text-sm font-bold text-secondary">{totalVendas.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">Vendas</div>
                     </div>
                     <div className="text-center p-1.5 bg-muted/30 rounded">
-                      <div className="text-xs font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
+                      <div className="text-sm font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
                         {((totalVendas / totalReservas) * 100 || 0).toFixed(0)}%
                       </div>
-                      <div className="text-[8px] text-muted-foreground">Taxa</div>
+                      <div className="text-xs text-muted-foreground">Taxa</div>
                     </div>
                   </div>
                 </div>
