@@ -3,81 +3,25 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { AreaChartComponent, HorizontalBarChart, DonutChart } from '@/components/dashboard/Charts';
 import { ConsultorItem, getConsultorColor } from '@/components/dashboard/ConsultorItem';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useFilters } from '@/contexts/FilterContext';
-import { lojas, consultores, stockData, reservasData, vendasData } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import { Store, Users, MapPin, ShoppingCart, Package, TrendingUp } from 'lucide-react';
 import logoAgris from '@/assets/logo-grupo-agris.png';
 
 const GestaoPage = () => {
-  const { filters } = useFilters();
+  const {
+    filteredLojas,
+    filteredConsultores,
+    totalStock,
+    totalReservas,
+    totalVendas,
+    clientesUnicos,
+    evolucaoMensal,
+    stockPorTipo,
+    topLojas,
+    consultoresComLojas
+  } = useFilteredData();
 
-  // Filtrar dados
-  const filteredLojas = filters.zona === "Portugal" 
-    ? lojas 
-    : lojas.filter(l => l.distrito === filters.zona);
-
-  const filteredConsultores = filters.consultor === "Todos"
-    ? consultores
-    : consultores.filter(c => c.nome === filters.consultor);
-
-  const totalStock = stockData
-    .filter(s => 
-      (filters.zona === "Portugal" || lojas.find(l => l.nome === s.loja)?.distrito === filters.zona) &&
-      (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
-      (filters.produto === "Todos" || s.produto === filters.produto)
-    )
-    .reduce((acc, s) => acc + s.quantidade, 0);
-
-  const totalReservas = reservasData
-    .filter(r => 
-      (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
-      (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-      (filters.produto === "Todos" || r.produto === filters.produto) &&
-      (filters.mes === "Todos" || r.mes === filters.mes) &&
-      (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === r.loja)?.distrito || '')) &&
-      r.ano === filters.ano
-    )
-    .reduce((acc, r) => acc + r.quantidade, 0);
-
-  const totalVendas = vendasData
-    .filter(r => 
-      (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
-      (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-      (filters.produto === "Todos" || r.produto === filters.produto) &&
-      (filters.mes === "Todos" || r.mes === filters.mes) &&
-      (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === r.loja)?.distrito || '')) &&
-      r.ano === filters.ano
-    )
-    .reduce((acc, r) => acc + r.quantidade, 0);
-
-  // Dados para gráficos - Mensal com todos os meses
-  const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  
-  const evolucaoMensal = mesesNomes.map((mes, idx) => {
-    const baseVendas = 200000 + Math.random() * 400000;
-    const baseReservas = baseVendas * (0.6 + Math.random() * 0.4);
-    return {
-      name: mes,
-      value: Math.floor(baseVendas),
-      value2: Math.floor(baseReservas)
-    };
-  });
-
-  // Distribuição de Produtos
-  const stockPorTipo = [
-    { name: 'Fertilizantes', value: stockData.filter(s => s.tipoProduto === 'Fertilizantes').reduce((a, s) => a + s.quantidade, 0) },
-    { name: 'Pesticidas', value: stockData.filter(s => s.tipoProduto === 'Pesticidas').reduce((a, s) => a + s.quantidade, 0) }
-  ];
-
-  // Top 8 Lojas por Vendas
-  const topLojas = lojas.slice(0, 8).map(l => ({
-    name: l.nome.length > 12 ? l.nome.substring(0, 12) + '...' : l.nome,
-    value: Math.floor(50000 + Math.random() * 150000),
-    value2: Math.floor(40000 + Math.random() * 100000)
-  })).sort((a, b) => b.value - a.value);
-
-  // Clientes total
-  const totalClientes = 156;
+  const totalClientes = clientesUnicos.length > 0 ? clientesUnicos.length : 156;
 
   return (
     <DashboardLayout>
@@ -182,12 +126,12 @@ const GestaoPage = () => {
               <div className="bg-card rounded-lg border p-3 flex-1 overflow-auto min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Consultores por Região</h3>
                 <div className="space-y-0.5">
-                  {consultores.map((c, idx) => (
+                  {consultoresComLojas.map((c, idx) => (
                     <ConsultorItem 
                       key={c.id}
                       nome={c.nome}
                       zona={c.zona}
-                      lojas={lojas.filter(l => c.distritos.includes(l.distrito)).length}
+                      lojas={c.lojasAtribuidas}
                       color={getConsultorColor(idx)}
                     />
                   ))}

@@ -2,90 +2,29 @@ import { FilterBar } from '@/components/dashboard/FilterBar';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { AreaChartComponent, DonutChart } from '@/components/dashboard/Charts';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useFilters } from '@/contexts/FilterContext';
-import { lojas, stockData, reservasData, vendasData, clientes, fertilizantes, pesticidas } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
+import { lojas } from '@/data/mockData';
 import { Package, Users, ShoppingCart, TrendingUp } from 'lucide-react';
 import logoAgriloja from '@/assets/logo-agriloja.png';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useFilters } from '@/contexts/FilterContext';
 
 const LojasPage = () => {
   const { filters, setFilters } = useFilters();
-
-  // Filtrar loja específica
-  const filteredLojas = filters.concelho !== "Todos"
-    ? lojas.filter(l => l.concelho === filters.concelho)
-    : lojas;
-
-  const lojaNames = filteredLojas.map(l => l.nome);
-
-  // Totais em quantidades
-  const totalStock = stockData.filter(s => 
-    lojaNames.includes(s.loja) &&
-    (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || s.produto === filters.produto)
-  ).reduce((a, s) => a + s.quantidade, 0);
-  
-  const totalReservas = reservasData.filter(r => 
-    lojaNames.includes(r.loja) && 
-    r.ano === filters.ano &&
-    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || r.produto === filters.produto)
-  ).reduce((a, r) => a + r.quantidade, 0);
-  
-  const totalVendas = vendasData.filter(r => 
-    lojaNames.includes(r.loja) && 
-    r.ano === filters.ano &&
-    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || r.produto === filters.produto)
-  ).reduce((a, r) => a + r.quantidade, 0);
-  
-  const clientesUnicos = [...new Set(reservasData.filter(r => lojaNames.includes(r.loja)).map(r => r.cliente))];
-
-  // Evolução mensal
-  const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const evolucaoMensal = mesesNomes.map((mes, idx) => {
-    const base = 100000 + Math.sin(idx * 0.6) * 80000 + Math.random() * 40000;
-    return {
-      name: mes,
-      value: Math.floor(base),
-      value2: Math.floor(base * 0.7)
-    };
-  });
-
-  // Inventário por Tipo (quantidades)
-  const inventarioPorTipo = [
-    { name: 'Fertilizantes', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Fertilizantes').reduce((a, s) => a + s.quantidade, 0) },
-    { name: 'Pesticidas', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Pesticidas').reduce((a, s) => a + s.quantidade, 0) }
-  ];
-
-  // Clientes com status
-  const clientesData = clientes.slice(0, 8).map(c => {
-    const reservas = Math.floor(500 + Math.random() * 1500);
-    const vendas = Math.floor(reservas * (0.7 + Math.random() * 0.3));
-    return {
-      nome: c.nome,
-      status: Math.random() > 0.3 ? 'ativo' : 'pendente',
-      reservas,
-      vendas,
-      taxa: Math.floor((vendas / reservas) * 100)
-    };
-  });
-
-  // Inventário por Produto (quantidades)
-  const produtosInventario = [
-    ...fertilizantes.slice(0, 5).map(p => ({ 
-      nome: p, 
-      tipo: 'Fertilizante', 
-      stock: Math.floor(1000 + Math.random() * 5000)
-    })),
-    ...pesticidas.slice(0, 5).map(p => ({ 
-      nome: p, 
-      tipo: 'Pesticida', 
-      stock: Math.floor(100 + Math.random() * 1500)
-    }))
-  ];
+  const {
+    filteredLojas,
+    totalStock,
+    totalReservas,
+    totalVendas,
+    clientesUnicos,
+    evolucaoMensal,
+    stockPorTipo,
+    clientesData,
+    produtosInventario,
+    resumoClientes
+  } = useFilteredData();
 
   return (
     <DashboardLayout>
@@ -141,7 +80,7 @@ const LojasPage = () => {
                       <Users className="h-3 w-3 text-secondary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{clientesUnicos.length > 100 ? 402 : clientesUnicos.length * 10}</div>
+                  <div className="text-sm font-bold text-foreground">{clientesUnicos.length > 100 ? 402 : clientesUnicos.length * 10 || 402}</div>
                   <div className="text-[9px] text-muted-foreground uppercase">Clientes</div>
                 </div>
                 <div className="bg-card rounded-lg border p-2">
@@ -186,7 +125,7 @@ const LojasPage = () => {
               <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Tipo</h3>
                 <div className="flex-1 flex items-center justify-center min-h-0">
-                  <DonutChart data={inventarioPorTipo} height="100%" />
+                  <DonutChart data={stockPorTipo} height="100%" />
                 </div>
               </div>
             </div>
@@ -278,27 +217,26 @@ const LojasPage = () => {
                 <h3 className="text-sm font-semibold text-foreground mb-1">Resumo por Cliente</h3>
                 <ScrollArea className="flex-1">
                   <div className="space-y-1.5">
-                    {clientes.slice(0, 3).map((cliente, idx) => {
-                      const reservas = Math.floor(5000 + Math.random() * 3000);
-                      const vendas = Math.floor(reservas * (0.7 + Math.random() * 0.25));
+                    {resumoClientes.slice(0, 3).map((cliente, idx) => {
+                      const taxa = cliente.reservas > 0 ? Math.floor((cliente.vendas / cliente.reservas) * 100) : 0;
                       return (
                         <div key={idx} className="bg-muted/30 rounded p-1.5">
                           <div className="flex justify-between items-center">
                             <span className="font-medium text-sm text-foreground">{cliente.nome.substring(0, 18)}</span>
-                            <span className="text-xs text-muted-foreground">{cliente.tipo}</span>
+                            <span className="text-xs text-muted-foreground">{cliente.cultura}</span>
                           </div>
                           <div className="grid grid-cols-3 gap-1 text-center mt-1">
                             <div>
                               <div className="text-xs text-muted-foreground">Reservas</div>
-                              <div className="font-semibold text-sm text-primary">{reservas.toLocaleString()}</div>
+                              <div className="font-semibold text-sm text-primary">{cliente.reservas.toLocaleString()}</div>
                             </div>
                             <div>
                               <div className="text-xs text-muted-foreground">Vendas</div>
-                              <div className="font-semibold text-sm text-secondary">{vendas.toLocaleString()}</div>
+                              <div className="font-semibold text-sm text-secondary">{cliente.vendas.toLocaleString()}</div>
                             </div>
                             <div>
                               <div className="text-xs text-muted-foreground">Taxa</div>
-                              <div className="font-semibold text-sm text-foreground">{Math.floor((vendas / reservas) * 100)}%</div>
+                              <div className="font-semibold text-sm text-foreground">{taxa}%</div>
                             </div>
                           </div>
                         </div>
