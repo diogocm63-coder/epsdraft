@@ -3,16 +3,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Save, RotateCcw, Undo, Redo } from 'lucide-react';
 import { gerarOrcamentoHoras, areaHa } from '@/data/operacoesData';
-import { meses } from '@/data/mockData';
 
 const OrcamentacaoHorasPage = () => {
   const orcamentoData = gerarOrcamentoHoras();
   const mesesAbrev = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-  // Summary data
-  const custoRealAno = 0;
-  const totalHorasAno = 0;
-  const custoOrcamentado = [96, 120, 192, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const custoOrcamentado = [0, 96, 120, 192, 0, 0, 0, 0, 0, 0, 0, 0];
   const totalOrcamentado = custoOrcamentado.reduce((a, b) => a + b, 0);
 
   return (
@@ -21,105 +17,105 @@ const OrcamentacaoHorasPage = () => {
       showAtividade 
       showAreaExecucao={false}
     >
-      <div className="space-y-4 h-full overflow-auto">
+      <div className="flex flex-col gap-2 h-full overflow-hidden">
         {/* Area Info */}
-        <div className="flex justify-end">
-          <div className="border rounded px-4 py-2 bg-white">
-            <span className="text-gray-600 text-sm">Área (ha):</span>
+        <div className="flex justify-end flex-shrink-0">
+          <div className="border border-gray-300 rounded px-3 py-1 text-xs bg-white">
+            <span className="text-gray-600">Área (ha):</span>
             <span className="font-bold ml-2">{areaHa}</span>
           </div>
         </div>
 
         {/* Summary Table */}
-        <div className="bg-white rounded-lg border overflow-hidden">
+        <div className="bg-white border border-gray-200 overflow-hidden flex-shrink-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="text-xs w-40"></TableHead>
+              <TableRow className="bg-muted/30">
+                <TableHead className="text-[9px] w-28 py-1"></TableHead>
                 {mesesAbrev.map(mes => (
-                  <TableHead key={mes} className="text-xs text-center px-2">{mes}</TableHead>
+                  <TableHead key={mes} className="text-[8px] text-center px-1 py-1">{mes}</TableHead>
                 ))}
-                <TableHead className="text-xs text-center font-bold">Total</TableHead>
+                <TableHead className="text-[9px] text-center font-bold py-1">Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="text-xs">Custo Real Ano-1</TableCell>
+                <TableCell className="text-[9px] py-0.5">Custo Real Ano-1</TableCell>
                 {mesesAbrev.map((_, i) => (
-                  <TableCell key={i} className="text-xs text-center"></TableCell>
+                  <TableCell key={i} className="text-[9px] text-center py-0.5"></TableCell>
                 ))}
-                <TableCell className="text-xs text-center"></TableCell>
+                <TableCell className="text-[9px] text-center py-0.5"></TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="text-xs">Total Horas Ano-1</TableCell>
+                <TableCell className="text-[9px] py-0.5">Total Horas Ano-1</TableCell>
                 {mesesAbrev.map((_, i) => (
-                  <TableCell key={i} className="text-xs text-center"></TableCell>
+                  <TableCell key={i} className="text-[9px] text-center py-0.5"></TableCell>
                 ))}
-                <TableCell className="text-xs text-center"></TableCell>
+                <TableCell className="text-[9px] text-center py-0.5"></TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="text-xs">Custo Orçamentado</TableCell>
+                <TableCell className="text-[9px] py-0.5">Custo Orçamentado</TableCell>
                 {custoOrcamentado.map((val, i) => (
-                  <TableCell key={i} className="text-xs text-center">{val > 0 ? `${val} €` : ''}</TableCell>
+                  <TableCell key={i} className="text-[9px] text-center py-0.5">{val > 0 ? `${val} €` : ''}</TableCell>
                 ))}
-                <TableCell className="text-xs text-center font-bold">{totalOrcamentado} €</TableCell>
+                <TableCell className="text-[9px] text-center font-bold py-0.5">{totalOrcamentado} €</TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </div>
 
         {/* Activity Selection */}
-        <div className="text-center py-2 bg-muted rounded-lg">
-          <span className="text-sm">Selecione um espaço para orçamentar | </span>
+        <div className="text-center py-1 bg-muted/50 rounded text-xs flex-shrink-0 border">
+          <span>Selecione um espaço para orçamentar | </span>
           <span className="font-semibold">Atividade: Fert</span>
         </div>
 
         {/* Orçamento de Horas */}
-        <div className="bg-white rounded-lg border p-4">
-          <h3 className="text-[#8B1538] font-semibold text-sm mb-2">Orçamento de Horas</h3>
-          <div className="flex gap-2 mb-3">
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Save className="h-3 w-3 mr-1" /> Save Changes
+        <div className="bg-white border border-gray-200 p-2 flex flex-col min-h-0 flex-1">
+          <h3 className="text-[#8B1538] font-semibold text-xs mb-1">Orçamento de Horas</h3>
+          <div className="flex gap-1 mb-2 flex-shrink-0">
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <Save className="h-2.5 w-2.5 mr-0.5" /> Save Changes
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <RotateCcw className="h-3 w-3 mr-1" /> Reset Changes
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <RotateCcw className="h-2.5 w-2.5 mr-0.5" /> Reset Changes
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Undo className="h-3 w-3 mr-1" /> Undo
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <Undo className="h-2.5 w-2.5 mr-0.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Redo className="h-3 w-3 mr-1" /> Redo
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <Redo className="h-2.5 w-2.5 mr-0.5" /> Redo
             </Button>
           </div>
-          <div className="overflow-x-auto max-h-48">
+          <div className="overflow-auto flex-1 min-h-0">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="text-xs w-8"></TableHead>
-                  <TableHead className="text-xs w-40"></TableHead>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-[8px] w-6 py-0.5"></TableHead>
+                  <TableHead className="text-[8px] w-28 py-0.5"></TableHead>
                   {mesesAbrev.map(mes => (
-                    <TableHead key={mes} className="text-xs text-center px-1 min-w-[60px]">{mes}</TableHead>
+                    <TableHead key={mes} className="text-[8px] text-center px-0.5 py-0.5 min-w-[45px]">{mes}</TableHead>
                   ))}
-                  <TableHead className="text-xs text-center font-bold">Total</TableHead>
+                  <TableHead className="text-[8px] text-center font-bold py-0.5">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow className="bg-muted/30">
-                  <TableCell className="text-xs">☐</TableCell>
-                  <TableCell className="text-xs"></TableCell>
+                <TableRow className="bg-muted/20">
+                  <TableCell className="text-[8px] py-0.5">☐</TableCell>
+                  <TableCell className="text-[8px] py-0.5"></TableCell>
                   {mesesAbrev.map((_, i) => (
-                    <TableCell key={i} className="text-xs text-center font-bold">0</TableCell>
+                    <TableCell key={i} className="text-[8px] text-center font-bold py-0.5">0</TableCell>
                   ))}
-                  <TableCell className="text-xs text-center font-bold">0</TableCell>
+                  <TableCell className="text-[8px] text-center font-bold py-0.5">0</TableCell>
                 </TableRow>
-                {orcamentoData.map((row, idx) => (
+                {orcamentoData.slice(0, 5).map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="text-xs"></TableCell>
-                    <TableCell className="text-xs">{row.local}</TableCell>
+                    <TableCell className="text-[8px] py-0.5"></TableCell>
+                    <TableCell className="text-[8px] py-0.5">{row.local}</TableCell>
                     {mesesAbrev.map((_, i) => (
-                      <TableCell key={i} className="text-xs text-center"></TableCell>
+                      <TableCell key={i} className="text-[8px] text-center py-0.5"></TableCell>
                     ))}
-                    <TableCell className="text-xs text-center font-bold">{row.total}</TableCell>
+                    <TableCell className="text-[8px] text-center font-bold py-0.5">{row.total}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -128,43 +124,43 @@ const OrcamentacaoHorasPage = () => {
         </div>
 
         {/* Orçamento €/hora */}
-        <div className="bg-white rounded-lg border p-4">
-          <h3 className="text-[#8B1538] font-semibold text-sm mb-2">Orçamento €/hora</h3>
-          <div className="flex gap-2 mb-3">
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Save className="h-3 w-3 mr-1" /> Save Changes
+        <div className="bg-white border border-gray-200 p-2 flex flex-col min-h-0 flex-1">
+          <h3 className="text-[#8B1538] font-semibold text-xs mb-1">Orçamento €/hora</h3>
+          <div className="flex gap-1 mb-2 flex-shrink-0">
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <Save className="h-2.5 w-2.5 mr-0.5" /> Save Changes
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <RotateCcw className="h-3 w-3 mr-1" /> Reset Changes
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <RotateCcw className="h-2.5 w-2.5 mr-0.5" /> Reset Changes
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Undo className="h-3 w-3 mr-1" /> Undo
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <Undo className="h-2.5 w-2.5 mr-0.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Redo className="h-3 w-3 mr-1" /> Redo
+            <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
+              <Redo className="h-2.5 w-2.5 mr-0.5" /> Redo
             </Button>
           </div>
-          <div className="overflow-x-auto max-h-48">
+          <div className="overflow-auto flex-1 min-h-0">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="text-xs w-8"></TableHead>
-                  <TableHead className="text-xs w-40"></TableHead>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-[8px] w-6 py-0.5"></TableHead>
+                  <TableHead className="text-[8px] w-28 py-0.5"></TableHead>
                   {mesesAbrev.map(mes => (
-                    <TableHead key={mes} className="text-xs text-center px-1 min-w-[60px]">{mes}</TableHead>
+                    <TableHead key={mes} className="text-[8px] text-center px-0.5 py-0.5 min-w-[45px]">{mes}</TableHead>
                   ))}
-                  <TableHead className="text-xs text-center font-bold">Total</TableHead>
+                  <TableHead className="text-[8px] text-center font-bold py-0.5">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orcamentoData.map((row, idx) => (
+                {orcamentoData.slice(0, 5).map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="text-xs">☐</TableCell>
-                    <TableCell className="text-xs">{row.local}</TableCell>
+                    <TableCell className="text-[8px] py-0.5">☐</TableCell>
+                    <TableCell className="text-[8px] py-0.5">{row.local}</TableCell>
                     {mesesAbrev.map((_, i) => (
-                      <TableCell key={i} className="text-xs text-center"></TableCell>
+                      <TableCell key={i} className="text-[8px] text-center py-0.5"></TableCell>
                     ))}
-                    <TableCell className="text-xs text-center font-bold"></TableCell>
+                    <TableCell className="text-[8px] text-center font-bold py-0.5"></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
