@@ -82,27 +82,27 @@ const GestaoPage = () => {
   return (
     <DashboardLayout>
       <div className="h-screen flex flex-col overflow-hidden bg-background">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-card border-b">
-          <div className="flex items-center gap-4">
-            <img src={logoAgris} alt="Grupo Agris" className="h-10 object-contain" />
+        {/* Header - compact */}
+        <div className="flex items-center justify-between px-4 py-2 bg-card border-b">
+          <div className="flex items-center gap-3">
+            <img src={logoAgris} alt="Grupo Agris" className="h-8 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">Visão 360º</h1>
-              <p className="text-sm text-muted-foreground">Dashboard de gestão geral</p>
+              <h1 className="text-lg font-bold text-foreground">Visão 360º</h1>
+              <p className="text-xs text-muted-foreground">Dashboard de gestão geral</p>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="px-6 py-4 bg-card border-b">
+        {/* Filters - compact */}
+        <div className="px-4 py-2 bg-card border-b">
           <FilterBar showConsultor showProduto />
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 h-full">
-            {/* Left Column - KPIs */}
-            <div className="col-span-2 flex flex-col gap-3">
+        <div className="flex-1 p-3 overflow-hidden">
+          <div className="grid grid-cols-12 gap-3 h-full">
+            {/* Left Column - KPIs in 2 columns */}
+            <div className="col-span-2 grid grid-cols-2 gap-2 content-start">
               <KPICard 
                 title="Total Lojas" 
                 value={filteredLojas.length} 
@@ -111,17 +111,23 @@ const GestaoPage = () => {
                 variant="blue"
               />
               <KPICard 
-                title="Consultores Ativos" 
+                title="Consultores" 
                 value={filteredConsultores.length} 
                 icon={Users}
                 variant="green"
               />
               <KPICard 
-                title="Total Clientes" 
+                title="Clientes" 
                 value={totalClientes} 
                 icon={MapPin}
                 trend={{ value: 8.7, positive: true }}
                 variant="blue"
+              />
+              <KPICard 
+                title="Stock" 
+                value={`${totalStock.toLocaleString()} un`} 
+                icon={Package}
+                variant="dark"
               />
               <KPICard 
                 title="Reservas" 
@@ -131,8 +137,8 @@ const GestaoPage = () => {
                 variant="blue"
               />
               <KPICard 
-                title="Reservas (€)" 
-                value={`${(totalReservas * 12.5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                title="Reservas €" 
+                value={`${(totalReservas * 12.5 / 1000).toFixed(0)}k €`} 
                 icon={ShoppingCart}
                 variant="blue"
               />
@@ -144,32 +150,26 @@ const GestaoPage = () => {
                 variant="green"
               />
               <KPICard 
-                title="Vendas (€)" 
-                value={`${(totalVendas * 12.5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                title="Vendas €" 
+                value={`${(totalVendas * 12.5 / 1000).toFixed(0)}k €`} 
                 icon={TrendingUp}
                 variant="green"
-              />
-              <KPICard 
-                title="Stock Total" 
-                value={`${totalStock.toLocaleString()} un`} 
-                icon={Package}
-                variant="dark"
               />
             </div>
 
             {/* Center Column - Charts */}
-            <div className="col-span-7 flex flex-col gap-4 h-full">
+            <div className="col-span-7 flex flex-col gap-3 h-full">
               {/* Vendas vs Reservas Chart */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Vendas vs Reservas (Mensal)</h3>
+              <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Vendas vs Reservas (Mensal)</h3>
                 <div className="flex-1 min-h-0">
                   <AreaChartComponent data={evolucaoMensal} height="100%" />
                 </div>
               </div>
 
               {/* Top Lojas Chart */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Top 8 Lojas por Vendas</h3>
+              <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Top 8 Lojas por Vendas</h3>
                 <div className="flex-1 min-h-0">
                   <HorizontalBarChart data={topLojas} height="100%" />
                 </div>
@@ -177,11 +177,11 @@ const GestaoPage = () => {
             </div>
 
             {/* Right Column */}
-            <div className="col-span-3 flex flex-col gap-4 h-full">
+            <div className="col-span-3 flex flex-col gap-3 h-full">
               {/* Consultores por Região */}
-              <div className="bg-card rounded-xl border p-4 flex-1 overflow-auto">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Consultores por Região</h3>
-                <div className="space-y-1">
+              <div className="bg-card rounded-lg border p-3 flex-1 overflow-auto min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Consultores por Região</h3>
+                <div className="space-y-0.5">
                   {consultores.map((c, idx) => (
                     <ConsultorItem 
                       key={c.id}
@@ -195,9 +195,11 @@ const GestaoPage = () => {
               </div>
 
               {/* Distribuição de Produtos */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col items-center justify-center">
-                <h3 className="text-sm font-semibold text-foreground mb-2 self-start">Distribuição de Produtos</h3>
-                <DonutChart data={stockPorTipo} height={160} />
+              <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col items-center justify-center min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1 self-start">Distribuição de Produtos</h3>
+                <div className="flex-1 flex items-center justify-center w-full">
+                  <DonutChart data={stockPorTipo} height={140} />
+                </div>
               </div>
             </div>
           </div>
