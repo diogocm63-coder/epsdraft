@@ -183,7 +183,7 @@ const LojasPage = () => {
               </div>
 
               {/* Inventário por Tipo */}
-              <div className="bg-card rounded-xl border p-2 h-[120px] flex flex-col">
+              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Tipo</h3>
                 <div className="flex-1 flex items-center justify-center min-h-0">
                   <DonutChart data={inventarioPorTipo} height="100%" />
