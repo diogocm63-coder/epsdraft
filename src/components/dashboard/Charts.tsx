@@ -120,7 +120,7 @@ export const GroupedBarChart = ({ data, height = 200 }: ChartProps) => {
   );
 };
 
-export const DonutChart = ({ data, height = 200 }: ChartProps) => {
+export const DonutChart = ({ data, height = 280 }: ChartProps) => {
   const DONUT_COLORS = [COLORS.primary, COLORS.secondary, COLORS.accent];
   
   return (
