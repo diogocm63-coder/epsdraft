@@ -14,18 +14,6 @@ export const DashboardSidebar = () => {
 
   return (
     <aside className={`${collapsed ? 'w-16' : 'w-56'} min-h-screen bg-sidebar flex flex-col transition-all duration-300`}>
-      {/* Logo area */}
-      <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-agris-blue to-agris-green flex items-center justify-center">
-              <span className="text-sidebar-primary-foreground text-sm font-bold">A</span>
-            </div>
-            <span className="text-sidebar-foreground font-semibold">AGRIS</span>
-          </div>
-        )}
-      </div>
-
       {/* Navigation */}
       <nav className="flex-1 py-4">
         {navItems.map((item) => {

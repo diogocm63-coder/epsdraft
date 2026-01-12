@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 interface FilterBarProps {
   showConsultor?: boolean;
   showConcelho?: boolean;
+  showProduto?: boolean;
 }
 
-export const FilterBar = ({ showConsultor = false, showConcelho = false }: FilterBarProps) => {
+export const FilterBar = ({ showConsultor = false, showConcelho = false, showProduto = false }: FilterBarProps) => {
   const { filters, setFilters, resetFilters } = useFilters();
 
   const activeFiltersCount = [
@@ -25,6 +26,12 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false }: Filte
   const concelhos = filters.zona === "Portugal" 
     ? ["Todos", ...lojas.map(l => l.concelho).sort()]
     : ["Todos", ...lojas.filter(l => l.distrito === filters.zona).map(l => l.concelho).sort()];
+
+  const produtos = filters.tipoProduto === "Todos" 
+    ? ["Todos", ...fertilizantes.slice(0, 10), ...pesticidas.slice(0, 10)]
+    : filters.tipoProduto === "Fertilizantes"
+      ? ["Todos", ...fertilizantes]
+      : ["Todos", ...pesticidas];
 
   return (
     <div className="flex items-center gap-3 flex-wrap">
@@ -82,20 +89,38 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false }: Filte
         </SelectContent>
       </Select>
 
-      <Select 
-        value={filters.zona} 
-        onValueChange={(v) => setFilters(prev => ({ ...prev, zona: v, concelho: "Todos" }))}
-      >
-        <SelectTrigger className="w-[130px] h-9 bg-card">
-          <SelectValue placeholder="Distrito" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="Portugal">Distrito</SelectItem>
-          {distritos.filter(d => d !== "Portugal").map(distrito => (
-            <SelectItem key={distrito} value={distrito}>{distrito}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {showProduto && (
+        <Select 
+          value={filters.produto} 
+          onValueChange={(v) => setFilters(prev => ({ ...prev, produto: v }))}
+        >
+          <SelectTrigger className="w-[180px] h-9 bg-card">
+            <SelectValue placeholder="Produto" />
+          </SelectTrigger>
+          <SelectContent>
+            {produtos.map(produto => (
+              <SelectItem key={produto} value={produto}>{produto.length > 25 ? produto.substring(0, 25) + '...' : produto}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {!showConcelho && (
+        <Select 
+          value={filters.zona} 
+          onValueChange={(v) => setFilters(prev => ({ ...prev, zona: v, concelho: "Todos" }))}
+        >
+          <SelectTrigger className="w-[130px] h-9 bg-card">
+            <SelectValue placeholder="Distrito" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Portugal">Distrito</SelectItem>
+            {distritos.filter(d => d !== "Portugal").map(distrito => (
+              <SelectItem key={distrito} value={distrito}>{distrito}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {showConcelho && (
         <Select 
@@ -114,18 +139,6 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false }: Filte
         </Select>
       )}
 
-      <div className="flex-1" />
-
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={resetFilters} 
-        className="text-muted-foreground hover:text-foreground"
-      >
-        <RotateCcw className="h-4 w-4 mr-1" />
-        Limpar
-      </Button>
-
       {showConsultor && (
         <Select 
           value={filters.consultor} 
@@ -142,6 +155,18 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false }: Filte
           </SelectContent>
         </Select>
       )}
+
+      <div className="flex-1" />
+
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={resetFilters} 
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <RotateCcw className="h-4 w-4 mr-1" />
+        Limpar
+      </Button>
     </div>
   );
 };

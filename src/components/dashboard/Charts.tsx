@@ -6,9 +6,9 @@ interface ChartData {
   value2?: number;
 }
 
-interface AreaChartProps {
+interface ChartProps {
   data: ChartData[];
-  height?: number;
+  height?: number | string;
   showGrid?: boolean;
 }
 
@@ -19,7 +19,7 @@ const COLORS = {
   muted: '#94a3b8'
 };
 
-export const AreaChartComponent = ({ data, height = 250, showGrid = true }: AreaChartProps) => {
+export const AreaChartComponent = ({ data, height = 250, showGrid = true }: ChartProps) => {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -71,7 +71,7 @@ export const AreaChartComponent = ({ data, height = 250, showGrid = true }: Area
   );
 };
 
-export const HorizontalBarChart = ({ data, height = 200 }: { data: ChartData[]; height?: number }) => {
+export const HorizontalBarChart = ({ data, height = 200 }: ChartProps) => {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 5, right: 10, left: 60, bottom: 5 }}>
@@ -94,7 +94,7 @@ export const HorizontalBarChart = ({ data, height = 200 }: { data: ChartData[]; 
   );
 };
 
-export const GroupedBarChart = ({ data, height = 200 }: { data: ChartData[]; height?: number }) => {
+export const GroupedBarChart = ({ data, height = 200 }: ChartProps) => {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -111,12 +111,16 @@ export const GroupedBarChart = ({ data, height = 200 }: { data: ChartData[]; hei
         />
         <Bar dataKey="value" fill={COLORS.secondary} radius={[4, 4, 0, 0]} name="Previsto" />
         <Bar dataKey="value2" fill={COLORS.primary} radius={[4, 4, 0, 0]} name="Real" />
+        <Legend 
+          iconType="square" 
+          wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
 };
 
-export const DonutChart = ({ data, height = 200 }: { data: ChartData[]; height?: number }) => {
+export const DonutChart = ({ data, height = 200 }: ChartProps) => {
   const DONUT_COLORS = [COLORS.primary, COLORS.secondary, COLORS.accent];
   
   return (
@@ -126,8 +130,8 @@ export const DonutChart = ({ data, height = 200 }: { data: ChartData[]; height?:
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={85}
+          innerRadius={50}
+          outerRadius={70}
           paddingAngle={2}
           dataKey="value"
         >

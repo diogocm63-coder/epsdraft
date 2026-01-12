@@ -16,16 +16,31 @@ const LojasPage = () => {
   // Filtrar loja específica
   const filteredLojas = filters.concelho !== "Todos"
     ? lojas.filter(l => l.concelho === filters.concelho)
-    : filters.zona === "Portugal" 
-      ? lojas 
-      : lojas.filter(l => l.distrito === filters.zona);
+    : lojas;
 
   const lojaNames = filteredLojas.map(l => l.nome);
 
-  // Totais
-  const totalStock = stockData.filter(s => lojaNames.includes(s.loja)).reduce((a, s) => a + s.quantidade, 0);
-  const totalReservas = reservasData.filter(r => lojaNames.includes(r.loja) && r.ano === filters.ano).reduce((a, r) => a + r.quantidade, 0);
-  const totalVendas = vendasData.filter(r => lojaNames.includes(r.loja) && r.ano === filters.ano).reduce((a, r) => a + r.quantidade, 0);
+  // Totais em quantidades
+  const totalStock = stockData.filter(s => 
+    lojaNames.includes(s.loja) &&
+    (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
+    (filters.produto === "Todos" || s.produto === filters.produto)
+  ).reduce((a, s) => a + s.quantidade, 0);
+  
+  const totalReservas = reservasData.filter(r => 
+    lojaNames.includes(r.loja) && 
+    r.ano === filters.ano &&
+    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+    (filters.produto === "Todos" || r.produto === filters.produto)
+  ).reduce((a, r) => a + r.quantidade, 0);
+  
+  const totalVendas = vendasData.filter(r => 
+    lojaNames.includes(r.loja) && 
+    r.ano === filters.ano &&
+    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+    (filters.produto === "Todos" || r.produto === filters.produto)
+  ).reduce((a, r) => a + r.quantidade, 0);
+  
   const clientesUnicos = [...new Set(reservasData.filter(r => lojaNames.includes(r.loja)).map(r => r.cliente))];
 
   // Evolução mensal
@@ -39,15 +54,15 @@ const LojasPage = () => {
     };
   });
 
-  // Inventário por Tipo
+  // Inventário por Tipo (quantidades)
   const inventarioPorTipo = [
     { name: 'Fertilizantes', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Fertilizantes').reduce((a, s) => a + s.quantidade, 0) },
     { name: 'Pesticidas', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Pesticidas').reduce((a, s) => a + s.quantidade, 0) }
   ];
 
   // Clientes com status
-  const clientesData = clientes.slice(0, 5).map(c => {
-    const reservas = Math.floor(5000 + Math.random() * 15000);
+  const clientesData = clientes.slice(0, 8).map(c => {
+    const reservas = Math.floor(500 + Math.random() * 1500);
     const vendas = Math.floor(reservas * (0.7 + Math.random() * 0.3));
     return {
       nome: c.nome,
@@ -58,19 +73,19 @@ const LojasPage = () => {
     };
   });
 
-  // Inventário por Produto
+  // Inventário por Produto (quantidades)
   const produtosInventario = [
-    ...fertilizantes.slice(0, 3).map(p => ({ nome: p, tipo: 'Fertilizante', stock: `${Math.floor(1000 + Math.random() * 5000)} kg` })),
-    ...pesticidas.slice(0, 3).map(p => ({ nome: p, tipo: 'Pesticida', stock: `${Math.floor(100 + Math.random() * 1500)} L` }))
+    ...fertilizantes.slice(0, 5).map(p => ({ 
+      nome: p, 
+      tipo: 'Fertilizante', 
+      stock: Math.floor(1000 + Math.random() * 5000)
+    })),
+    ...pesticidas.slice(0, 5).map(p => ({ 
+      nome: p, 
+      tipo: 'Pesticida', 
+      stock: Math.floor(100 + Math.random() * 1500)
+    }))
   ];
-
-  // Reservas Ativas
-  const reservasAtivas = clientes.slice(0, 4).map(c => ({
-    nome: c.nome,
-    produtos: Math.floor(2 + Math.random() * 5),
-    data: `${Math.floor(10 + Math.random() * 20)} Jan`,
-    valor: Math.floor(2000 + Math.random() * 8000)
-  }));
 
   return (
     <DashboardLayout>
@@ -102,19 +117,19 @@ const LojasPage = () => {
 
         {/* Filters */}
         <div className="px-6 py-4 bg-card border-b">
-          <FilterBar showConcelho />
+          <FilterBar showConcelho showProduto />
         </div>
 
         {/* Content */}
         <div className="flex-1 p-6 overflow-hidden">
           <div className="grid grid-cols-12 gap-4 h-full">
-            {/* Left Column - KPIs & Inventário */}
-            <div className="col-span-3 flex flex-col gap-4">
+            {/* Left Column - KPIs & Inventário por Tipo */}
+            <div className="col-span-3 flex flex-col gap-4 h-full">
               {/* KPIs Row */}
               <div className="grid grid-cols-2 gap-3">
                 <KPICard 
-                  title="Inventário Total" 
-                  value={`€${Math.floor(totalStock * 1.5 / 1000)}K`} 
+                  title="Inventário" 
+                  value={`${totalStock.toLocaleString()} un`} 
                   icon={Package}
                   variant="blue"
                 />
@@ -128,39 +143,43 @@ const LojasPage = () => {
               <div className="grid grid-cols-2 gap-3">
                 <KPICard 
                   title="Reservas" 
-                  value={`€${Math.floor(totalReservas * 20 / 1000)}K`} 
+                  value={`${totalReservas.toLocaleString()} un`} 
                   icon={ShoppingCart}
                   trend={{ value: 6.8, positive: true }}
                   variant="blue"
                 />
                 <KPICard 
                   title="Vendas" 
-                  value={`€${Math.floor(totalVendas * 28 / 1000)}K`} 
+                  value={`${totalVendas.toLocaleString()} un`} 
                   icon={TrendingUp}
                   trend={{ value: 12.3, positive: true }}
-                  variant="blue"
+                  variant="green"
                 />
               </div>
 
-              {/* Inventário por Tipo */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              {/* Inventário por Tipo - Centrado */}
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Inventário por Tipo</h3>
-                <DonutChart data={inventarioPorTipo} height={220} />
+                <div className="flex-1 flex items-center justify-center">
+                  <DonutChart data={inventarioPorTipo} height="100%" />
+                </div>
               </div>
             </div>
 
             {/* Center Column */}
-            <div className="col-span-5 flex flex-col gap-4">
-              {/* Reservas vs Vendas */}
-              <div className="bg-card rounded-xl border p-4">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Reservas vs Vendas (Evolução)</h3>
-                <AreaChartComponent data={evolucaoMensal} height={180} />
+            <div className="col-span-5 flex flex-col gap-4 h-full">
+              {/* Reservas vs Vendas - Maior */}
+              <div className="bg-card rounded-xl border p-4 flex-[1.5] flex flex-col min-h-0">
+                <h3 className="text-sm font-semibold text-foreground mb-2">Reservas vs Vendas (Evolução)</h3>
+                <div className="flex-1 min-h-0">
+                  <AreaChartComponent data={evolucaoMensal} height="100%" />
+                </div>
               </div>
 
               {/* Clientes */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Clientes</h3>
-                <ScrollArea className="h-[180px]">
+                <ScrollArea className="flex-1">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-muted-foreground text-xs border-b">
@@ -184,8 +203,8 @@ const LojasPage = () => {
                               </Badge>
                             </div>
                           </td>
-                          <td className="py-2 text-right text-foreground">€{cliente.reservas.toLocaleString()}</td>
-                          <td className="py-2 text-right text-foreground">€{cliente.vendas.toLocaleString()}</td>
+                          <td className="py-2 text-right text-foreground">{cliente.reservas.toLocaleString()} un</td>
+                          <td className="py-2 text-right text-foreground">{cliente.vendas.toLocaleString()} un</td>
                           <td className="py-2 text-right text-secondary font-medium">{cliente.taxa}%</td>
                         </tr>
                       ))}
@@ -196,23 +215,23 @@ const LojasPage = () => {
             </div>
 
             {/* Right Column */}
-            <div className="col-span-4 flex flex-col gap-4">
+            <div className="col-span-4 flex flex-col gap-4 h-full">
               {/* Inventário por Produto */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Inventário por Produto</h3>
-                <ScrollArea className="h-[180px]">
+                <ScrollArea className="flex-1">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-muted-foreground text-xs border-b">
                         <th className="text-left py-2">Produto</th>
                         <th className="text-left py-2">Tipo</th>
-                        <th className="text-right py-2">Stock</th>
+                        <th className="text-right py-2">Stock (un)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {produtosInventario.map((produto, idx) => (
                         <tr key={idx} className="border-b border-muted/30">
-                          <td className="py-2 text-foreground">{produto.nome.substring(0, 15)}...</td>
+                          <td className="py-2 text-foreground">{produto.nome.substring(0, 18)}...</td>
                           <td className="py-2">
                             <Badge 
                               variant="outline"
@@ -221,7 +240,7 @@ const LojasPage = () => {
                               {produto.tipo}
                             </Badge>
                           </td>
-                          <td className="py-2 text-right text-foreground">{produto.stock}</td>
+                          <td className="py-2 text-right text-foreground">{produto.stock.toLocaleString()}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -229,22 +248,24 @@ const LojasPage = () => {
                 </ScrollArea>
               </div>
 
-              {/* Reservas Ativas */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
-                <h3 className="text-sm font-semibold text-foreground mb-3">Reservas Ativas</h3>
-                <div className="space-y-2">
-                  {reservasAtivas.map((reserva, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 border-b border-muted/30 last:border-0">
-                      <div>
-                        <div className="text-sm font-medium text-foreground">{reserva.nome.substring(0, 20)}</div>
-                        <div className="text-xs text-muted-foreground">{reserva.produtos} produtos</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">{reserva.data}</div>
-                        <div className="text-sm font-semibold text-primary">€{reserva.valor.toLocaleString()}</div>
-                      </div>
-                    </div>
-                  ))}
+              {/* Resumo */}
+              <div className="bg-card rounded-xl border p-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">Resumo de Conversão</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <div className="text-xl font-bold text-primary">{totalReservas.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">Total Reservas (un)</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <div className="text-xl font-bold text-secondary">{totalVendas.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">Total Vendas (un)</div>
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-muted/30 rounded-lg mt-3">
+                  <div className="text-2xl font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
+                    {((totalVendas / totalReservas) * 100 || 0).toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Taxa de Conversão</div>
                 </div>
               </div>
             </div>
