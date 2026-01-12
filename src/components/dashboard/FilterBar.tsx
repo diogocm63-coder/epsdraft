@@ -106,7 +106,7 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false, showPro
         </Select>
       )}
 
-      {!showConcelho && !hideDistrito && (
+      {!hideDistrito && (
         <Select 
           value={filters.zona} 
           onValueChange={(v) => setFilters(prev => ({ ...prev, zona: v, concelho: "Todos" }))}

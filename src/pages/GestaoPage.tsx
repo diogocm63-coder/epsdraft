@@ -95,7 +95,7 @@ const GestaoPage = () => {
 
         {/* Filters - compact */}
         <div className="px-4 py-2 bg-card border-b">
-          <FilterBar showConsultor showProduto />
+          <FilterBar showConsultor showProduto showConcelho />
         </div>
 
         {/* Content */}
