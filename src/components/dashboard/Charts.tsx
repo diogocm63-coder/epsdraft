@@ -130,8 +130,8 @@ export const DonutChart = ({ data, height = 280 }: ChartProps) => {
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={50}
-          outerRadius={70}
+          innerRadius={70}
+          outerRadius={100}
           paddingAngle={2}
           dataKey="value"
         >
