@@ -125,65 +125,65 @@ const LojasPage = () => {
           <div className="grid grid-cols-12 gap-2 h-full">
             {/* Left Column - KPIs em grid 2x3 + Inventário por Tipo */}
             <div className="col-span-2 flex flex-col gap-2 h-full">
-              <div className="grid grid-cols-2 gap-1.5">
-                <div className="bg-card rounded-lg border p-2">
+              <div className="grid grid-cols-2 gap-1.5 flex-1">
+                <div className="bg-card rounded-lg border p-3 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-                      <Package className="h-3 w-3 text-primary-foreground" />
+                    <div className="w-7 h-7 rounded bg-primary flex items-center justify-center">
+                      <Package className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{totalStock.toLocaleString()}</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Inventário</div>
+                  <div className="text-base font-bold text-foreground">{totalStock.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">Inventário</div>
                 </div>
-                <div className="bg-card rounded-lg border p-2">
+                <div className="bg-card rounded-lg border p-3 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded bg-secondary flex items-center justify-center">
-                      <Users className="h-3 w-3 text-secondary-foreground" />
+                    <div className="w-7 h-7 rounded bg-secondary flex items-center justify-center">
+                      <Users className="h-3.5 w-3.5 text-secondary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{clientesUnicos.length > 100 ? 402 : clientesUnicos.length * 10}</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Clientes</div>
+                  <div className="text-base font-bold text-foreground">{clientesUnicos.length > 100 ? 402 : clientesUnicos.length * 10}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">Clientes</div>
                 </div>
-                <div className="bg-card rounded-lg border p-2">
+                <div className="bg-card rounded-lg border p-3 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-                      <ShoppingCart className="h-3 w-3 text-primary-foreground" />
+                    <div className="w-7 h-7 rounded bg-primary flex items-center justify-center">
+                      <ShoppingCart className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{totalReservas.toLocaleString()}</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Reservas (un)</div>
+                  <div className="text-base font-bold text-foreground">{totalReservas.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">Reservas (un)</div>
                 </div>
-                <div className="bg-card rounded-lg border p-2">
+                <div className="bg-card rounded-lg border p-3 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-                      <ShoppingCart className="h-3 w-3 text-primary-foreground" />
+                    <div className="w-7 h-7 rounded bg-primary flex items-center justify-center">
+                      <ShoppingCart className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{(totalReservas * 12.5 / 1000).toFixed(0)}k€</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Reservas (€)</div>
+                  <div className="text-base font-bold text-foreground">{(totalReservas * 12.5 / 1000).toFixed(0)}k€</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">Reservas (€)</div>
                 </div>
-                <div className="bg-card rounded-lg border p-2">
+                <div className="bg-card rounded-lg border p-3 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded bg-secondary flex items-center justify-center">
-                      <TrendingUp className="h-3 w-3 text-secondary-foreground" />
+                    <div className="w-7 h-7 rounded bg-secondary flex items-center justify-center">
+                      <TrendingUp className="h-3.5 w-3.5 text-secondary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{totalVendas.toLocaleString()}</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Vendas (un)</div>
+                  <div className="text-base font-bold text-foreground">{totalVendas.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">Vendas (un)</div>
                 </div>
-                <div className="bg-card rounded-lg border p-2">
+                <div className="bg-card rounded-lg border p-3 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded bg-secondary flex items-center justify-center">
-                      <TrendingUp className="h-3 w-3 text-secondary-foreground" />
+                    <div className="w-7 h-7 rounded bg-secondary flex items-center justify-center">
+                      <TrendingUp className="h-3.5 w-3.5 text-secondary-foreground" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-foreground">{(totalVendas * 14.8 / 1000).toFixed(0)}k€</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Vendas (€)</div>
+                  <div className="text-base font-bold text-foreground">{(totalVendas * 14.8 / 1000).toFixed(0)}k€</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">Vendas (€)</div>
                 </div>
               </div>
 
               {/* Inventário por Tipo */}
-              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
+              <div className="bg-card rounded-xl border p-2 h-[100px] flex flex-col">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Tipo</h3>
                 <div className="flex-1 flex items-center justify-center min-h-0">
                   <DonutChart data={inventarioPorTipo} height="100%" />
@@ -208,7 +208,7 @@ const LojasPage = () => {
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-card">
                       <tr className="text-muted-foreground border-b">
-                        <th className="text-left py-1">Cliente</th>
+                        <th className="text-left py-1 w-[55%]">Cliente</th>
                         <th className="text-right py-1">Reservas</th>
                         <th className="text-right py-1">Vendas</th>
                         <th className="text-right py-1">Taxa</th>
@@ -217,14 +217,14 @@ const LojasPage = () => {
                     <tbody>
                       {clientesData.map((cliente, idx) => (
                         <tr key={idx} className="border-b border-muted/30">
-                          <td className="py-1">
-                            <div className="flex items-center gap-1">
-                              <span className="text-foreground">{cliente.nome.substring(0, 12)}...</span>
+                          <td className="py-1 w-[55%]">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-foreground flex-1">{cliente.nome.substring(0, 20)}...</span>
                               <Badge 
                                 variant={cliente.status === 'ativo' ? 'default' : 'secondary'}
-                                className={`text-[9px] px-1 py-0 ${cliente.status === 'ativo' ? 'bg-secondary text-secondary-foreground' : 'bg-amber-500 text-white'}`}
+                                className={`text-[8px] px-1 py-0 shrink-0 ${cliente.status === 'ativo' ? 'bg-secondary text-secondary-foreground' : 'bg-amber-500 text-white'}`}
                               >
-                                {cliente.status}
+                                {cliente.status === 'ativo' ? 'A' : 'P'}
                               </Badge>
                             </div>
                           </td>
