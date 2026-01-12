@@ -131,10 +131,22 @@ const GestaoPage = () => {
                 variant="blue"
               />
               <KPICard 
+                title="Reservas (€)" 
+                value={`${(totalReservas * 12.5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                icon={ShoppingCart}
+                variant="blue"
+              />
+              <KPICard 
                 title="Vendas" 
                 value={`${totalVendas.toLocaleString()} un`} 
                 icon={TrendingUp}
                 trend={{ value: 12.4, positive: true }}
+                variant="green"
+              />
+              <KPICard 
+                title="Vendas (€)" 
+                value={`${(totalVendas * 12.5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                icon={TrendingUp}
                 variant="green"
               />
               <KPICard 
@@ -148,22 +160,26 @@ const GestaoPage = () => {
             {/* Center Column - Charts */}
             <div className="col-span-7 flex flex-col gap-4 h-full">
               {/* Vendas vs Reservas Chart */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Vendas vs Reservas (Mensal)</h3>
-                <AreaChartComponent data={evolucaoMensal} height={180} />
+                <div className="flex-1 min-h-0">
+                  <AreaChartComponent data={evolucaoMensal} height="100%" />
+                </div>
               </div>
 
               {/* Top Lojas Chart */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Top 8 Lojas por Vendas</h3>
-                <HorizontalBarChart data={topLojas} height={180} />
+                <div className="flex-1 min-h-0">
+                  <HorizontalBarChart data={topLojas} height="100%" />
+                </div>
               </div>
             </div>
 
             {/* Right Column */}
             <div className="col-span-3 flex flex-col gap-4 h-full">
-              {/* Consultores por Região - altura reduzida */}
-              <div className="bg-card rounded-xl border p-4 overflow-auto" style={{ maxHeight: '160px' }}>
+              {/* Consultores por Região */}
+              <div className="bg-card rounded-xl border p-4 flex-1 overflow-auto">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Consultores por Região</h3>
                 <div className="space-y-1">
                   {consultores.map((c, idx) => (
@@ -178,10 +194,10 @@ const GestaoPage = () => {
                 </div>
               </div>
 
-              {/* Distribuição de Produtos - altura aumentada */}
+              {/* Distribuição de Produtos */}
               <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col items-center justify-center">
                 <h3 className="text-sm font-semibold text-foreground mb-2 self-start">Distribuição de Produtos</h3>
-                <DonutChart data={stockPorTipo} height={220} />
+                <DonutChart data={stockPorTipo} height={160} />
               </div>
             </div>
           </div>
