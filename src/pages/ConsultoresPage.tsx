@@ -87,70 +87,70 @@ const ConsultoresPage = () => {
     <DashboardLayout>
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-card border-b">
-          <div className="flex items-center gap-4">
-            <img src={logoAgripro} alt="Agripro" className="h-8 object-contain" />
+        <div className="flex items-center justify-between px-4 py-2 bg-card border-b">
+          <div className="flex items-center gap-3">
+            <img src={logoAgripro} alt="Agripro" className="h-6 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">Consultores</h1>
-              <p className="text-sm text-muted-foreground">Análise de performance e gestão</p>
+              <h1 className="text-base font-bold text-foreground">Consultores</h1>
+              <p className="text-xs text-muted-foreground">Análise de performance e gestão</p>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="px-6 py-4 bg-card border-b">
+        <div className="px-4 py-2 bg-card border-b">
           <FilterBar showConsultor showProduto />
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 h-full">
+        <div className="flex-1 p-3 overflow-hidden">
+          <div className="grid grid-cols-12 gap-2 h-full">
             {/* Left Column - KPIs */}
-            <div className="col-span-2 grid grid-cols-1 gap-2 content-start">
+            <div className="col-span-2 grid grid-cols-2 gap-1 content-start">
               <KPICard 
-                title="Lojas na Zona" 
+                title="Lojas" 
                 value={filteredLojas.length} 
                 icon={Store}
                 variant="blue"
               />
               <KPICard 
-                title="Stock Total" 
-                value={`${totalStock.toLocaleString()} un`} 
+                title="Stock" 
+                value={`${(totalStock/1000).toFixed(0)}K`} 
                 icon={Package}
                 variant="green"
               />
               <KPICard 
-                title="Reservas (un)" 
-                value={`${totalReservas.toLocaleString()}`} 
+                title="Reservas" 
+                value={`${(totalReservas/1000).toFixed(0)}K`} 
                 icon={ShoppingCart}
                 variant="blue"
               />
               <KPICard 
-                title="Reservas (€)" 
-                value={`${(totalReservas * 12.5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                title="Reservas €" 
+                value={`${((totalReservas * 12.5)/1000).toFixed(0)}K`} 
                 icon={ShoppingCart}
                 variant="blue"
               />
               <KPICard 
-                title="Vendas (un)" 
-                value={`${totalVendas.toLocaleString()}`} 
+                title="Vendas" 
+                value={`${(totalVendas/1000).toFixed(0)}K`} 
                 icon={TrendingUp}
                 variant="green"
               />
               <KPICard 
-                title="Vendas (€)" 
-                value={`${(totalVendas * 14.8).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                title="Vendas €" 
+                value={`${((totalVendas * 14.8)/1000).toFixed(0)}K`} 
                 icon={TrendingUp}
                 variant="green"
               />
               <KPICard 
                 title="Hectares" 
-                value={totalHectares.toLocaleString()} 
+                value={`${(totalHectares/1000).toFixed(0)}K`} 
                 icon={MapPin}
                 variant="blue"
               />
               <KPICard 
-                title="Kg Totais" 
+                title="Kg" 
                 value={`${totalKg}t`} 
                 icon={Scale}
                 variant="dark"
@@ -158,18 +158,18 @@ const ConsultoresPage = () => {
             </div>
 
             {/* Center Column - Charts */}
-            <div className="col-span-6 flex flex-col gap-4 h-full">
+            <div className="col-span-6 flex flex-col gap-2 h-full">
               {/* Reservas vs Vendas */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Reservas vs Vendas (Evolução)</h3>
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Reservas vs Vendas (Evolução)</h3>
                 <div className="flex-1 min-h-0">
                   <AreaChartComponent data={evolucaoMensal} height="100%" />
                 </div>
               </div>
 
               {/* Custos Previstos vs Reais */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Custos: Previstos vs Reais (€/kg por cultura)</h3>
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Custos: Previstos vs Reais (€/kg)</h3>
                 <div className="flex-1 min-h-0">
                   <GroupedBarChart data={custosPorCultura} height="100%" />
                 </div>
@@ -177,25 +177,25 @@ const ConsultoresPage = () => {
             </div>
 
             {/* Right Column */}
-            <div className="col-span-4 flex flex-col gap-4 h-full">
+            <div className="col-span-4 flex flex-col gap-2 h-full">
               {/* Stock por Loja */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
-                <h3 className="text-sm font-semibold text-foreground mb-3">Stock por Loja</h3>
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Stock por Loja</h3>
                 <ScrollArea className="flex-1">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-[10px]">
                     <thead>
-                      <tr className="text-muted-foreground text-xs border-b">
-                        <th className="text-left py-2">Loja</th>
-                        <th className="text-left py-2">Consultor</th>
-                        <th className="text-right py-2">Stock (un)</th>
+                      <tr className="text-muted-foreground border-b">
+                        <th className="text-left py-1">Loja</th>
+                        <th className="text-left py-1">Consultor</th>
+                        <th className="text-right py-1">Stock</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {stockPorLoja.map((row, idx) => (
+                      {stockPorLoja.slice(0, 8).map((row, idx) => (
                         <tr key={idx} className="border-b border-muted/30">
-                          <td className="py-2 text-foreground">{row.loja}</td>
-                          <td className="py-2 text-primary">{row.consultor}</td>
-                          <td className="py-2 text-right text-foreground">{row.stock.toLocaleString()}</td>
+                          <td className="py-1 text-foreground">{row.loja}</td>
+                          <td className="py-1 text-primary">{row.consultor}</td>
+                          <td className="py-1 text-right text-foreground">{row.stock.toLocaleString()}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -204,27 +204,27 @@ const ConsultoresPage = () => {
               </div>
 
               {/* Resumo por Cliente */}
-              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
-                <h3 className="text-sm font-semibold text-foreground mb-3">Resumo por Cliente</h3>
-                <div className="space-y-3 flex-1 overflow-auto">
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Resumo por Cliente</h3>
+                <div className="space-y-1 flex-1 overflow-auto">
                   {resumoClientes.map((cliente, idx) => (
-                    <div key={idx} className="bg-muted/30 rounded-lg p-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-sm text-foreground">{cliente.nome}</span>
-                        <span className="text-xs text-muted-foreground">{cliente.cultura}</span>
+                    <div key={idx} className="bg-muted/30 rounded p-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-medium text-[10px] text-foreground">{cliente.nome}</span>
+                        <span className="text-[9px] text-muted-foreground">{cliente.cultura}</span>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="grid grid-cols-3 gap-1 text-center">
                         <div>
-                          <div className="text-xs text-muted-foreground">Reservas</div>
-                          <div className="font-semibold text-primary">{cliente.reservas.toLocaleString()} un</div>
+                          <div className="text-[8px] text-muted-foreground">Reservas</div>
+                          <div className="font-semibold text-[10px] text-primary">{(cliente.reservas/1000).toFixed(0)}K</div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground">Hectares</div>
-                          <div className="font-semibold text-foreground">{cliente.hectares}</div>
+                          <div className="text-[8px] text-muted-foreground">Hectares</div>
+                          <div className="font-semibold text-[10px] text-foreground">{cliente.hectares}</div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground">Kg</div>
-                          <div className="font-semibold text-foreground">{cliente.kg.toLocaleString()}</div>
+                          <div className="text-[8px] text-muted-foreground">Kg</div>
+                          <div className="font-semibold text-[10px] text-foreground">{(cliente.kg/1000).toFixed(0)}K</div>
                         </div>
                       </div>
                     </div>
