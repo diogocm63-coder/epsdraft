@@ -2,83 +2,22 @@ import { FilterBar } from '@/components/dashboard/FilterBar';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { AreaChartComponent, GroupedBarChart } from '@/components/dashboard/Charts';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useFilters } from '@/contexts/FilterContext';
-import { lojas, consultores, stockData, reservasData, vendasData, clientes } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import { Store, Package, ShoppingCart, TrendingUp, MapPin, Scale } from 'lucide-react';
 import logoAgripro from '@/assets/logo-agripro.png';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ConsultoresPage = () => {
-  const { filters } = useFilters();
-
-  // Filtrar lojas por zona
-  const filteredLojas = filters.zona === "Portugal" 
-    ? lojas 
-    : lojas.filter(l => l.distrito === filters.zona);
-
-  // Totais em quantidades
-  const totalStock = stockData.filter(s => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === s.loja)?.distrito === filters.zona) &&
-    (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || s.produto === filters.produto)
-  ).reduce((a, s) => a + s.quantidade, 0);
-
-  const totalReservas = reservasData.filter(r => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
-    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || r.produto === filters.produto) &&
-    r.ano === filters.ano
-  ).reduce((a, r) => a + r.quantidade, 0);
-
-  const totalVendas = vendasData.filter(r => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
-    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || r.produto === filters.produto) &&
-    r.ano === filters.ano
-  ).reduce((a, r) => a + r.quantidade, 0);
-
-  // Evolução mensal
-  const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const evolucaoMensal = mesesNomes.map((mes, idx) => {
-    const base = 150000 + Math.sin(idx * 0.8) * 100000 + Math.random() * 50000;
-    return {
-      name: mes,
-      value: Math.floor(base * 0.8),
-      value2: Math.floor(base)
-    };
-  });
-
-  // Custos Previstos vs Reais (€/kg por cultura de cliente)
-  const culturas = ['Vinha', 'Pêra', 'Maçã', 'Olival', 'Citrinos'];
-  const custosPorCultura = culturas.map(cultura => ({
-    name: cultura,
-    value: Math.floor(2 + Math.random() * 4), // Custo previsto €/kg
-    value2: Math.floor(2 + Math.random() * 5) // Custo real €/kg
-  }));
-
-  // Stock por Loja (quantidades)
-  const stockPorLoja = filteredLojas.slice(0, 12).map(l => {
-    const consultor = consultores.find(c => c.distritos.includes(l.distrito));
-    const stockLoja = stockData.filter(s => 
-      s.loja === l.nome &&
-      (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
-      (filters.produto === "Todos" || s.produto === filters.produto)
-    ).reduce((a, s) => a + s.quantidade, 0);
-    return {
-      loja: l.nome,
-      consultor: consultor?.nome.split(' ')[0] || '-',
-      stock: stockLoja
-    };
-  });
-
-  // Resumo por Cliente
-  const resumoClientes = clientes.slice(0, 3).map(c => ({
-    nome: c.nome,
-    cultura: c.tipo,
-    reservas: Math.floor(8000 + Math.random() * 5000),
-    hectares: Math.floor(100 + Math.random() * 400),
-    kg: Math.floor(10000 + Math.random() * 30000)
-  }));
+  const {
+    filteredLojas,
+    totalStock,
+    totalReservas,
+    totalVendas,
+    evolucaoMensal,
+    stockPorLoja,
+    resumoClientes,
+    custosPorCultura
+  } = useFilteredData();
 
   const totalHectares = 34086;
   const totalKg = 791;
@@ -207,7 +146,7 @@ const ConsultoresPage = () => {
               <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Resumo por Cliente</h3>
                 <div className="space-y-1 flex-1 overflow-auto">
-                  {resumoClientes.map((cliente, idx) => (
+                  {resumoClientes.slice(0, 3).map((cliente, idx) => (
                     <div key={idx} className="bg-muted/30 rounded p-2">
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-medium text-[10px] text-foreground">{cliente.nome}</span>
