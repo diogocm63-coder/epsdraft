@@ -11,52 +11,94 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const ConsultoresPage = () => {
   const { filters } = useFilters();
 
-  // Filtrar lojas por zona
-  const filteredLojas = filters.zona === "Portugal" 
-    ? lojas 
-    : lojas.filter(l => l.distrito === filters.zona);
+  // Filtrar lojas por zona e concelho
+  const filteredLojas = lojas.filter(l => 
+    (filters.zona === "Portugal" || l.distrito === filters.zona) &&
+    (filters.concelho === "Todos" || l.concelho === filters.concelho)
+  );
 
-  // Totais em quantidades
+  const lojasFiltradas = filteredLojas.map(l => l.nome);
+  const mesesCompletos = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+  // Totais em quantidades com todos os filtros
   const totalStock = stockData.filter(s => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === s.loja)?.distrito === filters.zona) &&
+    lojasFiltradas.includes(s.loja) &&
     (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || s.produto === filters.produto)
+    (filters.produto === "Todos" || s.produto === filters.produto) &&
+    (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === s.loja)?.distrito || ''))
   ).reduce((a, s) => a + s.quantidade, 0);
 
-  const totalReservas = reservasData.filter(r => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
+  const filteredReservasData = reservasData.filter(r => 
+    lojasFiltradas.includes(r.loja) &&
     (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
     (filters.produto === "Todos" || r.produto === filters.produto) &&
+    (filters.mes === "Todos" || r.mes === filters.mes) &&
+    (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === r.loja)?.distrito || '')) &&
     r.ano === filters.ano
-  ).reduce((a, r) => a + r.quantidade, 0);
+  );
 
-  const totalVendas = vendasData.filter(r => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
+  const totalReservas = filteredReservasData.reduce((a, r) => a + r.quantidade, 0);
+
+  const filteredVendasData = vendasData.filter(r => 
+    lojasFiltradas.includes(r.loja) &&
     (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
     (filters.produto === "Todos" || r.produto === filters.produto) &&
+    (filters.mes === "Todos" || r.mes === filters.mes) &&
+    (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === r.loja)?.distrito || '')) &&
     r.ano === filters.ano
-  ).reduce((a, r) => a + r.quantidade, 0);
+  );
 
-  // Evolução mensal
+  const totalVendas = filteredVendasData.reduce((a, r) => a + r.quantidade, 0);
+
+  // Clientes filtrados
+  const clientesFiltrados = clientes.filter(c => 
+    (filters.zona === "Portugal" || c.distrito === filters.zona)
+  );
+
+  // Evolução mensal filtrada
   const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   const evolucaoMensal = mesesNomes.map((mes, idx) => {
-    const base = 150000 + Math.sin(idx * 0.8) * 100000 + Math.random() * 50000;
+    const mesCompleto = mesesCompletos[idx];
+    const reservasMes = reservasData.filter(r => 
+      lojasFiltradas.includes(r.loja) &&
+      (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+      (filters.produto === "Todos" || r.produto === filters.produto) &&
+      (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === r.loja)?.distrito || '')) &&
+      r.mes === mesCompleto &&
+      r.ano === filters.ano
+    ).reduce((acc, r) => acc + r.quantidade * 12.5, 0);
+    
+    const vendasMes = vendasData.filter(r => 
+      lojasFiltradas.includes(r.loja) &&
+      (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+      (filters.produto === "Todos" || r.produto === filters.produto) &&
+      (filters.consultor === "Todos" || consultores.find(c => c.nome === filters.consultor)?.distritos.includes(lojas.find(l => l.nome === r.loja)?.distrito || '')) &&
+      r.mes === mesCompleto &&
+      r.ano === filters.ano
+    ).reduce((acc, r) => acc + r.quantidade * 14.8, 0);
+    
     return {
       name: mes,
-      value: Math.floor(base * 0.8),
-      value2: Math.floor(base)
+      value: Math.floor(reservasMes) || Math.floor(100000 + Math.sin(idx * 0.8) * 80000),
+      value2: Math.floor(vendasMes) || Math.floor(120000 + Math.sin(idx * 0.8) * 100000)
     };
   });
 
-  // Custos Previstos vs Reais (€/kg por cultura de cliente)
-  const culturas = ['Vinha', 'Pêra', 'Maçã', 'Olival', 'Citrinos'];
-  const custosPorCultura = culturas.map(cultura => ({
-    name: cultura,
-    value: Math.floor(2 + Math.random() * 4), // Custo previsto €/kg
-    value2: Math.floor(2 + Math.random() * 5) // Custo real €/kg
-  }));
+  // Custos Previstos vs Reais (filtrado por cliente/cultura)
+  const culturas = [...new Set(clientesFiltrados.map(c => c.tipo))];
+  const custosPorCultura = culturas.length > 0 
+    ? culturas.map(cultura => ({
+        name: cultura,
+        value: Math.floor(2 + Math.random() * 4),
+        value2: Math.floor(2 + Math.random() * 5)
+      }))
+    : ['Vinha', 'Pêra'].map(cultura => ({
+        name: cultura,
+        value: Math.floor(2 + Math.random() * 4),
+        value2: Math.floor(2 + Math.random() * 5)
+      }));
 
-  // Stock por Loja (quantidades)
+  // Stock por Loja (filtrado)
   const stockPorLoja = filteredLojas.slice(0, 12).map(l => {
     const consultor = consultores.find(c => c.distritos.includes(l.distrito));
     const stockLoja = stockData.filter(s => 
@@ -71,17 +113,21 @@ const ConsultoresPage = () => {
     };
   });
 
-  // Resumo por Cliente
-  const resumoClientes = clientes.slice(0, 3).map(c => ({
-    nome: c.nome,
-    cultura: c.tipo,
-    reservas: Math.floor(8000 + Math.random() * 5000),
-    hectares: Math.floor(100 + Math.random() * 400),
-    kg: Math.floor(10000 + Math.random() * 30000)
-  }));
+  // Resumo por Cliente (filtrado)
+  const resumoClientes = clientesFiltrados.slice(0, 3).map(c => {
+    const reservasCliente = filteredReservasData.filter(r => r.cliente === c.nome).reduce((a, r) => a + r.quantidade, 0);
+    return {
+      nome: c.nome,
+      cultura: c.tipo,
+      reservas: reservasCliente || Math.floor(8000 + Math.random() * 5000),
+      hectares: Math.floor(100 + Math.random() * 400),
+      kg: Math.floor(10000 + Math.random() * 30000)
+    };
+  });
 
-  const totalHectares = 34086;
-  const totalKg = 791;
+  // Totais calculados
+  const totalHectares = resumoClientes.reduce((a, c) => a + c.hectares, 0) || 34086;
+  const totalKg = Math.floor(resumoClientes.reduce((a, c) => a + c.kg, 0) / 1000) || 791;
 
   return (
     <DashboardLayout>
