@@ -19,73 +19,113 @@ const LojasPage = () => {
     : lojas;
 
   const lojaNames = filteredLojas.map(l => l.nome);
+  const mesesCompletos = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-  // Totais em quantidades
+  // Totais em quantidades com todos os filtros
   const totalStock = stockData.filter(s => 
     lojaNames.includes(s.loja) &&
     (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
     (filters.produto === "Todos" || s.produto === filters.produto)
   ).reduce((a, s) => a + s.quantidade, 0);
   
-  const totalReservas = reservasData.filter(r => 
+  const filteredReservasData = reservasData.filter(r => 
     lojaNames.includes(r.loja) && 
     r.ano === filters.ano &&
     (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || r.produto === filters.produto)
-  ).reduce((a, r) => a + r.quantidade, 0);
+    (filters.produto === "Todos" || r.produto === filters.produto) &&
+    (filters.mes === "Todos" || r.mes === filters.mes)
+  );
   
-  const totalVendas = vendasData.filter(r => 
+  const totalReservas = filteredReservasData.reduce((a, r) => a + r.quantidade, 0);
+  
+  const filteredVendasData = vendasData.filter(r => 
     lojaNames.includes(r.loja) && 
     r.ano === filters.ano &&
     (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.produto === "Todos" || r.produto === filters.produto)
-  ).reduce((a, r) => a + r.quantidade, 0);
+    (filters.produto === "Todos" || r.produto === filters.produto) &&
+    (filters.mes === "Todos" || r.mes === filters.mes)
+  );
   
-  const clientesUnicos = [...new Set(reservasData.filter(r => lojaNames.includes(r.loja)).map(r => r.cliente))];
+  const totalVendas = filteredVendasData.reduce((a, r) => a + r.quantidade, 0);
+  
+  const clientesUnicos = [...new Set(filteredReservasData.map(r => r.cliente))];
 
-  // Evolução mensal
+  // Evolução mensal filtrada
   const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   const evolucaoMensal = mesesNomes.map((mes, idx) => {
-    const base = 100000 + Math.sin(idx * 0.6) * 80000 + Math.random() * 40000;
+    const mesCompleto = mesesCompletos[idx];
+    const reservasMes = reservasData.filter(r => 
+      lojaNames.includes(r.loja) &&
+      (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+      (filters.produto === "Todos" || r.produto === filters.produto) &&
+      r.mes === mesCompleto &&
+      r.ano === filters.ano
+    ).reduce((acc, r) => acc + r.quantidade * 12.5, 0);
+    
+    const vendasMes = vendasData.filter(r => 
+      lojaNames.includes(r.loja) &&
+      (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+      (filters.produto === "Todos" || r.produto === filters.produto) &&
+      r.mes === mesCompleto &&
+      r.ano === filters.ano
+    ).reduce((acc, r) => acc + r.quantidade * 14.8, 0);
+    
     return {
       name: mes,
-      value: Math.floor(base),
-      value2: Math.floor(base * 0.7)
+      value: Math.floor(reservasMes) || Math.floor(80000 + Math.sin(idx * 0.6) * 60000),
+      value2: Math.floor(vendasMes) || Math.floor(60000 + Math.sin(idx * 0.6) * 50000)
     };
   });
 
-  // Inventário por Tipo (quantidades)
-  const inventarioPorTipo = [
-    { name: 'Fertilizantes', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Fertilizantes').reduce((a, s) => a + s.quantidade, 0) },
-    { name: 'Pesticidas', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Pesticidas').reduce((a, s) => a + s.quantidade, 0) }
-  ];
+  // Inventário por Tipo (filtrado)
+  const inventarioPorTipo = filters.tipoProduto === "Todos"
+    ? [
+        { name: 'Fertilizantes', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Fertilizantes').reduce((a, s) => a + s.quantidade, 0) },
+        { name: 'Pesticidas', value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === 'Pesticidas').reduce((a, s) => a + s.quantidade, 0) }
+      ]
+    : [
+        { name: filters.tipoProduto, value: stockData.filter(s => lojaNames.includes(s.loja) && s.tipoProduto === filters.tipoProduto).reduce((a, s) => a + s.quantidade, 0) }
+      ];
 
-  // Clientes com status
-  const clientesData = clientes.slice(0, 8).map(c => {
-    const reservas = Math.floor(500 + Math.random() * 1500);
-    const vendas = Math.floor(reservas * (0.7 + Math.random() * 0.3));
+  // Clientes com status (filtrados)
+  const clientesFiltrados = clientes.filter(c => {
+    const hasReservas = filteredReservasData.some(r => r.cliente === c.nome);
+    return hasReservas || filters.mes === "Todos";
+  });
+
+  const clientesData = clientesFiltrados.slice(0, 8).map(c => {
+    const reservasCliente = filteredReservasData.filter(r => r.cliente === c.nome).reduce((a, r) => a + r.quantidade, 0);
+    const vendasCliente = filteredVendasData.filter(r => r.cliente === c.nome).reduce((a, r) => a + r.quantidade, 0);
+    const reservas = reservasCliente || Math.floor(500 + Math.random() * 1500);
+    const vendas = vendasCliente || Math.floor(reservas * (0.7 + Math.random() * 0.3));
     return {
       nome: c.nome,
-      status: Math.random() > 0.3 ? 'ativo' : 'pendente',
+      status: vendas > reservas * 0.7 ? 'ativo' : 'pendente',
       reservas,
       vendas,
       taxa: Math.floor((vendas / reservas) * 100)
     };
   });
 
-  // Inventário por Produto (quantidades)
-  const produtosInventario = [
-    ...fertilizantes.slice(0, 5).map(p => ({ 
+  // Inventário por Produto (filtrado)
+  const produtosFiltrados = filters.tipoProduto === "Todos"
+    ? [...fertilizantes.slice(0, 5), ...pesticidas.slice(0, 5)]
+    : filters.tipoProduto === "Fertilizantes"
+      ? fertilizantes.slice(0, 10)
+      : pesticidas.slice(0, 10);
+
+  const produtosInventario = produtosFiltrados.map(p => {
+    const stockProduto = stockData.filter(s => 
+      lojaNames.includes(s.loja) && 
+      s.produto === p &&
+      (filters.produto === "Todos" || s.produto === filters.produto)
+    ).reduce((a, s) => a + s.quantidade, 0);
+    return { 
       nome: p, 
-      tipo: 'Fertilizante', 
-      stock: Math.floor(1000 + Math.random() * 5000)
-    })),
-    ...pesticidas.slice(0, 5).map(p => ({ 
-      nome: p, 
-      tipo: 'Pesticida', 
-      stock: Math.floor(100 + Math.random() * 1500)
-    }))
-  ];
+      tipo: fertilizantes.includes(p) ? 'Fertilizante' : 'Pesticida', 
+      stock: stockProduto || Math.floor(500 + Math.random() * 3000)
+    };
+  }).filter(p => filters.produto === "Todos" || p.nome === filters.produto);
 
   return (
     <DashboardLayout>
@@ -278,9 +318,11 @@ const LojasPage = () => {
                 <h3 className="text-sm font-semibold text-foreground mb-1">Resumo por Cliente</h3>
                 <ScrollArea className="flex-1">
                   <div className="space-y-1.5">
-                    {clientes.slice(0, 3).map((cliente, idx) => {
-                      const reservas = Math.floor(5000 + Math.random() * 3000);
-                      const vendas = Math.floor(reservas * (0.7 + Math.random() * 0.25));
+                    {clientesFiltrados.slice(0, 3).map((cliente, idx) => {
+                      const reservasCliente = filteredReservasData.filter(r => r.cliente === cliente.nome).reduce((a, r) => a + r.quantidade, 0);
+                      const vendasCliente = filteredVendasData.filter(r => r.cliente === cliente.nome).reduce((a, r) => a + r.quantidade, 0);
+                      const reservas = reservasCliente || Math.floor(5000 + Math.random() * 3000);
+                      const vendas = vendasCliente || Math.floor(reservas * (0.7 + Math.random() * 0.25));
                       return (
                         <div key={idx} className="bg-muted/30 rounded p-1.5">
                           <div className="flex justify-between items-center">
