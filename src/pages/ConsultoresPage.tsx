@@ -1,12 +1,12 @@
 import { FilterBar } from '@/components/dashboard/FilterBar';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { DataTable } from '@/components/dashboard/DataTable';
-import { MiniBarChart, MiniLineChart } from '@/components/dashboard/MiniChart';
+import { KPICard } from '@/components/dashboard/KPICard';
+import { AreaChartComponent, GroupedBarChart } from '@/components/dashboard/Charts';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useFilters } from '@/contexts/FilterContext';
-import { lojas, consultores, stockData, reservasData, vendasData, custosData, clientes } from '@/data/mockData';
-import { Store, Package, TrendingUp, DollarSign, Users, MapPin } from 'lucide-react';
+import { lojas, consultores, stockData, reservasData, vendasData, clientes } from '@/data/mockData';
+import { Store, Package, ShoppingCart, TrendingUp, MapPin, Scale } from 'lucide-react';
 import logoAgripro from '@/assets/logo-agripro.png';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ConsultoresPage = () => {
   const { filters } = useFilters();
@@ -16,169 +16,222 @@ const ConsultoresPage = () => {
     ? lojas 
     : lojas.filter(l => l.distrito === filters.zona);
 
-  // Filtrar stock
-  const filteredStock = stockData.filter(s => 
+  // Totais em quantidades
+  const totalStock = stockData.filter(s => 
     (filters.zona === "Portugal" || lojas.find(l => l.nome === s.loja)?.distrito === filters.zona) &&
     (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
     (filters.produto === "Todos" || s.produto === filters.produto)
-  );
+  ).reduce((a, s) => a + s.quantidade, 0);
 
-  // Filtrar reservas
-  const filteredReservas = reservasData.filter(r => 
+  const totalReservas = reservasData.filter(r => 
     (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
     (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.mes === "Todos" || r.mes === filters.mes) &&
+    (filters.produto === "Todos" || r.produto === filters.produto) &&
     r.ano === filters.ano
-  );
+  ).reduce((a, r) => a + r.quantidade, 0);
 
-  const filteredVendas = vendasData.filter(r => 
+  const totalVendas = vendasData.filter(r => 
     (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
     (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
-    (filters.mes === "Todos" || r.mes === filters.mes) &&
+    (filters.produto === "Todos" || r.produto === filters.produto) &&
     r.ano === filters.ano
-  );
+  ).reduce((a, r) => a + r.quantidade, 0);
 
-  const totalStock = filteredStock.reduce((a, s) => a + s.quantidade, 0);
-  const totalReservas = filteredReservas.reduce((a, r) => a + r.quantidade, 0);
-  const totalVendas = filteredVendas.reduce((a, r) => a + r.quantidade, 0);
-
-  // Stock por loja
-  const stockPorLoja = filteredLojas.slice(0, 6).map(l => ({
-    name: l.nome.substring(0, 8),
-    value: filteredStock.filter(s => s.loja === l.nome).reduce((a, s) => a + s.quantidade, 0)
-  }));
-
-  // Reservas por cliente
-  const reservasPorCliente = clientes.slice(0, 5).map(c => ({
-    cliente: c.nome.substring(0, 20),
-    tipo: c.tipo,
-    reservas: filteredReservas.filter(r => r.cliente === c.nome).reduce((a, r) => a + r.quantidade, 0)
-  }));
-
-  // Reservas vs Vendas evolução
-  const evolucaoMensal = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'].map((mes, idx) => {
-    const mesNome = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'][idx];
+  // Evolução mensal
+  const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const evolucaoMensal = mesesNomes.map((mes, idx) => {
+    const base = 150000 + Math.sin(idx * 0.8) * 100000 + Math.random() * 50000;
     return {
       name: mes,
-      value: reservasData.filter(r => r.mes === mesNome && r.ano === filters.ano).reduce((a, r) => a + r.quantidade, 0),
-      value2: vendasData.filter(r => r.mes === mesNome && r.ano === filters.ano).reduce((a, r) => a + r.quantidade, 0)
+      value: Math.floor(base * 0.8),
+      value2: Math.floor(base)
     };
   });
 
-  // Custos por cliente
-  const custosCliente = custosData
-    .filter(c => c.ano === filters.ano)
-    .slice(0, 5)
-    .map(c => ({
-      cliente: c.cliente.substring(0, 18),
-      cultura: c.tipoCultura,
-      previsto: `${c.custoPrevisto}€/kg`,
-      real: `${c.custoReal}€/kg`,
-      diff: c.custoReal - c.custoPrevisto > 0 ? `+${c.custoReal - c.custoPrevisto}€` : `${c.custoReal - c.custoPrevisto}€`
-    }));
+  // Custos Previstos vs Reais (€/kg por cultura de cliente)
+  const culturas = ['Vinha', 'Pêra', 'Maçã', 'Olival', 'Citrinos'];
+  const custosPorCultura = culturas.map(cultura => ({
+    name: cultura,
+    value: Math.floor(2 + Math.random() * 4), // Custo previsto €/kg
+    value2: Math.floor(2 + Math.random() * 5) // Custo real €/kg
+  }));
 
-  // Totais custos
-  const totalCustoPrevisto = custosData.filter(c => c.ano === filters.ano).reduce((a, c) => a + c.custoPrevisto, 0);
-  const totalCustoReal = custosData.filter(c => c.ano === filters.ano).reduce((a, c) => a + c.custoReal, 0);
+  // Stock por Loja (quantidades)
+  const stockPorLoja = filteredLojas.slice(0, 12).map(l => {
+    const consultor = consultores.find(c => c.distritos.includes(l.distrito));
+    const stockLoja = stockData.filter(s => 
+      s.loja === l.nome &&
+      (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
+      (filters.produto === "Todos" || s.produto === filters.produto)
+    ).reduce((a, s) => a + s.quantidade, 0);
+    return {
+      loja: l.nome,
+      consultor: consultor?.nome.split(' ')[0] || '-',
+      stock: stockLoja
+    };
+  });
+
+  // Resumo por Cliente
+  const resumoClientes = clientes.slice(0, 3).map(c => ({
+    nome: c.nome,
+    cultura: c.tipo,
+    reservas: Math.floor(8000 + Math.random() * 5000),
+    hectares: Math.floor(100 + Math.random() * 400),
+    kg: Math.floor(10000 + Math.random() * 30000)
+  }));
+
+  const totalHectares = 34086;
+  const totalKg = 791;
 
   return (
     <DashboardLayout>
-      <div className="h-screen flex flex-col overflow-hidden">
+      <div className="h-screen flex flex-col overflow-hidden bg-background">
         {/* Header */}
-        <div className="page-header" style={{ borderLeft: '4px solid hsl(80, 45%, 45%)' }}>
-          <div className="flex items-center gap-4">
-            <img src={logoAgripro} alt="Agripro" className="h-8 object-contain" />
+        <div className="flex items-center justify-between px-4 py-2 bg-card border-b">
+          <div className="flex items-center gap-3">
+            <img src={logoAgripro} alt="Agripro" className="h-6 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">Consultores</h1>
-              <p className="text-sm text-muted-foreground">Gestão de Zonas e Clientes</p>
+              <h1 className="text-base font-bold text-foreground">Consultores</h1>
+              <p className="text-xs text-muted-foreground">Análise de performance e gestão</p>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="px-4 pt-4">
-          <FilterBar />
+        <div className="px-4 py-2 bg-card border-b">
+          <FilterBar showConsultor showProduto showConcelho />
         </div>
 
-        {/* Content Grid */}
-        <div className="flex-1 p-4 grid grid-cols-4 grid-rows-3 gap-4 overflow-hidden">
-          {/* KPI Cards - Row 1 */}
-          <StatCard 
-            title="Lojas na Zona" 
-            value={filteredLojas.length} 
-            subtitle="Zona de influência"
-            icon={Store}
-            variant="primary"
-          />
-          <StatCard 
-            title="Stock Total" 
-            value={totalStock.toLocaleString()} 
-            subtitle="Unidades"
-            icon={Package}
-            variant="secondary"
-          />
-          <StatCard 
-            title="Reservas" 
-            value={totalReservas.toLocaleString()} 
-            subtitle="Unidades"
-            icon={TrendingUp}
-            variant="accent"
-          />
-          <StatCard 
-            title="Vendas" 
-            value={totalVendas.toLocaleString()} 
-            subtitle="Unidades"
-            icon={DollarSign}
-            trend={{ value: ((totalVendas/totalReservas)*100 - 100).toFixed(0) as unknown as number, positive: totalVendas >= totalReservas * 0.8 }}
-            variant="primary"
-          />
+        {/* Content */}
+        <div className="flex-1 p-3 overflow-hidden">
+          <div className="grid grid-cols-12 gap-2 h-full">
+            {/* Left Column - KPIs */}
+            <div className="col-span-2 grid grid-cols-2 gap-1 content-start">
+              <KPICard 
+                title="Lojas" 
+                value={filteredLojas.length} 
+                icon={Store}
+                variant="blue"
+              />
+              <KPICard 
+                title="Stock" 
+                value={`${(totalStock/1000).toFixed(0)}K`} 
+                icon={Package}
+                variant="green"
+              />
+              <KPICard 
+                title="Reservas" 
+                value={`${(totalReservas/1000).toFixed(0)}K`} 
+                icon={ShoppingCart}
+                variant="blue"
+              />
+              <KPICard 
+                title="Reservas €" 
+                value={`${((totalReservas * 12.5)/1000).toFixed(0)}K`} 
+                icon={ShoppingCart}
+                variant="blue"
+              />
+              <KPICard 
+                title="Vendas" 
+                value={`${(totalVendas/1000).toFixed(0)}K`} 
+                icon={TrendingUp}
+                variant="green"
+              />
+              <KPICard 
+                title="Vendas €" 
+                value={`${((totalVendas * 14.8)/1000).toFixed(0)}K`} 
+                icon={TrendingUp}
+                variant="green"
+              />
+              <KPICard 
+                title="Hectares" 
+                value={`${(totalHectares/1000).toFixed(0)}K`} 
+                icon={MapPin}
+                variant="blue"
+              />
+              <KPICard 
+                title="Kg" 
+                value={`${totalKg}t`} 
+                icon={Scale}
+                variant="dark"
+              />
+            </div>
 
-          {/* Row 2 */}
-          <div className="col-span-2 dashboard-card">
-            <h3 className="text-sm font-semibold mb-2 text-foreground">Stock por Loja</h3>
-            <MiniBarChart data={stockPorLoja} height={120} />
-          </div>
-          <div className="col-span-2 dashboard-card">
-            <h3 className="text-sm font-semibold mb-2 text-foreground">Reservas por Cliente</h3>
-            <DataTable 
-              columns={[
-                { key: 'cliente', header: 'Cliente' },
-                { key: 'tipo', header: 'Cultura' },
-                { key: 'reservas', header: 'Qtd', align: 'right' }
-              ]}
-              data={reservasPorCliente}
-              maxHeight="120px"
-            />
-          </div>
-
-          {/* Row 3 */}
-          <div className="col-span-2 dashboard-card">
-            <h3 className="text-sm font-semibold mb-2 text-foreground">Reservas vs Vendas (Evolução)</h3>
-            <MiniLineChart data={evolucaoMensal} height={120} />
-          </div>
-          <div className="col-span-2 dashboard-card">
-            <h3 className="text-sm font-semibold mb-2 text-foreground">Custos por Cliente (€/kg)</h3>
-            <div className="flex gap-4 mb-2">
-              <div className="text-xs">
-                <span className="text-muted-foreground">Total Previsto: </span>
-                <span className="font-semibold">{(totalCustoPrevisto / custosData.filter(c => c.ano === filters.ano).length).toFixed(0)}€/kg</span>
+            {/* Center Column - Charts */}
+            <div className="col-span-6 flex flex-col gap-2 h-full">
+              {/* Reservas vs Vendas */}
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Reservas vs Vendas (Evolução)</h3>
+                <div className="flex-1 min-h-0">
+                  <AreaChartComponent data={evolucaoMensal} height="100%" />
+                </div>
               </div>
-              <div className="text-xs">
-                <span className="text-muted-foreground">Total Real: </span>
-                <span className="font-semibold">{(totalCustoReal / custosData.filter(c => c.ano === filters.ano).length).toFixed(0)}€/kg</span>
+
+              {/* Custos Previstos vs Reais */}
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Custos: Previstos vs Reais (€/kg)</h3>
+                <div className="flex-1 min-h-0">
+                  <GroupedBarChart data={custosPorCultura} height="100%" />
+                </div>
               </div>
             </div>
-            <DataTable 
-              columns={[
-                { key: 'cliente', header: 'Cliente' },
-                { key: 'cultura', header: 'Cultura' },
-                { key: 'previsto', header: 'Previsto', align: 'right' },
-                { key: 'real', header: 'Real', align: 'right' },
-                { key: 'diff', header: 'Dif.', align: 'right' }
-              ]}
-              data={custosCliente}
-              maxHeight="90px"
-            />
+
+            {/* Right Column */}
+            <div className="col-span-4 flex flex-col gap-2 h-full">
+              {/* Stock por Loja */}
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Stock por Loja</h3>
+                <ScrollArea className="flex-1">
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="text-muted-foreground border-b">
+                        <th className="text-left py-1">Loja</th>
+                        <th className="text-left py-1">Consultor</th>
+                        <th className="text-right py-1">Stock</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stockPorLoja.slice(0, 8).map((row, idx) => (
+                        <tr key={idx} className="border-b border-muted/30">
+                          <td className="py-1 text-foreground">{row.loja}</td>
+                          <td className="py-1 text-primary">{row.consultor}</td>
+                          <td className="py-1 text-right text-foreground">{row.stock.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+              </div>
+
+              {/* Resumo por Cliente */}
+              <div className="bg-card rounded-lg border p-2 flex-1 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Resumo por Cliente</h3>
+                <div className="space-y-1 flex-1 overflow-auto">
+                  {resumoClientes.map((cliente, idx) => (
+                    <div key={idx} className="bg-muted/30 rounded p-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-medium text-[10px] text-foreground">{cliente.nome}</span>
+                        <span className="text-[9px] text-muted-foreground">{cliente.cultura}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 text-center">
+                        <div>
+                          <div className="text-[8px] text-muted-foreground">Reservas</div>
+                          <div className="font-semibold text-[10px] text-primary">{(cliente.reservas/1000).toFixed(0)}K</div>
+                        </div>
+                        <div>
+                          <div className="text-[8px] text-muted-foreground">Hectares</div>
+                          <div className="font-semibold text-[10px] text-foreground">{cliente.hectares}</div>
+                        </div>
+                        <div>
+                          <div className="text-[8px] text-muted-foreground">Kg</div>
+                          <div className="font-semibold text-[10px] text-foreground">{(cliente.kg/1000).toFixed(0)}K</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
