@@ -4,7 +4,7 @@ import { AreaChartComponent, GroupedBarChart } from '@/components/dashboard/Char
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useFilters } from '@/contexts/FilterContext';
 import { lojas, consultores, stockData, reservasData, vendasData, clientes } from '@/data/mockData';
-import { Store, Package, ShoppingCart, Euro, MapPin, Scale } from 'lucide-react';
+import { Store, Package, ShoppingCart, TrendingUp, MapPin, Scale } from 'lucide-react';
 import logoAgripro from '@/assets/logo-agripro.png';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -16,18 +16,24 @@ const ConsultoresPage = () => {
     ? lojas 
     : lojas.filter(l => l.distrito === filters.zona);
 
-  // Totais
+  // Totais em quantidades
   const totalStock = stockData.filter(s => 
-    (filters.zona === "Portugal" || lojas.find(l => l.nome === s.loja)?.distrito === filters.zona)
+    (filters.zona === "Portugal" || lojas.find(l => l.nome === s.loja)?.distrito === filters.zona) &&
+    (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
+    (filters.produto === "Todos" || s.produto === filters.produto)
   ).reduce((a, s) => a + s.quantidade, 0);
 
   const totalReservas = reservasData.filter(r => 
     (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
+    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+    (filters.produto === "Todos" || r.produto === filters.produto) &&
     r.ano === filters.ano
   ).reduce((a, r) => a + r.quantidade, 0);
 
   const totalVendas = vendasData.filter(r => 
     (filters.zona === "Portugal" || lojas.find(l => l.nome === r.loja)?.distrito === filters.zona) &&
+    (filters.tipoProduto === "Todos" || r.tipoProduto === filters.tipoProduto) &&
+    (filters.produto === "Todos" || r.produto === filters.produto) &&
     r.ano === filters.ano
   ).reduce((a, r) => a + r.quantidade, 0);
 
@@ -42,26 +48,33 @@ const ConsultoresPage = () => {
     };
   });
 
-  // Custos Previstos vs Reais
-  const custosMensais = mesesNomes.map(mes => ({
-    name: mes,
-    value: Math.floor(60000 + Math.random() * 60000),
-    value2: Math.floor(70000 + Math.random() * 70000)
+  // Custos Previstos vs Reais (€/kg por cultura de cliente)
+  const culturas = ['Vinha', 'Pêra', 'Maçã', 'Olival', 'Citrinos'];
+  const custosPorCultura = culturas.map(cultura => ({
+    name: cultura,
+    value: Math.floor(2 + Math.random() * 4), // Custo previsto €/kg
+    value2: Math.floor(2 + Math.random() * 5) // Custo real €/kg
   }));
 
-  // Stock por Loja
-  const stockPorLoja = filteredLojas.slice(0, 10).map(l => {
+  // Stock por Loja (quantidades)
+  const stockPorLoja = filteredLojas.slice(0, 12).map(l => {
     const consultor = consultores.find(c => c.distritos.includes(l.distrito));
+    const stockLoja = stockData.filter(s => 
+      s.loja === l.nome &&
+      (filters.tipoProduto === "Todos" || s.tipoProduto === filters.tipoProduto) &&
+      (filters.produto === "Todos" || s.produto === filters.produto)
+    ).reduce((a, s) => a + s.quantidade, 0);
     return {
       loja: l.nome,
       consultor: consultor?.nome.split(' ')[0] || '-',
-      stock: Math.floor(10000 + Math.random() * 40000)
+      stock: stockLoja
     };
   });
 
   // Resumo por Cliente
   const resumoClientes = clientes.slice(0, 3).map(c => ({
     nome: c.nome,
+    cultura: c.tipo,
     reservas: Math.floor(8000 + Math.random() * 5000),
     hectares: Math.floor(100 + Math.random() * 400),
     kg: Math.floor(10000 + Math.random() * 30000)
@@ -86,7 +99,7 @@ const ConsultoresPage = () => {
 
         {/* Filters */}
         <div className="px-6 py-4 bg-card border-b">
-          <FilterBar showConsultor />
+          <FilterBar showConsultor showProduto />
         </div>
 
         {/* Content */}
@@ -102,23 +115,23 @@ const ConsultoresPage = () => {
               />
               <KPICard 
                 title="Stock Total" 
-                value={`€${Math.floor(totalStock * 1.2 / 1000)}K`} 
+                value={`${totalStock.toLocaleString()} un`} 
                 icon={Package}
                 variant="green"
               />
               <KPICard 
                 title="Reservas" 
-                value={`€${Math.floor(totalReservas * 12 / 1000)}K`} 
+                value={`${totalReservas.toLocaleString()} un`} 
                 icon={ShoppingCart}
                 trend={{ value: 4.2, positive: true }}
                 variant="blue"
               />
               <KPICard 
                 title="Vendas" 
-                value={`€${Math.floor(totalVendas * 12 / 1000)}K`} 
-                icon={Euro}
+                value={`${totalVendas.toLocaleString()} un`} 
+                icon={TrendingUp}
                 trend={{ value: 8.5, positive: true }}
-                variant="blue"
+                variant="green"
               />
               <KPICard 
                 title="Hectares" 
@@ -135,32 +148,36 @@ const ConsultoresPage = () => {
             </div>
 
             {/* Center Column - Charts */}
-            <div className="col-span-6 flex flex-col gap-4">
+            <div className="col-span-6 flex flex-col gap-4 h-full">
               {/* Reservas vs Vendas */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Reservas vs Vendas (Evolução)</h3>
-                <AreaChartComponent data={evolucaoMensal} height={170} />
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
+                <h3 className="text-sm font-semibold text-foreground mb-2">Reservas vs Vendas (Evolução)</h3>
+                <div className="flex-1 min-h-0">
+                  <AreaChartComponent data={evolucaoMensal} height="100%" />
+                </div>
               </div>
 
               {/* Custos Previstos vs Reais */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Custos: Previstos vs Reais</h3>
-                <GroupedBarChart data={custosMensais} height={170} />
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
+                <h3 className="text-sm font-semibold text-foreground mb-2">Custos: Previstos vs Reais (€/kg por cultura)</h3>
+                <div className="flex-1 min-h-0">
+                  <GroupedBarChart data={custosPorCultura} height="100%" />
+                </div>
               </div>
             </div>
 
             {/* Right Column */}
-            <div className="col-span-4 flex flex-col gap-4">
+            <div className="col-span-4 flex flex-col gap-4 h-full">
               {/* Stock por Loja */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Stock por Loja</h3>
-                <ScrollArea className="h-[180px]">
+                <ScrollArea className="flex-1">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-muted-foreground text-xs border-b">
                         <th className="text-left py-2">Loja</th>
                         <th className="text-left py-2">Consultor</th>
-                        <th className="text-right py-2">Stock (€)</th>
+                        <th className="text-right py-2">Stock (un)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -177,16 +194,19 @@ const ConsultoresPage = () => {
               </div>
 
               {/* Resumo por Cliente */}
-              <div className="bg-card rounded-xl border p-4 flex-1">
+              <div className="bg-card rounded-xl border p-4 flex-1 flex flex-col min-h-0">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Resumo por Cliente</h3>
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1 overflow-auto">
                   {resumoClientes.map((cliente, idx) => (
                     <div key={idx} className="bg-muted/30 rounded-lg p-3">
-                      <div className="font-medium text-sm text-foreground mb-2">{cliente.nome}</div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-sm text-foreground">{cliente.nome}</span>
+                        <span className="text-xs text-muted-foreground">{cliente.cultura}</span>
+                      </div>
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
                           <div className="text-xs text-muted-foreground">Reservas</div>
-                          <div className="font-semibold text-primary">€{cliente.reservas.toLocaleString()}</div>
+                          <div className="font-semibold text-primary">{cliente.reservas.toLocaleString()} un</div>
                         </div>
                         <div>
                           <div className="text-xs text-muted-foreground">Hectares</div>
