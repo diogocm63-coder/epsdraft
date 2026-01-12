@@ -183,10 +183,10 @@ const LojasPage = () => {
               </div>
 
               {/* Inventário por Tipo */}
-              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
+              <div className="bg-card rounded-xl border p-2 h-[120px] flex flex-col">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Tipo</h3>
                 <div className="flex-1 flex items-center justify-center min-h-0">
-                  <DonutChart data={inventarioPorTipo} height={90} />
+                  <DonutChart data={inventarioPorTipo} height="100%" />
                 </div>
               </div>
             </div>
@@ -202,11 +202,11 @@ const LojasPage = () => {
               </div>
 
               {/* Clientes */}
-              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
+              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0 overflow-hidden">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Clientes</h3>
-                <ScrollArea className="flex-1">
+                <div className="flex-1 min-h-0 overflow-auto">
                   <table className="w-full text-[10px]">
-                    <thead>
+                    <thead className="sticky top-0 bg-card">
                       <tr className="text-muted-foreground border-b">
                         <th className="text-left py-1">Cliente</th>
                         <th className="text-right py-1">Reservas</th>
@@ -215,7 +215,7 @@ const LojasPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {clientesData.slice(0, 5).map((cliente, idx) => (
+                      {clientesData.map((cliente, idx) => (
                         <tr key={idx} className="border-b border-muted/30">
                           <td className="py-1">
                             <div className="flex items-center gap-1">
@@ -235,14 +235,14 @@ const LojasPage = () => {
                       ))}
                     </tbody>
                   </table>
-                </ScrollArea>
+                </div>
               </div>
             </div>
 
             {/* Right Column */}
             <div className="col-span-4 flex flex-col gap-2 h-full">
               {/* Inventário por Produto */}
-              <div className="bg-card rounded-xl border p-2 flex flex-col" style={{ height: '100px' }}>
+              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Inventário por Produto</h3>
                 <ScrollArea className="flex-1">
                   <table className="w-full text-[10px]">
@@ -254,7 +254,7 @@ const LojasPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {produtosInventario.slice(0, 3).map((produto, idx) => (
+                      {produtosInventario.slice(0, 4).map((produto, idx) => (
                         <tr key={idx} className="border-b border-muted/30">
                           <td className="py-0.5 text-foreground">{produto.nome.substring(0, 12)}...</td>
                           <td className="py-0.5">
@@ -309,22 +309,24 @@ const LojasPage = () => {
               </div>
 
               {/* Resumo de Conversão */}
-              <div className="bg-card rounded-xl border p-2">
+              <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Resumo de Conversão</h3>
-                <div className="grid grid-cols-3 gap-1.5">
-                  <div className="text-center p-1.5 bg-muted/30 rounded">
-                    <div className="text-xs font-bold text-primary">{totalReservas.toLocaleString()}</div>
-                    <div className="text-[8px] text-muted-foreground">Reservas</div>
-                  </div>
-                  <div className="text-center p-1.5 bg-muted/30 rounded">
-                    <div className="text-xs font-bold text-secondary">{totalVendas.toLocaleString()}</div>
-                    <div className="text-[8px] text-muted-foreground">Vendas</div>
-                  </div>
-                  <div className="text-center p-1.5 bg-muted/30 rounded">
-                    <div className="text-xs font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
-                      {((totalVendas / totalReservas) * 100 || 0).toFixed(0)}%
+                <div className="flex-1 flex items-center">
+                  <div className="grid grid-cols-3 gap-1.5 w-full">
+                    <div className="text-center p-1.5 bg-muted/30 rounded">
+                      <div className="text-xs font-bold text-primary">{totalReservas.toLocaleString()}</div>
+                      <div className="text-[8px] text-muted-foreground">Reservas</div>
                     </div>
-                    <div className="text-[8px] text-muted-foreground">Taxa</div>
+                    <div className="text-center p-1.5 bg-muted/30 rounded">
+                      <div className="text-xs font-bold text-secondary">{totalVendas.toLocaleString()}</div>
+                      <div className="text-[8px] text-muted-foreground">Vendas</div>
+                    </div>
+                    <div className="text-center p-1.5 bg-muted/30 rounded">
+                      <div className="text-xs font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
+                        {((totalVendas / totalReservas) * 100 || 0).toFixed(0)}%
+                      </div>
+                      <div className="text-[8px] text-muted-foreground">Taxa</div>
+                    </div>
                   </div>
                 </div>
               </div>
