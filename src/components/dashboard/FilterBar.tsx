@@ -9,9 +9,10 @@ interface FilterBarProps {
   showConsultor?: boolean;
   showConcelho?: boolean;
   showProduto?: boolean;
+  hideDistrito?: boolean;
 }
 
-export const FilterBar = ({ showConsultor = false, showConcelho = false, showProduto = false }: FilterBarProps) => {
+export const FilterBar = ({ showConsultor = false, showConcelho = false, showProduto = false, hideDistrito = false }: FilterBarProps) => {
   const { filters, setFilters, resetFilters } = useFilters();
 
   const activeFiltersCount = [
@@ -105,7 +106,7 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false, showPro
         </Select>
       )}
 
-      {!showConcelho && (
+      {!showConcelho && !hideDistrito && (
         <Select 
           value={filters.zona} 
           onValueChange={(v) => setFilters(prev => ({ ...prev, zona: v, concelho: "Todos" }))}

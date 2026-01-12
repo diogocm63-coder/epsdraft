@@ -106,7 +106,7 @@ const ConsultoresPage = () => {
         <div className="flex-1 p-6 overflow-hidden">
           <div className="grid grid-cols-12 gap-4 h-full">
             {/* Left Column - KPIs */}
-            <div className="col-span-2 flex flex-col gap-3">
+            <div className="col-span-2 grid grid-cols-1 gap-2 content-start">
               <KPICard 
                 title="Lojas na Zona" 
                 value={filteredLojas.length} 
@@ -120,17 +120,27 @@ const ConsultoresPage = () => {
                 variant="green"
               />
               <KPICard 
-                title="Reservas" 
-                value={`${totalReservas.toLocaleString()} un`} 
+                title="Reservas (un)" 
+                value={`${totalReservas.toLocaleString()}`} 
                 icon={ShoppingCart}
-                trend={{ value: 4.2, positive: true }}
                 variant="blue"
               />
               <KPICard 
-                title="Vendas" 
-                value={`${totalVendas.toLocaleString()} un`} 
+                title="Reservas (€)" 
+                value={`${(totalReservas * 12.5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                icon={ShoppingCart}
+                variant="blue"
+              />
+              <KPICard 
+                title="Vendas (un)" 
+                value={`${totalVendas.toLocaleString()}`} 
                 icon={TrendingUp}
-                trend={{ value: 8.5, positive: true }}
+                variant="green"
+              />
+              <KPICard 
+                title="Vendas (€)" 
+                value={`${(totalVendas * 14.8).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`} 
+                icon={TrendingUp}
                 variant="green"
               />
               <KPICard 
