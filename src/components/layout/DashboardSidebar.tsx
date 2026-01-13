@@ -12,6 +12,7 @@ import {
   PieChart,
   Clock,
   Package,
+  Grape,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -23,6 +24,7 @@ const mainNavItems = [
 
 const operacoesNavItems = [
   { path: "/operacoes/painel-geral", label: "Painel Geral", icon: ClipboardList },
+  { path: "/operacoes/controlo-producao", label: "Controlo da Produção", icon: Grape },
   { path: "/operacoes/analise-custos", label: "Análise de Custos", icon: DollarSign },
   { path: "/operacoes/mao-de-obra", label: "Mão de Obra", icon: Users2 },
   { path: "/operacoes/gestao-atividades", label: "Gestão de Atividades", icon: ListTodo },
