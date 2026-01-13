@@ -1,14 +1,54 @@
 // Mock data for Operações pages
-
-export const consultoresOp = ["Tudo", "Carlos Silva", "Maria Santos", "João Pereira", "Ana Costa"];
-export const organizacoes = ["Vine & Wine", "AgroCorp", "FarmTech"];
-export const espacos = ["Tudo", "Espaço A", "Espaço B", "Espaço C"];
+export const consultoresOp = [
+  "Tudo",
+  "António Silva",
+  "Maria Santos",
+  "João Ferreira",
+  "Ana Costa",
+  "Pedro Rodrigues",
+  "Carla Martins",
+];
+export const organizacoes = [
+  "Quinta do Vale Meão",
+  "Quinta da Leda",
+  "Quinta do Crasto",
+  "Quinta dos Murças",
+  "Quinta da Romaneira",
+  "Casa Ferreirinha",
+  "Quinta do Noval",
+  "Quinta da Roêda",
+  "Pomares do Oeste",
+  "Frutas do Cadaval",
+  "Quinta das Pêras",
+  "Herdade do Alentejo",
+  "Monte da Raposinha",
+  "Quinta da Bacalhôa",
+  "Pomares do Sul",
+  "Quinta dos Açores",
+  "Pomares da Ilha",
+  "Quinta de Aveiro",
+  "Frutas de Aveiro",
+  "Herdade de Beja",
+  "Pomares do Alentejo Sul",
+  "Quinta de Guimarães",
+  "Pomares de Braga",
+  "Quinta do Fundão",
+  "Pêras do Centro",
+  "Quinta de Coimbra",
+  "Frutas de Montemor",
+  "Quinta da Madeira",
+  "Pomares do Funchal",
+  "Herdade de Portalegre",
+  "Pomares de Portalegre",
+  "Quinta de Ponte de Lima",
+  "Frutas do Norte",
+];
+export const espacos = ["Tudo", "Norte", "Centro", "Lisboa", "Sul", "Ilhas"];
 export const locais = ["Tudo", "Tejo", "Lagar", "Arripiado", "Vinha do Tejo"];
 export const atividades = ["Tudo", "Poda", "Fert", "Colheita", "Rega"];
 export const tiposProdutoOp = ["(Vazio)", "Fertilizantes", "Combustíveis", "Pesticidas", "Plantas"];
 export const produtos = ["Tudo", "Uva Tinta", "Uva Branca", "Azeite", "Oliva"];
 export const variedades = ["Tudo", "Touriga Nacional", "Aragonez", "Syrah", "Alvarinho", "Arinto"];
-
 export interface HorasTrabalhadasData {
   total: number;
   horasUteis: number;
@@ -16,7 +56,6 @@ export interface HorasTrabalhadasData {
   percentUteis: number;
   percentPausa: number;
 }
-
 export interface CustosData {
   total: number;
   pessoal: number;
@@ -24,42 +63,35 @@ export interface CustosData {
   percentPessoal: number;
   percentProdutos: number;
 }
-
 export interface TipoAtividadeData {
   name: string;
   value: number;
   color: string;
 }
-
 export interface CustoMensalData {
   mes: string;
   valor: number;
   valorHa: number;
 }
-
 export interface CustoPorAtividadeData {
   atividade: string;
   custoTotal: number;
   orcamento: number;
 }
-
 export interface CustoPorLocalData {
   local: string;
   custoTotal: number;
   orcamento: number;
 }
-
 export interface AtividadeDetalheData {
   atividade: string;
   marco: number;
   total: number;
 }
-
 export interface HorasPorDiaData {
   dia: string;
   horas: number;
 }
-
 export interface OrcamentoRow {
   local: string;
   janeiro: number;
@@ -76,7 +108,6 @@ export interface OrcamentoRow {
   dezembro: number;
   total: number;
 }
-
 // Generate mock data
 export const gerarHorasTrabalhadas = (): HorasTrabalhadasData => ({
   total: 4912,
@@ -85,7 +116,6 @@ export const gerarHorasTrabalhadas = (): HorasTrabalhadasData => ({
   percentUteis: 97,
   percentPausa: 3,
 });
-
 export const gerarCustos = (): CustosData => ({
   total: 3260,
   pessoal: 1380,
@@ -93,12 +123,10 @@ export const gerarCustos = (): CustosData => ({
   percentPessoal: 42,
   percentProdutos: 58,
 });
-
 export const gerarTipoAtividade = (): TipoAtividadeData[] => [
   { name: "operações culturais", value: 88, color: "#8B1538" },
   { name: "fertilização", value: 12, color: "#C4A962" },
 ];
-
 export const gerarCustosMensais = (): CustoMensalData[] => [
   { mes: "Janeiro", valor: 0, valorHa: 0 },
   { mes: "Fevereiro", valor: 0, valorHa: 0 },
@@ -113,43 +141,35 @@ export const gerarCustosMensais = (): CustoMensalData[] => [
   { mes: "Novembro", valor: 0, valorHa: 0 },
   { mes: "Dezembro", valor: 0, valorHa: 0 },
 ];
-
 export const gerarCustosPorAtividade = (): CustoPorAtividadeData[] => [
   { atividade: "Poda", custoTotal: 2000, orcamento: 0 },
   { atividade: "Fert", custoTotal: 1300, orcamento: 900 },
 ];
-
 export const gerarCustosPorLocal = (): CustoPorLocalData[] => [
   { local: "Tejo", custoTotal: 3100, orcamento: 900 },
   { local: "Arripiado", custoTotal: 100, orcamento: 0 },
   { local: "Lagar", custoTotal: 100, orcamento: 0 },
 ];
-
 export const gerarTop5AtividadesCusto = (): { atividade: string; custo: number }[] => [
   { atividade: "Poda", custo: 1958 },
   { atividade: "Fert", custo: 1302 },
 ];
-
 export const gerarCustoTotalPorProduto = (): { produto: string; custo: number }[] => [
   { produto: "Plantas", custo: 1885 },
 ];
-
 export const gerarCustoTotalPorHa = (): { local: string; custo: number }[] => [
   { local: "Tejo", custo: 4299 },
   { local: "Lagar", custo: 53 },
   { local: "Arripiado", custo: 5 },
 ];
-
 export const gerarHorasPorAtividade = (): { atividade: string; horas: number }[] => [
   { atividade: "Poda", horas: 4307 },
   { atividade: "Fert", horas: 605 },
 ];
-
 export const gerarHorasPorLocal = (): { local: string; horas: number }[] => [
   { local: "Vinha do Tejo", horas: 4886 },
   { local: "(Vazio)", horas: 26 },
 ];
-
 export const gerarHorasPorDiaSemana = (): HorasPorDiaData[] => [
   { dia: "Dom", horas: 1 },
   { dia: "Seg", horas: 916 },
@@ -159,13 +179,11 @@ export const gerarHorasPorDiaSemana = (): HorasPorDiaData[] => [
   { dia: "Sex", horas: 0 },
   { dia: "Sáb", horas: 0 },
 ];
-
 export const gerarHorasPorHa = (): { local: string; horas: number }[] => [
   { local: "Tejo", horas: 6810 },
   { local: "Lagar", horas: 5 },
   { local: "Arripiado", horas: 1 },
 ];
-
 export const gerarAtividadesDetalhe = (): AtividadeDetalheData[] => [
   { atividade: "Task 1 - Fert #2", marco: 150, total: 150 },
   { atividade: "Task 1 - Poda #1", marco: 24, total: 24 },
@@ -176,16 +194,12 @@ export const gerarAtividadesDetalhe = (): AtividadeDetalheData[] => [
   { atividade: "Task 2 - Poda #9", marco: 1206.75, total: 1206.75 },
   { atividade: "Task 3 - Poda #1", marco: 80, total: 80 },
 ];
-
 export const gerarHorasTrabalhadasHa = (): { mes: string; valor: number }[] => [{ mes: "Março", valor: 191 }];
-
 export const gerarHorasTrabalhadasHaPorAtividade = (): { atividade: string; horas: number }[] => [
   { atividade: "Poda", horas: 168 },
   { atividade: "Fert", horas: 24 },
 ];
-
 export const gerarCustoHa = (): { mes: string; valor: number }[] => [{ mes: "Março", valor: 127 }];
-
 export const gerarCustoHaPorAtividade = (): {
   atividade: string;
   custoProdutos: number;
@@ -194,7 +208,6 @@ export const gerarCustoHaPorAtividade = (): {
   { atividade: "Poda", custoProdutos: 42, custoTrabalhadores: 34 },
   { atividade: "Fert", custoProdutos: 31, custoTrabalhadores: 20 },
 ];
-
 export const gerarControloOrcamentalCustoTotal = (): {
   mes: string;
   custoTotal: number;
@@ -204,7 +217,6 @@ export const gerarControloOrcamentalCustoTotal = (): {
   { mes: "Março", custoTotal: 3260, custoOrcamentado: 350 },
   { mes: "Abril", custoTotal: 0, custoOrcamentado: 362 },
 ];
-
 export const gerarControloOrcamentalHoras = (): {
   atividade: string;
   totalHoras: number;
@@ -213,18 +225,15 @@ export const gerarControloOrcamentalHoras = (): {
   { atividade: "Poda", totalHoras: 4307, horasOrcamentadas: 0 },
   { atividade: "Fert", totalHoras: 605, horasOrcamentadas: 34 },
 ];
-
 export const gerarControloOrcamentalCustoHa = (): { mes: string; custoHa: number; orcamentoHa: number }[] => [
   { mes: "Fevereiro", custoHa: 6, orcamentoHa: 0 },
   { mes: "Março", custoHa: 127, orcamentoHa: 14 },
   { mes: "Abril", custoHa: 0, orcamentoHa: 14 },
 ];
-
 export const gerarCustoPorProduto = (): { produto: string; custoProduto: number; orcamento: number }[] => [
   { produto: "Plantas", custoProduto: 1885, orcamento: 0 },
   { produto: "Fertilizantes", custoProduto: 0, orcamento: 450 },
 ];
-
 export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
   {
     local: "12",
@@ -339,7 +348,6 @@ export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
     total: 0,
   },
 ];
-
 export const areaHa = 25.7;
 export const percentExecucao = 2;
 export const areaTotalHa = 26;
