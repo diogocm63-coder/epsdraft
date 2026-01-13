@@ -110,13 +110,16 @@ export const useFilteredData = () => {
       const reservasMes = filteredReservas.filter(r => r.mes === mesCompleto).reduce((a, r) => a + r.quantidade, 0);
       // Recomendações Técnicas - aproximadamente 12% das encomendas
       const recTecnicasMes = Math.floor(reservasMes * 0.12);
+      // Previsão de Vendas - aproximadamente 110% das vendas atuais (crescimento esperado)
+      const previsaoVendasMes = Math.floor(vendasMes * 1.10);
       
       // Multiplicar por valor médio para obter €
       return {
         name: mes,
         value: vendasMes * 12.5, // vendas em €
         value2: reservasMes * 12.5, // encomendas em €
-        value3: recTecnicasMes * 12.5 // recomendações técnicas em €
+        value3: recTecnicasMes * 12.5, // recomendações técnicas em €
+        value4: previsaoVendasMes * 12.5 // previsão de vendas em €
       };
     });
   }, [filteredVendas, filteredReservas]);

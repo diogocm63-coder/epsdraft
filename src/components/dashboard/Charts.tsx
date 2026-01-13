@@ -5,6 +5,7 @@ interface ChartData {
   value: number;
   value2?: number;
   value3?: number;
+  value4?: number;
 }
 
 interface ChartProps {
@@ -18,7 +19,8 @@ const COLORS = {
   secondary: '#4caf50',
   accent: '#3b9ddd',
   muted: '#94a3b8',
-  tertiary: '#f59e0b'
+  tertiary: '#f59e0b',
+  quaternary: '#8b5cf6'
 };
 
 export const AreaChartComponent = ({ data, height = 250, showGrid = true }: ChartProps) => {
@@ -49,6 +51,10 @@ export const AreaChartComponent = ({ data, height = 250, showGrid = true }: Char
             <stop offset="5%" stopColor={COLORS.tertiary} stopOpacity={0.3}/>
             <stop offset="95%" stopColor={COLORS.tertiary} stopOpacity={0}/>
           </linearGradient>
+          <linearGradient id="colorPrevisao" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={COLORS.quaternary} stopOpacity={0.3}/>
+            <stop offset="95%" stopColor={COLORS.quaternary} stopOpacity={0}/>
+          </linearGradient>
         </defs>
         <Area 
           type="monotone" 
@@ -76,6 +82,15 @@ export const AreaChartComponent = ({ data, height = 250, showGrid = true }: Char
           fill="url(#colorRecTecnicas)" 
           name="Rec. Técnicas"
           dot={{ fill: COLORS.tertiary, strokeWidth: 0, r: 3 }}
+        />
+        <Area 
+          type="monotone" 
+          dataKey="value4" 
+          stroke={COLORS.quaternary} 
+          strokeWidth={2}
+          fill="url(#colorPrevisao)" 
+          name="Previsão Vendas"
+          dot={{ fill: COLORS.quaternary, strokeWidth: 0, r: 3 }}
         />
         <Legend 
           iconType="circle" 
