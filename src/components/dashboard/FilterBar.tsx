@@ -1,9 +1,9 @@
-import { useFilters } from '@/contexts/FilterContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { anos, meses, tiposProduto, distritos, lojas, fertilizantes, pesticidas, consultores } from '@/data/mockData';
-import { Button } from '@/components/ui/button';
-import { Filter, RotateCcw } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useFilters } from "@/contexts/FilterContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { anos, meses, tiposProduto, distritos, lojas, fertilizantes, pesticidas, consultores } from "@/data/mockData";
+import { Button } from "@/components/ui/button";
+import { Filter, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface FilterBarProps {
   showConsultor?: boolean;
@@ -12,7 +12,12 @@ interface FilterBarProps {
   hideZona?: boolean;
 }
 
-export const FilterBar = ({ showConsultor = false, showConcelho = false, showProduto = false, hideZona = false }: FilterBarProps) => {
+export const FilterBar = ({
+  showConsultor = false,
+  showConcelho = false,
+  showProduto = false,
+  hideZona = false,
+}: FilterBarProps) => {
   const { filters, setFilters, resetFilters } = useFilters();
 
   const activeFiltersCount = [
@@ -21,18 +26,26 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false, showPro
     filters.tipoProduto !== "Todos",
     filters.zona !== "Portugal",
     filters.produto !== "Todos",
-    filters.consultor !== "Todos"
+    filters.consultor !== "Todos",
   ].filter(Boolean).length;
 
-  const concelhos = filters.zona === "Portugal" 
-    ? ["Todos", ...lojas.map(l => l.concelho).sort()]
-    : ["Todos", ...lojas.filter(l => l.distrito === filters.zona).map(l => l.concelho).sort()];
+  const concelhos =
+    filters.zona === "Portugal"
+      ? ["Todos", ...lojas.map((l) => l.concelho).sort()]
+      : [
+          "Todos",
+          ...lojas
+            .filter((l) => l.distrito === filters.zona)
+            .map((l) => l.concelho)
+            .sort(),
+        ];
 
-  const produtos = filters.tipoProduto === "Todos" 
-    ? ["Todos", ...fertilizantes.slice(0, 10), ...pesticidas.slice(0, 10)]
-    : filters.tipoProduto === "Fertilizantes"
-      ? ["Todos", ...fertilizantes]
-      : ["Todos", ...pesticidas];
+  const produtos =
+    filters.tipoProduto === "Todos"
+      ? ["Todos", ...fertilizantes.slice(0, 10), ...pesticidas.slice(0, 10)]
+      : filters.tipoProduto === "Fertilizantes"
+        ? ["Todos", ...fertilizantes]
+        : ["Todos", ...pesticidas];
 
   return (
     <div className="flex items-center gap-3 flex-wrap">
@@ -40,131 +53,135 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false, showPro
         <Filter className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">Filtros</span>
         {activeFiltersCount > 0 && (
-          <Badge variant="default" className="bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center text-xs">
+          <Badge
+            variant="default"
+            className="bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center text-xs"
+          >
             {activeFiltersCount}
           </Badge>
         )}
       </div>
 
-      <Select 
-        value={filters.ano.toString()} 
-        onValueChange={(v) => setFilters(prev => ({ ...prev, ano: parseInt(v) }))}
+      <Select
+        value={filters.ano.toString()}
+        onValueChange={(v) => setFilters((prev) => ({ ...prev, ano: parseInt(v) }))}
       >
         <SelectTrigger className="w-[90px] h-9 bg-card">
           <SelectValue placeholder="Ano" />
         </SelectTrigger>
         <SelectContent>
-          {anos.map(ano => (
-            <SelectItem key={ano} value={ano.toString()}>{ano}</SelectItem>
+          {anos.map((ano) => (
+            <SelectItem key={ano} value={ano.toString()}>
+              {ano}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <Select 
-        value={filters.mes} 
-        onValueChange={(v) => setFilters(prev => ({ ...prev, mes: v }))}
-      >
+      <Select value={filters.mes} onValueChange={(v) => setFilters((prev) => ({ ...prev, mes: v }))}>
         <SelectTrigger className="w-[120px] h-9 bg-card">
           <SelectValue placeholder="Mês" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="Todos">Mês</SelectItem>
-          {meses.map(mes => (
-            <SelectItem key={mes} value={mes}>{mes}</SelectItem>
+          {meses.map((mes) => (
+            <SelectItem key={mes} value={mes}>
+              {mes}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <Select 
-        value={filters.tipoProduto} 
-        onValueChange={(v) => setFilters(prev => ({ ...prev, tipoProduto: v, produto: "Todos" }))}
+      <Select
+        value={filters.tipoProduto}
+        onValueChange={(v) => setFilters((prev) => ({ ...prev, tipoProduto: v, produto: "Todos" }))}
       >
         <SelectTrigger className="w-[130px] h-9 bg-card">
           <SelectValue placeholder="Tipo Produto" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="Todos">Tipo Produto</SelectItem>
-          {tiposProduto.map(tipo => (
-            <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+          {tiposProduto.map((tipo) => (
+            <SelectItem key={tipo} value={tipo}>
+              {tipo}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       {showProduto && (
-        <Select 
-          value={filters.produto} 
-          onValueChange={(v) => setFilters(prev => ({ ...prev, produto: v }))}
-        >
+        <Select value={filters.produto} onValueChange={(v) => setFilters((prev) => ({ ...prev, produto: v }))}>
           <SelectTrigger className="w-[180px] h-9 bg-card">
             <SelectValue placeholder="Produto" />
           </SelectTrigger>
           <SelectContent>
-            {produtos.map(produto => (
-              <SelectItem key={produto} value={produto}>{produto.length > 25 ? produto.substring(0, 25) + '...' : produto}</SelectItem>
+            {produtos.map((produto) => (
+              <SelectItem key={produto} value={produto}>
+                {produto.length > 25 ? produto.substring(0, 25) + "..." : produto}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       )}
 
       {!hideZona && (
-        <Select 
-          value={filters.zona} 
-          onValueChange={(v) => setFilters(prev => ({ ...prev, zona: v, concelho: "Todos" }))}
+        <Select
+          value={filters.zona}
+          onValueChange={(v) => setFilters((prev) => ({ ...prev, zona: v, concelho: "Todos" }))}
         >
           <SelectTrigger className="w-[130px] h-9 bg-card">
             <SelectValue placeholder="Zona" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Portugal">Zona</SelectItem>
-            {distritos.filter(d => d !== "Portugal").map(zona => (
-              <SelectItem key={zona} value={zona}>{zona}</SelectItem>
+            {distritos
+              .filter((d) => d !== "Portugal")
+              .map((zona) => (
+                <SelectItem key={zona} value={zona}>
+                  {zona}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {showConsultor && (
+        <Select value={filters.consultor} onValueChange={(v) => setFilters((prev) => ({ ...prev, consultor: v }))}>
+          <SelectTrigger className="w-[180px] h-9 bg-card">
+            <SelectValue placeholder="Todos os consultores" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Todos">Todos os consultores</SelectItem>
+            {consultores.map((c) => (
+              <SelectItem key={c.id} value={c.nome}>
+                {c.nome}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       )}
 
       {showConcelho && (
-        <Select 
-          value={filters.concelho} 
-          onValueChange={(v) => setFilters(prev => ({ ...prev, concelho: v }))}
-        >
+        <Select value={filters.concelho} onValueChange={(v) => setFilters((prev) => ({ ...prev, concelho: v }))}>
           <SelectTrigger className="w-[140px] h-9 bg-card">
             <SelectValue placeholder="Concelho/Loja" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Todos">Concelho/Loja</SelectItem>
-            {concelhos.filter(c => c !== "Todos").map(concelho => (
-              <SelectItem key={concelho} value={concelho}>{concelho}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-
-      {showConsultor && (
-        <Select 
-          value={filters.consultor} 
-          onValueChange={(v) => setFilters(prev => ({ ...prev, consultor: v }))}
-        >
-          <SelectTrigger className="w-[180px] h-9 bg-card">
-            <SelectValue placeholder="Todos os consultores" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Todos">Todos os consultores</SelectItem>
-            {consultores.map(c => (
-              <SelectItem key={c.id} value={c.nome}>{c.nome}</SelectItem>
-            ))}
+            {concelhos
+              .filter((c) => c !== "Todos")
+              .map((concelho) => (
+                <SelectItem key={concelho} value={concelho}>
+                  {concelho}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       )}
 
       <div className="flex-1" />
 
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={resetFilters} 
-        className="text-muted-foreground hover:text-foreground"
-      >
+      <Button variant="ghost" size="sm" onClick={resetFilters} className="text-muted-foreground hover:text-foreground">
         <RotateCcw className="h-4 w-4 mr-1" />
         Limpar
       </Button>
