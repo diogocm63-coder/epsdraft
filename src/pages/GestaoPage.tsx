@@ -69,7 +69,7 @@ const GestaoPage = () => {
             <div className="col-span-7 flex flex-col gap-3 h-full">
               {/* Vendas vs Reservas Chart */}
               <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Vendas vs Encomendas (Mensal)</h3>
+                <h3 className="text-xs font-semibold text-foreground mb-1">Vendas vs Encomendas vs Recomendações (Mensal)</h3>
                 <div className="flex-1 min-h-0">
                   <AreaChartComponent data={evolucaoMensal} height="100%" />
                 </div>
