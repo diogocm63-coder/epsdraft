@@ -59,10 +59,14 @@ export const useFilteredData = () => {
 
   const lojaNames = useMemo(() => filteredLojas.map((l) => l.nome), [filteredLojas]);
 
-  // Filtered clientes based on allowed distritos (cumulative)
+  // Filtered clientes based on allowed distritos and cliente filter (cumulative)
   const filteredClientes = useMemo(() => {
-    return clientes.filter((c) => allowedDistritos.includes(c.distrito));
-  }, [allowedDistritos]);
+    let clientesFiltrados = clientes.filter((c) => allowedDistritos.includes(c.distrito));
+    if (filters.cliente !== "Todos") {
+      clientesFiltrados = clientesFiltrados.filter((c) => c.nome === filters.cliente);
+    }
+    return clientesFiltrados;
+  }, [allowedDistritos, filters.cliente]);
 
   // Filtered stock
   const filteredStock = useMemo(() => {
