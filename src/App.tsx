@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 
 // Operações Pages
 import PainelGeralPage from "./pages/operacoes/PainelGeralPage";
+import ControloProducaoPage from "./pages/operacoes/ControloProducaoPage";
 import AnaliseCustosPage from "./pages/operacoes/AnaliseCustosPage";
 import MaoDeObraPage from "./pages/operacoes/MaoDeObraPage";
 import GestaoAtividadesPage from "./pages/operacoes/GestaoAtividadesPage";
@@ -35,6 +36,7 @@ const App = () => (
             
             {/* Operações */}
             <Route path="/operacoes/painel-geral" element={<PainelGeralPage />} />
+            <Route path="/operacoes/controlo-producao" element={<ControloProducaoPage />} />
             <Route path="/operacoes/analise-custos" element={<AnaliseCustosPage />} />
             <Route path="/operacoes/mao-de-obra" element={<MaoDeObraPage />} />
             <Route path="/operacoes/gestao-atividades" element={<GestaoAtividadesPage />} />
