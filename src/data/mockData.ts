@@ -1,5 +1,4 @@
 // Lojas reais do Excel
-// Lojas reais do Excel
 export const lojas = [
   { nome: "ÁGUEDA", distrito: "Aveiro", concelho: "Águeda" },
   { nome: "ALMEIRIM", distrito: "Santarém", concelho: "Almeirim" },
@@ -191,7 +190,11 @@ export const gerarReservas = () => {
       const produtos = [...fertilizantes.slice(0, 4), ...pesticidas.slice(0, 2)];
       produtos.forEach((produto) => {
         anos.forEach((ano) => {
-          meses.forEach((mes) => {
+          let mesesAno = meses;
+          if (ano === 2026) {
+            mesesAno = meses.slice(0, 6); // Até Junho
+          }
+          mesesAno.forEach((mes) => {
             data.push({
               loja: loja.nome,
               cliente: cliente.nome,
@@ -211,10 +214,143 @@ export const gerarReservas = () => {
 
 // Gerar vendas (baseadas em reservas com variação)
 export const gerarVendas = (reservas: ReturnType<typeof gerarReservas>) => {
-  return reservas.map((r) => ({
-    ...r,
-    quantidade: Math.floor(r.quantidade * (0.7 + Math.random() * 0.5)),
-  }));
+  return reservas
+    .filter((r) => r.ano !== 2026 || meses.indexOf(r.mes) <= 4) // Para 2026, apenas até Maio
+    .map((r) => ({
+      ...r,
+      quantidade: Math.floor(r.quantidade * (0.7 + Math.random() * 0.5)),
+    }));
+};
+
+// Gerar previsão de vendas para 2026
+export const gerarPrevisaoVendas = (
+  vendas: ReturnType<typeof gerarVendas>,
+  reservas: ReturnType<typeof gerarReservas>,
+) => {
+  const data: {
+    loja: string;
+    cliente: string;
+    produto: string;
+    tipoProduto: string;
+    quantidade: number;
+    mes: string;
+    ano: number;
+  }[] = [];
+
+  const combos = new Set<string>();
+  reservas.filter((r) => r.ano === 2026).forEach((r) => combos.add(`${r.loja}|${r.cliente}|${r.produto}`));
+
+  combos.forEach((combo) => {
+    const [loja, cliente, produto] = combo.split("|");
+    const tipoProduto = fertilizantes.includes(produto) ? "Fertilizantes" : "Pesticidas";
+
+    meses.forEach((mes, idx) => {
+      const venda = vendas.find(
+        (v) => v.loja === loja && v.cliente === cliente && v.produto === produto && v.mes === mes && v.ano === 2026,
+      );
+      const reserva = reservas.find(
+        (re) =>
+          re.loja === loja && re.cliente === cliente && re.produto === produto && re.mes === mes && re.ano === 2026,
+      );
+
+      let quantidade: number;
+      if (venda && reserva) {
+        // Média com ruído para cruzar em alguns meses
+        quantidade = Math.floor((venda.quantidade + reserva.quantidade) / 2 + (Math.random() * 20 - 10));
+      } else if (reserva) {
+        quantidade = Math.floor(reserva.quantidade * (0.8 + Math.random() * 0.4));
+      } else {
+        // Extrapolação baseada no último conhecido com variação
+        let lastQuantidade = 0;
+        for (let i = idx - 1; i >= 0; i--) {
+          const prevVenda = vendas.find(
+            (v) =>
+              v.loja === loja && v.cliente === cliente && v.produto === produto && v.mes === meses[i] && v.ano === 2026,
+          );
+          const prevReserva = reservas.find(
+            (re) =>
+              re.loja === loja &&
+              re.cliente === cliente &&
+              re.produto === produto &&
+              re.mes === meses[i] &&
+              re.ano === 2026,
+          );
+          if (prevVenda) {
+            lastQuantidade = prevVenda.quantidade;
+            break;
+          }
+          if (prevReserva) {
+            lastQuantidade = prevReserva.quantidade;
+            break;
+          }
+        }
+        quantidade = Math.floor(lastQuantidade * (0.9 + Math.random() * 0.2));
+      }
+
+      data.push({
+        loja,
+        cliente,
+        produto,
+        tipoProduto,
+        quantidade,
+        mes,
+        ano: 2026,
+      });
+    });
+  });
+
+  return data;
+};
+
+// Gerar recomendações até Julho para 2026
+export const gerarRecomendacoes = (reservas: ReturnType<typeof gerarReservas>) => {
+  const data: {
+    loja: string;
+    cliente: string;
+    produto: string;
+    tipoProduto: string;
+    quantidade: number;
+    mes: string;
+    ano: number;
+  }[] = [];
+
+  const combos = new Set<string>();
+  reservas.filter((r) => r.ano === 2026).forEach((r) => combos.add(`${r.loja}|${r.cliente}|${r.produto}`));
+
+  combos.forEach((combo) => {
+    const [loja, cliente, produto] = combo.split("|");
+    const tipoProduto = fertilizantes.includes(produto) ? "Fertilizantes" : "Pesticidas";
+
+    meses.slice(0, 7).forEach((mes) => {
+      // Até Julho
+      const reserva = reservas.find(
+        (re) =>
+          re.loja === loja && re.cliente === cliente && re.produto === produto && re.mes === mes && re.ano === 2026,
+      );
+      let quantidade = reserva ? reserva.quantidade : Math.floor(Math.random() * 100 + 10);
+
+      data.push({
+        loja,
+        cliente,
+        produto,
+        tipoProduto,
+        quantidade,
+        mes,
+        ano: 2026,
+      });
+    });
+  });
+
+  // Ajustar para que o total seja entre 1/3 e 3/4 do total de encomendas de 2026
+  const totalReservas2026 = reservas.filter((r) => r.ano === 2026).reduce((sum, r) => sum + r.quantidade, 0);
+  const currentSum = data.reduce((sum, d) => sum + d.quantidade, 0);
+  const factor = (1 / 3 + Math.random() * (3 / 4 - 1 / 3)) * (totalReservas2026 / currentSum);
+
+  data.forEach((d) => {
+    d.quantidade = Math.floor(d.quantidade * factor);
+  });
+
+  return data;
 };
 
 // Gerar custos por cliente/produto
@@ -245,4 +381,6 @@ export const gerarCustos = () => {
 export const stockData = gerarStockPorLoja();
 export const reservasData = gerarReservas();
 export const vendasData = gerarVendas(reservasData);
+export const previsaoVendasData = gerarPrevisaoVendas(vendasData, reservasData);
+export const recomendacoesData = gerarRecomendacoes(reservasData);
 export const custosData = gerarCustos();
