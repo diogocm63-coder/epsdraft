@@ -1,6 +1,6 @@
 import { useFilters } from "@/contexts/FilterContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { anos, meses, tiposProduto, distritos, lojas, fertilizantes, pesticidas, consultores } from "@/data/mockData";
+import { anos, meses, tiposProduto, distritos, lojas, fertilizantes, pesticidas, consultores, clientes } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Filter, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ interface FilterBarProps {
   showConsultor?: boolean;
   showConcelho?: boolean;
   showProduto?: boolean;
+  showCliente?: boolean;
   hideZona?: boolean;
 }
 
@@ -16,6 +17,7 @@ export const FilterBar = ({
   showConsultor = false,
   showConcelho = false,
   showProduto = false,
+  showCliente = false,
   hideZona = false,
 }: FilterBarProps) => {
   const { filters, setFilters, resetFilters } = useFilters();
@@ -27,6 +29,7 @@ export const FilterBar = ({
     filters.zona !== "Portugal",
     filters.produto !== "Todos",
     filters.consultor !== "Todos",
+    filters.cliente !== "Todos",
   ].filter(Boolean).length;
 
   const concelhos =
@@ -175,6 +178,22 @@ export const FilterBar = ({
                   {concelho}
                 </SelectItem>
               ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {showCliente && (
+        <Select value={filters.cliente} onValueChange={(v) => setFilters((prev) => ({ ...prev, cliente: v }))}>
+          <SelectTrigger className="w-[180px] h-9 bg-card">
+            <SelectValue placeholder="Cliente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Todos">Todos os clientes</SelectItem>
+            {clientes.map((c) => (
+              <SelectItem key={c.nome} value={c.nome}>
+                {c.nome.length > 20 ? c.nome.substring(0, 20) + "..." : c.nome}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       )}
