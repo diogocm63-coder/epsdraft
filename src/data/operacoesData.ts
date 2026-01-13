@@ -44,7 +44,17 @@ export const organizacoes = [
   "Frutas do Norte",
 ];
 export const espacos = ["Tudo", "Norte", "Centro", "Lisboa", "Sul", "Ilhas"];
-export const locais = ["Tudo", "Tejo", "Lagar", "Arripiado", "Vinha do Tejo"];
+export const locais = [
+  "Tudo",
+  "Talhão 1",
+  "Talhão 2",
+  "Talhão 3",
+  "Talhão 4",
+  "Talhão 5",
+  "Talhão 6",
+  "Talhão 7",
+  "Talhão 8",
+];
 export const atividades = [
   "Tudo",
   "Plantação",
@@ -176,10 +186,14 @@ export const gerarCustosPorAtividade = (): CustoPorAtividadeData[] => [
   { atividade: "Colheita", custoTotal: 2500, orcamento: 2200 },
 ];
 export const gerarCustosPorLocal = (): CustoPorLocalData[] => [
-  { local: "Tejo", custoTotal: 3100, orcamento: 900 },
-  { local: "Arripiado", custoTotal: 100, orcamento: 0 },
-  { local: "Lagar", custoTotal: 100, orcamento: 0 },
-  { local: "Vinha do Tejo", custoTotal: 4500, orcamento: 4000 },
+  { local: "Talhão 1", custoTotal: 3100, orcamento: 900 },
+  { local: "Talhão 2", custoTotal: 2800, orcamento: 800 },
+  { local: "Talhão 3", custoTotal: 2500, orcamento: 700 },
+  { local: "Talhão 4", custoTotal: 2200, orcamento: 600 },
+  { local: "Talhão 5", custoTotal: 1900, orcamento: 500 },
+  { local: "Talhão 6", custoTotal: 1600, orcamento: 400 },
+  { local: "Talhão 7", custoTotal: 1300, orcamento: 300 },
+  { local: "Talhão 8", custoTotal: 1000, orcamento: 200 },
 ];
 export const gerarTop5AtividadesCusto = (): { atividade: string; custo: number }[] => [
   { atividade: "Colheita", custo: 2500 },
@@ -194,10 +208,14 @@ export const gerarCustoTotalPorProduto = (): { produto: string; custo: number }[
   { produto: "Pesticidas", custo: 1400 },
 ];
 export const gerarCustoTotalPorHa = (): { local: string; custo: number }[] => [
-  { local: "Tejo", custo: 4299 },
-  { local: "Lagar", custo: 53 },
-  { local: "Arripiado", custo: 5 },
-  { local: "Vinha do Tejo", custo: 6200 },
+  { local: "Talhão 1", custo: 4299 },
+  { local: "Talhão 2", custo: 3899 },
+  { local: "Talhão 3", custo: 3499 },
+  { local: "Talhão 4", custo: 3099 },
+  { local: "Talhão 5", custo: 2699 },
+  { local: "Talhão 6", custo: 2299 },
+  { local: "Talhão 7", custo: 1899 },
+  { local: "Talhão 8", custo: 1499 },
 ];
 export const gerarHorasPorAtividade = (): { atividade: string; horas: number }[] => [
   { atividade: "Plantação", horas: 800 },
@@ -212,10 +230,14 @@ export const gerarHorasPorAtividade = (): { atividade: string; horas: number }[]
   { atividade: "Colheita", horas: 1200 },
 ];
 export const gerarHorasPorLocal = (): { local: string; horas: number }[] => [
-  { local: "Vinha do Tejo", horas: 4886 },
-  { local: "(Vazio)", horas: 26 },
-  { local: "Tejo", horas: 3200 },
-  { local: "Lagar", horas: 150 },
+  { local: "Talhão 1", horas: 4886 },
+  { local: "Talhão 2", horas: 4500 },
+  { local: "Talhão 3", horas: 4200 },
+  { local: "Talhão 4", horas: 3900 },
+  { local: "Talhão 5", horas: 3600 },
+  { local: "Talhão 6", horas: 3300 },
+  { local: "Talhão 7", horas: 3000 },
+  { local: "Talhão 8", horas: 2700 },
 ];
 export const gerarHorasPorDiaSemana = (): HorasPorDiaData[] => [
   { dia: "Dom", horas: 1 },
@@ -227,10 +249,14 @@ export const gerarHorasPorDiaSemana = (): HorasPorDiaData[] => [
   { dia: "Sáb", horas: 0 },
 ];
 export const gerarHorasPorHa = (): { local: string; horas: number }[] => [
-  { local: "Tejo", horas: 6810 },
-  { local: "Lagar", horas: 5 },
-  { local: "Arripiado", horas: 1 },
-  { local: "Vinha do Tejo", horas: 7500 },
+  { local: "Talhão 1", horas: 6810 },
+  { local: "Talhão 2", horas: 6410 },
+  { local: "Talhão 3", horas: 6010 },
+  { local: "Talhão 4", horas: 5610 },
+  { local: "Talhão 5", horas: 5210 },
+  { local: "Talhão 6", horas: 4810 },
+  { local: "Talhão 7", horas: 4410 },
+  { local: "Talhão 8", horas: 4010 },
 ];
 export const gerarAtividadesDetalhe = (): AtividadeDetalheData[] => [
   { atividade: "Task 1 - Fert #2", marco: 150, total: 150 },
@@ -343,7 +369,7 @@ export const gerarCustoPorProduto = (): { produto: string; custoProduto: number;
 ];
 export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
   {
-    local: "12",
+    local: "Talhão 1",
     janeiro: 100,
     fevereiro: 120,
     marco: 150,
@@ -359,7 +385,7 @@ export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
     total: 1590,
   },
   {
-    local: "another test - bank",
+    local: "Talhão 2",
     janeiro: 50,
     fevereiro: 60,
     marco: 70,
@@ -375,7 +401,7 @@ export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
     total: 1260,
   },
   {
-    local: "Local - Pedro Test",
+    local: "Talhão 3",
     janeiro: 200,
     fevereiro: 180,
     marco: 160,
@@ -391,23 +417,23 @@ export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
     total: 1115,
   },
   {
-    local: "Local A Teste",
-    janeiro: 0,
-    fevereiro: 0,
-    marco: 0,
-    abril: 0,
-    maio: 0,
-    junho: 0,
-    julho: 0,
-    agosto: 0,
-    setembro: 0,
-    outubro: 0,
-    novembro: 0,
-    dezembro: 0,
-    total: 0,
+    local: "Talhão 4",
+    janeiro: 150,
+    fevereiro: 140,
+    marco: 130,
+    abril: 120,
+    maio: 110,
+    junho: 100,
+    julho: 90,
+    agosto: 80,
+    setembro: 70,
+    outubro: 60,
+    novembro: 50,
+    dezembro: 40,
+    total: 1140,
   },
   {
-    local: "Local B",
+    local: "Talhão 5",
     janeiro: 300,
     fevereiro: 250,
     marco: 200,
@@ -423,23 +449,23 @@ export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
     total: 2150,
   },
   {
-    local: "Local B Teste",
-    janeiro: 0,
-    fevereiro: 0,
-    marco: 0,
-    abril: 0,
-    maio: 0,
-    junho: 0,
-    julho: 0,
-    agosto: 0,
-    setembro: 0,
-    outubro: 0,
-    novembro: 0,
-    dezembro: 0,
-    total: 0,
+    local: "Talhão 6",
+    janeiro: 250,
+    fevereiro: 200,
+    marco: 150,
+    abril: 100,
+    maio: 50,
+    junho: 300,
+    julho: 250,
+    agosto: 200,
+    setembro: 150,
+    outubro: 100,
+    novembro: 50,
+    dezembro: 300,
+    total: 2100,
   },
   {
-    local: "newloc",
+    local: "Talhão 7",
     janeiro: 400,
     fevereiro: 350,
     marco: 300,
@@ -453,6 +479,22 @@ export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
     novembro: 300,
     dezembro: 250,
     total: 3100,
+  },
+  {
+    local: "Talhão 8",
+    janeiro: 350,
+    fevereiro: 300,
+    marco: 250,
+    abril: 200,
+    maio: 150,
+    junho: 100,
+    julho: 50,
+    agosto: 400,
+    setembro: 350,
+    outubro: 300,
+    novembro: 250,
+    dezembro: 200,
+    total: 3050,
   },
 ];
 export const areaHa = 25.7;
