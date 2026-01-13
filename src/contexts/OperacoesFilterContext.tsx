@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 interface OperacoesFilterState {
   ano: number;
   mes: string;
+  consultor: string;
   organizacao: string;
   espaco: string;
   local: string;
@@ -21,6 +22,7 @@ interface OperacoesFilterContextType {
 const defaultFilters: OperacoesFilterState = {
   ano: 2025,
   mes: "Tudo",
+  consultor: "Tudo",
   organizacao: "Vine & Wine",
   espaco: "Tudo",
   local: "Tudo",
