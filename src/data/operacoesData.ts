@@ -4,7 +4,7 @@ export const organizacoes = ["Vine & Wine", "AgroCorp", "FarmTech"];
 export const espacos = ["Tudo", "Espaço A", "Espaço B", "Espaço C"];
 export const locais = ["Tudo", "Tejo", "Lagar", "Arripiado", "Vinha do Tejo"];
 export const atividades = ["Tudo", "Poda", "Fert", "Colheita", "Rega"];
-export const tiposProdutoOp = ["(Vazio)", "Fertilisers", "Fertilizers", "Fuels", "Pesticides", "Plants"];
+export const tiposProdutoOp = ["(Vazio)", "Fertilizantes", "Combustíveis", "Pesticidas", "Plantas"];
 
 export interface HorasTrabalhadasData {
   total: number;
@@ -92,8 +92,8 @@ export const gerarCustos = (): CustosData => ({
 });
 
 export const gerarTipoAtividade = (): TipoAtividadeData[] => [
-  { name: "cultural operations", value: 88, color: "#8B1538" },
-  { name: "fertilisation", value: 12, color: "#C4A962" },
+  { name: "operações culturais", value: 88, color: "#8B1538" },
+  { name: "fertilização", value: 12, color: "#C4A962" },
 ];
 
 export const gerarCustosMensais = (): CustoMensalData[] => [
@@ -128,7 +128,7 @@ export const gerarTop5AtividadesCusto = (): { atividade: string; custo: number }
 ];
 
 export const gerarCustoTotalPorProduto = (): { produto: string; custo: number }[] => [
-  { produto: "Plants", custo: 1885 },
+  { produto: "Plantas", custo: 1885 },
 ];
 
 export const gerarCustoTotalPorHa = (): { local: string; custo: number }[] => [
@@ -218,8 +218,8 @@ export const gerarControloOrcamentalCustoHa = (): { mes: string; custoHa: number
 ];
 
 export const gerarCustoPorProduto = (): { produto: string; custoProduto: number; orcamento: number }[] => [
-  { produto: "Plants", custoProduto: 1885, orcamento: 0 },
-  { produto: "Fertilizers", custoProduto: 0, orcamento: 450 },
+  { produto: "Plantas", custoProduto: 1885, orcamento: 0 },
+  { produto: "Fertilizantes", custoProduto: 0, orcamento: 450 },
 ];
 
 export const gerarOrcamentoHoras = (): OrcamentoRow[] => [

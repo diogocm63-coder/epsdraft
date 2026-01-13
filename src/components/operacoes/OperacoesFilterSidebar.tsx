@@ -78,9 +78,9 @@ export const OperacoesFilterSidebar = ({
           </Select>
         </div>
 
-        {/* Espaço */}
+        {/* Zona */}
         <div>
-          <label className="text-[#8B1538] text-xs">Espaço</label>
+          <label className="text-[#8B1538] text-xs">Zona</label>
           <Select 
             value={filters.espaco} 
             onValueChange={(v) => setFilters(prev => ({ ...prev, espaco: v }))}
@@ -96,9 +96,9 @@ export const OperacoesFilterSidebar = ({
           </Select>
         </div>
 
-        {/* Local */}
+        {/* Talhão */}
         <div>
-          <label className="text-[#8B1538] text-xs">Local</label>
+          <label className="text-[#8B1538] text-xs">Talhão</label>
           <Select 
             value={filters.local} 
             onValueChange={(v) => setFilters(prev => ({ ...prev, local: v }))}

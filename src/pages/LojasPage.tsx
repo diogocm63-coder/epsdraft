@@ -90,7 +90,7 @@ const LojasPage = () => {
                     </div>
                   </div>
                   <div className="text-sm font-bold text-foreground">{totalReservas.toLocaleString()}</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Reservas (un)</div>
+                  <div className="text-[9px] text-muted-foreground uppercase">Encomendas (un)</div>
                 </div>
                 <div className="bg-card rounded-lg border p-2">
                   <div className="flex items-center gap-1.5 mb-1">
@@ -99,7 +99,7 @@ const LojasPage = () => {
                     </div>
                   </div>
                   <div className="text-sm font-bold text-foreground">{(totalReservas * 12.5 / 1000).toFixed(0)}k€</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">Reservas (€)</div>
+                  <div className="text-[9px] text-muted-foreground uppercase">Encomendas (€)</div>
                 </div>
                 <div className="bg-card rounded-lg border p-2">
                   <div className="flex items-center gap-1.5 mb-1">
@@ -132,9 +132,9 @@ const LojasPage = () => {
 
             {/* Center Column */}
             <div className="col-span-6 flex flex-col gap-2 h-full">
-              {/* Reservas vs Vendas */}
+              {/* Encomendas vs Vendas */}
               <div className="bg-card rounded-xl border p-2 flex-[1.2] flex flex-col min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Reservas vs Vendas (Evolução)</h3>
+                <h3 className="text-xs font-semibold text-foreground mb-1">Encomendas vs Vendas (Evolução)</h3>
                 <div className="flex-1 min-h-0">
                   <AreaChartComponent data={evolucaoMensal} height="100%" />
                 </div>
@@ -148,8 +148,9 @@ const LojasPage = () => {
                     <thead className="sticky top-0 bg-card">
                       <tr className="text-muted-foreground border-b">
                         <th className="text-left py-1">Cliente</th>
-                        <th className="text-right py-1">Reservas</th>
+                        <th className="text-right py-1">Encomendas</th>
                         <th className="text-right py-1">Vendas</th>
+                        <th className="text-right py-1">Inv. Cliente</th>
                         <th className="text-right py-1">Taxa</th>
                       </tr>
                     </thead>
@@ -169,6 +170,7 @@ const LojasPage = () => {
                           </td>
                           <td className="py-1 text-right text-foreground">{cliente.reservas.toLocaleString()}</td>
                           <td className="py-1 text-right text-foreground">{cliente.vendas.toLocaleString()}</td>
+                          <td className="py-1 text-right text-muted-foreground">{Math.floor(cliente.vendas * 0.3).toLocaleString()}</td>
                           <td className="py-1 text-right text-secondary font-medium">{cliente.taxa}%</td>
                         </tr>
                       ))}
@@ -227,7 +229,7 @@ const LojasPage = () => {
                           </div>
                           <div className="grid grid-cols-3 gap-1 text-center mt-1">
                             <div>
-                              <div className="text-xs text-muted-foreground">Reservas</div>
+                              <div className="text-xs text-muted-foreground">Encomendas</div>
                               <div className="font-semibold text-sm text-primary">{cliente.reservas.toLocaleString()}</div>
                             </div>
                             <div>
@@ -250,22 +252,26 @@ const LojasPage = () => {
               <div className="bg-card rounded-xl border p-2 flex-1 flex flex-col min-h-0">
                 <h3 className="text-sm font-semibold text-foreground mb-1">Resumo de Conversão</h3>
                 <div className="flex-1 flex items-center">
-                  <div className="grid grid-cols-3 gap-1.5 w-full">
-                    <div className="text-center p-1.5 bg-muted/30 rounded">
-                      <div className="text-sm font-bold text-primary">{totalReservas.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">Reservas</div>
-                    </div>
-                    <div className="text-center p-1.5 bg-muted/30 rounded">
-                      <div className="text-sm font-bold text-secondary">{totalVendas.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">Vendas</div>
-                    </div>
-                    <div className="text-center p-1.5 bg-muted/30 rounded">
-                      <div className="text-sm font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
-                        {((totalVendas / totalReservas) * 100 || 0).toFixed(0)}%
-                      </div>
-                      <div className="text-xs text-muted-foreground">Taxa</div>
-                    </div>
+                <div className="grid grid-cols-4 gap-1 w-full">
+                  <div className="text-center p-1.5 bg-muted/30 rounded">
+                    <div className="text-sm font-bold text-primary">{totalReservas.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">Encomendas</div>
                   </div>
+                  <div className="text-center p-1.5 bg-muted/30 rounded">
+                    <div className="text-sm font-bold text-secondary">{totalVendas.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">Vendas</div>
+                  </div>
+                  <div className="text-center p-1.5 bg-muted/30 rounded">
+                    <div className="text-sm font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
+                      {((totalVendas / totalReservas) * 100 || 0).toFixed(0)}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">Taxa</div>
+                  </div>
+                  <div className="text-center p-1.5 bg-muted/30 rounded">
+                    <div className="text-sm font-bold text-foreground">{Math.floor(totalReservas * 0.12)}</div>
+                    <div className="text-xs text-muted-foreground">Rec. Técnicas</div>
+                  </div>
+                </div>
                 </div>
               </div>
             </div>
