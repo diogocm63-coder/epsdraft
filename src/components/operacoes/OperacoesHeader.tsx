@@ -17,8 +17,8 @@ export const OperacoesHeader = ({
   const tipoAtividade = gerarTipoAtividade();
   
   const tipoAtividadeCusto = [
-    { name: 'cultural operations', value: 2000 },
-    { name: 'fertilisation', value: 1000 },
+    { name: 'operações culturais', value: 2000 },
+    { name: 'fertilização', value: 1000 },
   ];
 
   return (
@@ -121,11 +121,11 @@ export const OperacoesHeader = ({
         <div className="flex justify-center gap-2 text-[8px]">
           <div className="flex items-center gap-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#8B1538]" />
-            <span className="text-gray-500">cultural operations</span>
+            <span className="text-gray-500">operações culturais</span>
           </div>
           <div className="flex items-center gap-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#C4A962]" />
-            <span className="text-gray-500">fertilisation</span>
+            <span className="text-gray-500">fertilização</span>
           </div>
         </div>
       </div>
