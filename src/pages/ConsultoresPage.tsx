@@ -152,10 +152,18 @@ const ConsultoresPage = () => {
                         <span className="font-medium text-[10px] text-foreground">{cliente.nome}</span>
                         <span className="text-[9px] text-muted-foreground">{cliente.cultura}</span>
                       </div>
-                      <div className="grid grid-cols-3 gap-1 text-center">
+                      <div className="grid grid-cols-5 gap-1 text-center">
                         <div>
                           <div className="text-[8px] text-muted-foreground">Encomendas</div>
                           <div className="font-semibold text-[10px] text-primary">{(cliente.reservas/1000).toFixed(0)}K</div>
+                        </div>
+                        <div>
+                          <div className="text-[8px] text-muted-foreground">Vendas</div>
+                          <div className="font-semibold text-[10px] text-secondary">{(cliente.vendas/1000).toFixed(0)}K</div>
+                        </div>
+                        <div>
+                          <div className="text-[8px] text-muted-foreground">Rec. Técnicas</div>
+                          <div className="font-semibold text-[10px] text-amber-500">{Math.floor(cliente.reservas * 0.12).toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-[8px] text-muted-foreground">Hectares</div>
