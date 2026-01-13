@@ -1,4 +1,5 @@
 // Lojas reais do Excel
+// Lojas reais do Excel
 export const lojas = [
   { nome: "ÁGUEDA", distrito: "Aveiro", concelho: "Águeda" },
   { nome: "ALMEIRIM", distrito: "Santarém", concelho: "Almeirim" },
@@ -41,16 +42,41 @@ export const lojas = [
 
 // Produtos reais (seleção representativa)
 export const fertilizantes = [
-  "6-18-34 1S 0,005B 0,3Zn", "Melius® 0-20-10", "10-10-29,5 6S", "10-10-10",
-  "12-24-12", "13-12-19-7S-0,2B", "15-15-15 9S", "17-17-17", "22-11-22",
-  "AGROVEG 10-25-10", "AGROVEG 18", "AGROVEG 20-10-5", "Basacote Plus 6M",
-  "Basfoliar Fruit", "HUMIC ACID", "ORGANIC GROW", "NITRO PLUS 27"
+  "6-18-34 1S 0,005B 0,3Zn",
+  "Melius® 0-20-10",
+  "10-10-29,5 6S",
+  "10-10-10",
+  "12-24-12",
+  "13-12-19-7S-0,2B",
+  "15-15-15 9S",
+  "17-17-17",
+  "22-11-22",
+  "AGROVEG 10-25-10",
+  "AGROVEG 18",
+  "AGROVEG 20-10-5",
+  "Basacote Plus 6M",
+  "Basfoliar Fruit",
+  "HUMIC ACID",
+  "ORGANIC GROW",
+  "NITRO PLUS 27",
 ];
 
 export const pesticidas = [
-  "DECIS EXPERT", "KARATE ZEON", "CONFIDOR", "MOVENTO", "ENVIDOR",
-  "AFFIRM", "STEWARD", "CORAGEN", "VOLIAM", "THIOPRON 825",
-  "THIOVIT JET", "TOPAZE", "SWITCH", "SCORE", "SCALA"
+  "DECIS EXPERT",
+  "KARATE ZEON",
+  "CONFIDOR",
+  "MOVENTO",
+  "ENVIDOR",
+  "AFFIRM",
+  "STEWARD",
+  "CORAGEN",
+  "VOLIAM",
+  "THIOPRON 825",
+  "THIOVIT JET",
+  "TOPAZE",
+  "SWITCH",
+  "SCORE",
+  "SCALA",
 ];
 
 export const tiposProduto = ["Fertilizantes", "Pesticidas"];
@@ -72,6 +98,25 @@ export const clientes = [
   { nome: "Monte da Raposinha", tipo: "Vinha", distrito: "Setúbal" },
   { nome: "Quinta da Bacalhôa", tipo: "Vinha", distrito: "Setúbal" },
   { nome: "Pomares do Sul", tipo: "Pêra", distrito: "Faro" },
+  // Adicionados para distritos em falta
+  { nome: "Quinta dos Açores", tipo: "Vinha", distrito: "Açores" },
+  { nome: "Pomares da Ilha", tipo: "Pêra", distrito: "Açores" },
+  { nome: "Quinta de Aveiro", tipo: "Vinha", distrito: "Aveiro" },
+  { nome: "Frutas de Aveiro", tipo: "Pêra", distrito: "Aveiro" },
+  { nome: "Herdade de Beja", tipo: "Vinha", distrito: "Beja" },
+  { nome: "Pomares do Alentejo Sul", tipo: "Pêra", distrito: "Beja" },
+  { nome: "Quinta de Guimarães", tipo: "Vinha", distrito: "Braga" },
+  { nome: "Pomares de Braga", tipo: "Pêra", distrito: "Braga" },
+  { nome: "Quinta do Fundão", tipo: "Vinha", distrito: "Castelo Branco" },
+  { nome: "Pêras do Centro", tipo: "Pêra", distrito: "Castelo Branco" },
+  { nome: "Quinta de Coimbra", tipo: "Vinha", distrito: "Coimbra" },
+  { nome: "Frutas de Montemor", tipo: "Pêra", distrito: "Coimbra" },
+  { nome: "Quinta da Madeira", tipo: "Vinha", distrito: "Madeira" },
+  { nome: "Pomares do Funchal", tipo: "Pêra", distrito: "Madeira" },
+  { nome: "Herdade de Portalegre", tipo: "Vinha", distrito: "Portalegre" },
+  { nome: "Pomares de Portalegre", tipo: "Pêra", distrito: "Portalegre" },
+  { nome: "Quinta de Ponte de Lima", tipo: "Vinha", distrito: "Viana do Castelo" },
+  { nome: "Frutas do Norte", tipo: "Pêra", distrito: "Viana do Castelo" },
 ];
 
 // Consultores dummy
@@ -81,38 +126,45 @@ export const consultores = [
   { id: 3, nome: "João Ferreira", zona: "Lisboa", distritos: ["Lisboa", "Santarém"] },
   { id: 4, nome: "Ana Costa", zona: "Sul", distritos: ["Setúbal", "Évora", "Beja", "Faro", "Portalegre"] },
   { id: 5, nome: "Pedro Rodrigues", zona: "Ilhas", distritos: ["Açores", "Madeira"] },
-  { id: 6, nome: "Carla Martins", zona: "Centro", distritos: ["Castelo Branco", "Guarda"] },
+  { id: 6, nome: "Carla Martins", zona: "Centro", distritos: ["Castelo Branco"] },
 ];
 
-export const distritos = [
-  "Portugal",
-  ...Array.from(new Set(lojas.map(l => l.distrito))).sort()
-];
+export const distritos = ["Portugal", ...Array.from(new Set(lojas.map((l) => l.distrito))).sort()];
 
 export const anos = [2023, 2024, 2025, 2026];
 export const meses = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
 ];
 
 // Gerar dados de stock por loja e produto
 export const gerarStockPorLoja = () => {
   const data: { loja: string; produto: string; tipoProduto: string; quantidade: number }[] = [];
-  lojas.forEach(loja => {
-    fertilizantes.slice(0, 8).forEach(produto => {
+  lojas.forEach((loja) => {
+    fertilizantes.slice(0, 8).forEach((produto) => {
       data.push({
         loja: loja.nome,
         produto,
         tipoProduto: "Fertilizantes",
-        quantidade: Math.floor(Math.random() * 500) + 50
+        quantidade: Math.floor(Math.random() * 500) + 50,
       });
     });
-    pesticidas.slice(0, 6).forEach(produto => {
+    pesticidas.slice(0, 6).forEach((produto) => {
       data.push({
         loja: loja.nome,
         produto,
         tipoProduto: "Pesticidas",
-        quantidade: Math.floor(Math.random() * 200) + 20
+        quantidade: Math.floor(Math.random() * 200) + 20,
       });
     });
   });
@@ -121,26 +173,25 @@ export const gerarStockPorLoja = () => {
 
 // Gerar reservas
 export const gerarReservas = () => {
-  const data: { 
-    loja: string; 
-    cliente: string; 
-    produto: string; 
+  const data: {
+    loja: string;
+    cliente: string;
+    produto: string;
     tipoProduto: string;
     quantidade: number;
     mes: string;
     ano: number;
   }[] = [];
-  
-  lojas.forEach(loja => {
-    const clientesFiltrados = clientes.filter(c => 
-      c.distrito === lojas.find(l => l.nome === loja.nome)?.distrito
-    ).slice(0, 3);
-    
-    clientesFiltrados.forEach(cliente => {
+
+  lojas.forEach((loja) => {
+    const distritoLoja = lojas.find((l) => l.nome === loja.nome)?.distrito;
+    const clientesFiltrados = clientes.filter((c) => c.distrito === distritoLoja).slice(0, 3);
+
+    clientesFiltrados.forEach((cliente) => {
       const produtos = [...fertilizantes.slice(0, 4), ...pesticidas.slice(0, 2)];
-      produtos.forEach(produto => {
-        meses.forEach((mes, idx) => {
-          if (Math.random() > 0.4) {
+      produtos.forEach((produto) => {
+        anos.forEach((ano) => {
+          meses.forEach((mes) => {
             data.push({
               loja: loja.nome,
               cliente: cliente.nome,
@@ -148,9 +199,9 @@ export const gerarReservas = () => {
               tipoProduto: fertilizantes.includes(produto) ? "Fertilizantes" : "Pesticidas",
               quantidade: Math.floor(Math.random() * 100) + 10,
               mes,
-              ano: idx < 6 ? 2025 : 2026
+              ano,
             });
-          }
+          });
         });
       });
     });
@@ -160,9 +211,9 @@ export const gerarReservas = () => {
 
 // Gerar vendas (baseadas em reservas com variação)
 export const gerarVendas = (reservas: ReturnType<typeof gerarReservas>) => {
-  return reservas.map(r => ({
+  return reservas.map((r) => ({
     ...r,
-    quantidade: Math.floor(r.quantidade * (0.7 + Math.random() * 0.5))
+    quantidade: Math.floor(r.quantidade * (0.7 + Math.random() * 0.5)),
   }));
 };
 
@@ -175,16 +226,16 @@ export const gerarCustos = () => {
     custoReal: number;
     ano: number;
   }[] = [];
-  
-  clientes.forEach(cliente => {
-    anos.forEach(ano => {
+
+  clientes.forEach((cliente) => {
+    anos.forEach((ano) => {
       const custoPrevisto = Math.floor(Math.random() * 50) + 20;
       data.push({
         cliente: cliente.nome,
         tipoCultura: cliente.tipo,
         custoPrevisto,
         custoReal: custoPrevisto + Math.floor((Math.random() - 0.3) * 15),
-        ano
+        ano,
       });
     });
   });
