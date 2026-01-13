@@ -152,7 +152,7 @@ const ConsultoresPage = () => {
                         <span className="font-medium text-[10px] text-foreground">{cliente.nome}</span>
                         <span className="text-[9px] text-muted-foreground">{cliente.cultura}</span>
                       </div>
-                      <div className="grid grid-cols-5 gap-1 text-center">
+                      <div className="grid grid-cols-6 gap-1 text-center">
                         <div>
                           <div className="text-[8px] text-muted-foreground">Encomendas</div>
                           <div className="font-semibold text-[10px] text-primary">{(cliente.reservas/1000).toFixed(0)}K</div>
@@ -172,6 +172,10 @@ const ConsultoresPage = () => {
                         <div>
                           <div className="text-[8px] text-muted-foreground">Kg</div>
                           <div className="font-semibold text-[10px] text-foreground">{(cliente.kg/1000).toFixed(0)}K</div>
+                        </div>
+                        <div>
+                          <div className="text-[8px] text-muted-foreground">Kg/ha</div>
+                          <div className="font-semibold text-[10px] text-foreground">{cliente.hectares > 0 ? (cliente.kg / cliente.hectares).toFixed(0) : 0}</div>
                         </div>
                       </div>
                     </div>
