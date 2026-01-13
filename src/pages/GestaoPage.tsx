@@ -53,11 +53,11 @@ const GestaoPage = () => {
               positive: true
             }} variant="blue" />
               <KPICard title="Stock" value={`${totalStock.toLocaleString()} un`} icon={Package} variant="dark" />
-              <KPICard title="Reservas" value={`${totalReservas.toLocaleString()} un`} icon={ShoppingCart} trend={{
+              <KPICard title="Encomendas" value={`${totalReservas.toLocaleString()} un`} icon={ShoppingCart} trend={{
               value: 2.3,
               positive: true
             }} variant="blue" />
-              <KPICard title="Reservas €" value={`${(totalReservas * 12.5 / 1000).toFixed(0)}k €`} icon={ShoppingCart} variant="blue" />
+              <KPICard title="Encomendas €" value={`${(totalReservas * 12.5 / 1000).toFixed(0)}k €`} icon={ShoppingCart} variant="blue" />
               <KPICard title="Vendas" value={`${totalVendas.toLocaleString()} un`} icon={TrendingUp} trend={{
               value: 12.4,
               positive: true
@@ -69,7 +69,7 @@ const GestaoPage = () => {
             <div className="col-span-7 flex flex-col gap-3 h-full">
               {/* Vendas vs Reservas Chart */}
               <div className="bg-card rounded-lg border p-3 flex-1 flex flex-col min-h-0">
-                <h3 className="text-xs font-semibold text-foreground mb-1">Vendas vs Reservas (Mensal)</h3>
+                <h3 className="text-xs font-semibold text-foreground mb-1">Vendas vs Encomendas (Mensal)</h3>
                 <div className="flex-1 min-h-0">
                   <AreaChartComponent data={evolucaoMensal} height="100%" />
                 </div>
@@ -85,7 +85,31 @@ const GestaoPage = () => {
             </div>
 
             {/* Right Column */}
-            <div className="col-span-3 flex flex-col gap-3 h-full">
+            <div className="col-span-3 flex flex-col gap-2 h-full">
+              {/* Resumo de Conversão */}
+              <div className="bg-card rounded-lg border p-2 flex flex-col min-h-0">
+                <h3 className="text-xs font-semibold text-foreground mb-1">Resumo de Conversão</h3>
+                <div className="grid grid-cols-4 gap-1 w-full">
+                  <div className="text-center p-1 bg-muted/30 rounded">
+                    <div className="text-xs font-bold text-primary">{totalReservas.toLocaleString()}</div>
+                    <div className="text-[9px] text-muted-foreground">Encomendas</div>
+                  </div>
+                  <div className="text-center p-1 bg-muted/30 rounded">
+                    <div className="text-xs font-bold text-secondary">{totalVendas.toLocaleString()}</div>
+                    <div className="text-[9px] text-muted-foreground">Vendas</div>
+                  </div>
+                  <div className="text-center p-1 bg-muted/30 rounded">
+                    <div className="text-xs font-bold" style={{ color: totalVendas >= totalReservas * 0.8 ? 'hsl(122, 39%, 49%)' : 'hsl(0, 72%, 51%)' }}>
+                      {((totalVendas / totalReservas) * 100 || 0).toFixed(0)}%
+                    </div>
+                    <div className="text-[9px] text-muted-foreground">Taxa</div>
+                  </div>
+                  <div className="text-center p-1 bg-muted/30 rounded">
+                    <div className="text-xs font-bold text-foreground">{Math.floor(totalReservas * 0.12)}</div>
+                    <div className="text-[9px] text-muted-foreground">Rec. Técnicas</div>
+                  </div>
+                </div>
+              </div>
               {/* Consultores por Região */}
               <div className="bg-card rounded-lg border p-3 flex-1 overflow-auto min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Consultores por Região</h3>
