@@ -150,6 +150,7 @@ const LojasPage = () => {
                         <th className="text-left py-1">Cliente</th>
                         <th className="text-right py-1">Encomendas</th>
                         <th className="text-right py-1">Vendas</th>
+                        <th className="text-right py-1">Rec. Técnicas</th>
                         <th className="text-right py-1">Inv. Cliente</th>
                         <th className="text-right py-1">Taxa</th>
                       </tr>
@@ -170,6 +171,7 @@ const LojasPage = () => {
                           </td>
                           <td className="py-1 text-right text-foreground">{cliente.reservas.toLocaleString()}</td>
                           <td className="py-1 text-right text-foreground">{cliente.vendas.toLocaleString()}</td>
+                          <td className="py-1 text-right text-amber-500">{Math.floor(cliente.reservas * 0.12).toLocaleString()}</td>
                           <td className="py-1 text-right text-muted-foreground">{Math.floor(cliente.vendas * 0.3).toLocaleString()}</td>
                           <td className="py-1 text-right text-secondary font-medium">{cliente.taxa}%</td>
                         </tr>
@@ -227,7 +229,7 @@ const LojasPage = () => {
                             <span className="font-medium text-sm text-foreground">{cliente.nome.substring(0, 18)}</span>
                             <span className="text-xs text-muted-foreground">{cliente.cultura}</span>
                           </div>
-                          <div className="grid grid-cols-3 gap-1 text-center mt-1">
+                          <div className="grid grid-cols-4 gap-1 text-center mt-1">
                             <div>
                               <div className="text-xs text-muted-foreground">Encomendas</div>
                               <div className="font-semibold text-sm text-primary">{cliente.reservas.toLocaleString()}</div>
@@ -235,6 +237,10 @@ const LojasPage = () => {
                             <div>
                               <div className="text-xs text-muted-foreground">Vendas</div>
                               <div className="font-semibold text-sm text-secondary">{cliente.vendas.toLocaleString()}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground">Rec. Técnicas</div>
+                              <div className="font-semibold text-sm text-amber-500">{Math.floor(cliente.reservas * 0.12).toLocaleString()}</div>
                             </div>
                             <div>
                               <div className="text-xs text-muted-foreground">Taxa</div>
