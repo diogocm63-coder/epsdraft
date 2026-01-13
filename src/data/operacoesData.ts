@@ -174,31 +174,39 @@ export const gerarAtividadesDetalhe = (): AtividadeDetalheData[] => [
   { atividade: "Task 3 - Poda #1", marco: 80, total: 80 },
 ];
 
-export const gerarHorasTrabalhadasHa = (): { mes: string; valor: number }[] => [
-  { mes: "Março", valor: 191 },
-];
+export const gerarHorasTrabalhadasHa = (): { mes: string; valor: number }[] => [{ mes: "Março", valor: 191 }];
 
 export const gerarHorasTrabalhadasHaPorAtividade = (): { atividade: string; horas: number }[] => [
   { atividade: "Poda", horas: 168 },
   { atividade: "Fert", horas: 24 },
 ];
 
-export const gerarCustoHa = (): { mes: string; valor: number }[] => [
-  { mes: "Março", valor: 127 },
-];
+export const gerarCustoHa = (): { mes: string; valor: number }[] => [{ mes: "Março", valor: 127 }];
 
-export const gerarCustoHaPorAtividade = (): { atividade: string; custoProdutos: number; custoTrabalhadores: number }[] => [
+export const gerarCustoHaPorAtividade = (): {
+  atividade: string;
+  custoProdutos: number;
+  custoTrabalhadores: number;
+}[] => [
   { atividade: "Poda", custoProdutos: 42, custoTrabalhadores: 34 },
   { atividade: "Fert", custoProdutos: 31, custoTrabalhadores: 20 },
 ];
 
-export const gerarControloOrcamentalCustoTotal = (): { mes: string; custoTotal: number; custoOrcamentado: number }[] => [
+export const gerarControloOrcamentalCustoTotal = (): {
+  mes: string;
+  custoTotal: number;
+  custoOrcamentado: number;
+}[] => [
   { mes: "Fevereiro", custoTotal: 146, custoOrcamentado: 0 },
   { mes: "Março", custoTotal: 3260, custoOrcamentado: 350 },
   { mes: "Abril", custoTotal: 0, custoOrcamentado: 362 },
 ];
 
-export const gerarControloOrcamentalHoras = (): { atividade: string; totalHoras: number; horasOrcamentadas: number }[] => [
+export const gerarControloOrcamentalHoras = (): {
+  atividade: string;
+  totalHoras: number;
+  horasOrcamentadas: number;
+}[] => [
   { atividade: "Poda", totalHoras: 4307, horasOrcamentadas: 0 },
   { atividade: "Fert", totalHoras: 605, horasOrcamentadas: 34 },
 ];
@@ -215,13 +223,118 @@ export const gerarCustoPorProduto = (): { produto: string; custoProduto: number;
 ];
 
 export const gerarOrcamentoHoras = (): OrcamentoRow[] => [
-  { local: "12", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
-  { local: "another test - bank", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
-  { local: "Local - Pedro Test", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
-  { local: "Local A Teste", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
-  { local: "Local B", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
-  { local: "Local B Teste", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
-  { local: "newloc", janeiro: 0, fevereiro: 0, marco: 0, abril: 0, maio: 0, junho: 0, julho: 0, agosto: 0, setembro: 0, outubro: 0, novembro: 0, dezembro: 0, total: 0 },
+  {
+    local: "12",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
+  {
+    local: "another test - bank",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
+  {
+    local: "Local - Pedro Test",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
+  {
+    local: "Local A Teste",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
+  {
+    local: "Local B",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
+  {
+    local: "Local B Teste",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
+  {
+    local: "newloc",
+    janeiro: 0,
+    fevereiro: 0,
+    marco: 0,
+    abril: 0,
+    maio: 0,
+    junho: 0,
+    julho: 0,
+    agosto: 0,
+    setembro: 0,
+    outubro: 0,
+    novembro: 0,
+    dezembro: 0,
+    total: 0,
+  },
 ];
 
 export const areaHa = 25.7;
