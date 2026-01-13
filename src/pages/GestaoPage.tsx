@@ -6,7 +6,6 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useFilteredData } from '@/hooks/useFilteredData';
 import { Store, Users, MapPin, ShoppingCart, Package, TrendingUp } from 'lucide-react';
 import logoAgris from '@/assets/logo-grupo-agris.png';
-
 const GestaoPage = () => {
   const {
     filteredLojas,
@@ -20,18 +19,15 @@ const GestaoPage = () => {
     topLojas,
     consultoresComLojas
   } = useFilteredData();
-
   const totalClientes = clientesUnicos.length > 0 ? clientesUnicos.length : 156;
-
-  return (
-    <DashboardLayout>
+  return <DashboardLayout>
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         {/* Header - compact */}
         <div className="flex items-center justify-between px-4 py-2 bg-card border-b">
           <div className="flex items-center gap-3">
             <img src={logoAgris} alt="Grupo Agris" className="h-8 object-contain" />
             <div>
-              <h1 className="text-lg font-bold text-foreground">Visão 360º</h1>
+              <h1 className="text-lg font-bold text-foreground">Geral</h1>
               <p className="text-xs text-muted-foreground">Dashboard de gestão geral</p>
             </div>
           </div>
@@ -47,58 +43,26 @@ const GestaoPage = () => {
           <div className="grid grid-cols-12 gap-3 h-full">
             {/* Left Column - KPIs in 2 columns */}
             <div className="col-span-2 grid grid-cols-2 gap-2 content-start">
-              <KPICard 
-                title="Total Lojas" 
-                value={filteredLojas.length} 
-                icon={Store}
-                trend={{ value: 5.2, positive: true }}
-                variant="blue"
-              />
-              <KPICard 
-                title="Consultores" 
-                value={filteredConsultores.length} 
-                icon={Users}
-                variant="green"
-              />
-              <KPICard 
-                title="Clientes" 
-                value={totalClientes} 
-                icon={MapPin}
-                trend={{ value: 8.7, positive: true }}
-                variant="blue"
-              />
-              <KPICard 
-                title="Stock" 
-                value={`${totalStock.toLocaleString()} un`} 
-                icon={Package}
-                variant="dark"
-              />
-              <KPICard 
-                title="Reservas" 
-                value={`${totalReservas.toLocaleString()} un`} 
-                icon={ShoppingCart}
-                trend={{ value: 2.3, positive: true }}
-                variant="blue"
-              />
-              <KPICard 
-                title="Reservas €" 
-                value={`${(totalReservas * 12.5 / 1000).toFixed(0)}k €`} 
-                icon={ShoppingCart}
-                variant="blue"
-              />
-              <KPICard 
-                title="Vendas" 
-                value={`${totalVendas.toLocaleString()} un`} 
-                icon={TrendingUp}
-                trend={{ value: 12.4, positive: true }}
-                variant="green"
-              />
-              <KPICard 
-                title="Vendas €" 
-                value={`${(totalVendas * 12.5 / 1000).toFixed(0)}k €`} 
-                icon={TrendingUp}
-                variant="green"
-              />
+              <KPICard title="Total Lojas" value={filteredLojas.length} icon={Store} trend={{
+              value: 5.2,
+              positive: true
+            }} variant="blue" />
+              <KPICard title="Consultores" value={filteredConsultores.length} icon={Users} variant="green" />
+              <KPICard title="Clientes" value={totalClientes} icon={MapPin} trend={{
+              value: 8.7,
+              positive: true
+            }} variant="blue" />
+              <KPICard title="Stock" value={`${totalStock.toLocaleString()} un`} icon={Package} variant="dark" />
+              <KPICard title="Reservas" value={`${totalReservas.toLocaleString()} un`} icon={ShoppingCart} trend={{
+              value: 2.3,
+              positive: true
+            }} variant="blue" />
+              <KPICard title="Reservas €" value={`${(totalReservas * 12.5 / 1000).toFixed(0)}k €`} icon={ShoppingCart} variant="blue" />
+              <KPICard title="Vendas" value={`${totalVendas.toLocaleString()} un`} icon={TrendingUp} trend={{
+              value: 12.4,
+              positive: true
+            }} variant="green" />
+              <KPICard title="Vendas €" value={`${(totalVendas * 12.5 / 1000).toFixed(0)}k €`} icon={TrendingUp} variant="green" />
             </div>
 
             {/* Center Column - Charts */}
@@ -126,15 +90,7 @@ const GestaoPage = () => {
               <div className="bg-card rounded-lg border p-3 flex-1 overflow-auto min-h-0">
                 <h3 className="text-xs font-semibold text-foreground mb-1">Consultores por Região</h3>
                 <div className="space-y-0.5">
-                  {consultoresComLojas.map((c, idx) => (
-                    <ConsultorItem 
-                      key={c.id}
-                      nome={c.nome}
-                      zona={c.zona}
-                      lojas={c.lojasAtribuidas}
-                      color={getConsultorColor(idx)}
-                    />
-                  ))}
+                  {consultoresComLojas.map((c, idx) => <ConsultorItem key={c.id} nome={c.nome} zona={c.zona} lojas={c.lojasAtribuidas} color={getConsultorColor(idx)} />)}
                 </div>
               </div>
 
@@ -149,8 +105,6 @@ const GestaoPage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>;
 };
-
 export default GestaoPage;
