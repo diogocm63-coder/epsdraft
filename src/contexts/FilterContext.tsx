@@ -9,6 +9,7 @@ interface FilterState {
   zona: string;
   concelho: string;
   consultor: string;
+  cliente: string;
 }
 
 interface FilterContextType {
@@ -25,6 +26,7 @@ const defaultFilters: FilterState = {
   zona: "Portugal",
   concelho: "Todos",
   consultor: "Todos",
+  cliente: "Todos",
 };
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
