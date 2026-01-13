@@ -5,6 +5,8 @@ export const espacos = ["Tudo", "Espaço A", "Espaço B", "Espaço C"];
 export const locais = ["Tudo", "Tejo", "Lagar", "Arripiado", "Vinha do Tejo"];
 export const atividades = ["Tudo", "Poda", "Fert", "Colheita", "Rega"];
 export const tiposProdutoOp = ["(Vazio)", "Fertilizantes", "Combustíveis", "Pesticidas", "Plantas"];
+export const produtos = ["Tudo", "Uva Tinta", "Uva Branca", "Azeite", "Oliva"];
+export const variedades = ["Tudo", "Touriga Nacional", "Aragonez", "Syrah", "Alvarinho", "Arinto"];
 
 export interface HorasTrabalhadasData {
   total: number;

@@ -8,6 +8,8 @@ interface OperacoesFilterState {
   local: string;
   atividade: string;
   tipoProduto: string;
+  produto: string;
+  variedade: string;
 }
 
 interface OperacoesFilterContextType {
@@ -24,6 +26,8 @@ const defaultFilters: OperacoesFilterState = {
   local: "Tudo",
   atividade: "Tudo",
   tipoProduto: "Fertilizantes",
+  produto: "Tudo",
+  variedade: "Tudo",
 };
 
 const OperacoesFilterContext = createContext<OperacoesFilterContextType | undefined>(undefined);

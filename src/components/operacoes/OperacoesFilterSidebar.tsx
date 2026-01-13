@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOperacoesFilters } from "@/contexts/OperacoesFilterContext";
-import { organizacoes, espacos, locais, atividades, tiposProdutoOp } from "@/data/operacoesData";
+import { organizacoes, espacos, locais, atividades, tiposProdutoOp, produtos, variedades } from "@/data/operacoesData";
 import { anos, meses } from "@/data/mockData";
 
 interface OperacoesFilterSidebarProps {
@@ -109,6 +109,42 @@ export const OperacoesFilterSidebar = ({
             <SelectContent>
               {locais.map(loc => (
                 <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Produto */}
+        <div>
+          <label className="text-[#8B1538] text-xs">Produto</label>
+          <Select 
+            value={filters.produto} 
+            onValueChange={(v) => setFilters(prev => ({ ...prev, produto: v }))}
+          >
+            <SelectTrigger className="h-7 text-xs mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {produtos.map(prod => (
+                <SelectItem key={prod} value={prod}>{prod}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Variedade */}
+        <div>
+          <label className="text-[#8B1538] text-xs">Variedade</label>
+          <Select 
+            value={filters.variedade} 
+            onValueChange={(v) => setFilters(prev => ({ ...prev, variedade: v }))}
+          >
+            <SelectTrigger className="h-7 text-xs mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {variedades.map(vari => (
+                <SelectItem key={vari} value={vari}>{vari}</SelectItem>
               ))}
             </SelectContent>
           </Select>
