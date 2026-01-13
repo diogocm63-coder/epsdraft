@@ -23,7 +23,7 @@ const defaultFilters: OperacoesFilterState = {
   espaco: "Tudo",
   local: "Tudo",
   atividade: "Tudo",
-  tipoProduto: "Fertilizantes",
+  tipoProduto: "Fertilizers",
 };
 
 const OperacoesFilterContext = createContext<OperacoesFilterContextType | undefined>(undefined);
