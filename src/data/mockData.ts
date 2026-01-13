@@ -228,47 +228,11 @@ export const gerarPrevisaoVendas = (
   combos.forEach((combo) => {
     const [loja, cliente, produto] = combo.split("|");
     const tipoProduto = fertilizantes.includes(produto) ? "Fertilizantes" : "Pesticidas";
-    meses.forEach((mes, idx) => {
-      const venda = vendas.find(
-        (v) => v.loja === loja && v.cliente === cliente && v.produto === produto && v.mes === mes && v.ano === 2026,
+    meses.forEach((mes) => {
+      const vendaAnterior = vendas.find(
+        (v) => v.loja === loja && v.cliente === cliente && v.produto === produto && v.mes === mes && v.ano === 2025,
       );
-      const reserva = reservas.find(
-        (re) =>
-          re.loja === loja && re.cliente === cliente && re.produto === produto && re.mes === mes && re.ano === 2026,
-      );
-      let quantidade: number;
-      if (venda && reserva) {
-        // Média com ruído para cruzar em alguns meses
-        quantidade = Math.floor((venda.quantidade + reserva.quantidade) / 2 + (Math.random() * 20 - 10));
-      } else if (reserva) {
-        quantidade = Math.floor(reserva.quantidade * (0.8 + Math.random() * 0.4));
-      } else {
-        // Extrapolação baseada no último conhecido com variação
-        let lastQuantidade = 0;
-        for (let i = idx - 1; i >= 0; i--) {
-          const prevVenda = vendas.find(
-            (v) =>
-              v.loja === loja && v.cliente === cliente && v.produto === produto && v.mes === meses[i] && v.ano === 2026,
-          );
-          const prevReserva = reservas.find(
-            (re) =>
-              re.loja === loja &&
-              re.cliente === cliente &&
-              re.produto === produto &&
-              re.mes === meses[i] &&
-              re.ano === 2026,
-          );
-          if (prevVenda) {
-            lastQuantidade = prevVenda.quantidade;
-            break;
-          }
-          if (prevReserva) {
-            lastQuantidade = prevReserva.quantidade;
-            break;
-          }
-        }
-        quantidade = Math.floor(lastQuantidade * (0.9 + Math.random() * 0.2));
-      }
+      const quantidade = vendaAnterior ? vendaAnterior.quantidade : 0;
       data.push({
         loja,
         cliente,
