@@ -1,22 +1,31 @@
-import { OperacoesLayout } from '@/components/operacoes/OperacoesLayout';
+import { OperacoesLayout } from "@/components/operacoes/OperacoesLayout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Save, RotateCcw, Undo, Redo } from 'lucide-react';
-import { gerarOrcamentoHoras, areaHa } from '@/data/operacoesData';
+import { Save, RotateCcw, Undo, Redo } from "lucide-react";
+import { gerarOrcamentoHoras, areaHa } from "@/data/operacoesData";
 
 const OrcamentacaoHorasPage = () => {
   const orcamentoData = gerarOrcamentoHoras();
-  const mesesAbrev = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const mesesAbrev = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
 
   const custoOrcamentado = [0, 96, 120, 192, 0, 0, 0, 0, 0, 0, 0, 0];
   const totalOrcamentado = custoOrcamentado.reduce((a, b) => a + b, 0);
 
   return (
-    <OperacoesLayout 
-      title="O R Ç A M E N T O ( H O R A S )" 
-      showAtividade 
-      showAreaExecucao={false}
-    >
+    <OperacoesLayout title="O R Ç A M E N T O ( H O R A S )" showAtividade showAreaExecucao={false}>
       <div className="flex flex-col gap-2 h-full overflow-hidden">
         {/* Area Info */}
         <div className="flex justify-end flex-shrink-0">
@@ -32,8 +41,10 @@ const OrcamentacaoHorasPage = () => {
             <TableHeader>
               <TableRow className="bg-muted/30">
                 <TableHead className="text-[9px] w-28 py-1"></TableHead>
-                {mesesAbrev.map(mes => (
-                  <TableHead key={mes} className="text-[8px] text-center px-1 py-1">{mes}</TableHead>
+                {mesesAbrev.map((mes) => (
+                  <TableHead key={mes} className="text-[8px] text-center px-1 py-1">
+                    {mes}
+                  </TableHead>
                 ))}
                 <TableHead className="text-[9px] text-center font-bold py-1">Total</TableHead>
               </TableRow>
@@ -56,7 +67,9 @@ const OrcamentacaoHorasPage = () => {
               <TableRow>
                 <TableCell className="text-[9px] py-0.5">Custo Orçamentado</TableCell>
                 {custoOrcamentado.map((val, i) => (
-                  <TableCell key={i} className="text-[9px] text-center py-0.5">{val > 0 ? `${val} €` : ''}</TableCell>
+                  <TableCell key={i} className="text-[9px] text-center py-0.5">
+                    {val > 0 ? `${val} €` : ""}
+                  </TableCell>
                 ))}
                 <TableCell className="text-[9px] text-center font-bold py-0.5">{totalOrcamentado} €</TableCell>
               </TableRow>
@@ -75,16 +88,16 @@ const OrcamentacaoHorasPage = () => {
           <h3 className="text-[#8B1538] font-semibold text-xs mb-1">Orçamento de Horas</h3>
           <div className="flex gap-1 mb-2 flex-shrink-0">
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <Save className="h-2.5 w-2.5 mr-0.5" /> Save Changes
+              <Save className="h-2.5 w-2.5 mr-0.5" /> Guardar Alterações
             </Button>
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <RotateCcw className="h-2.5 w-2.5 mr-0.5" /> Reset Changes
+              <RotateCcw className="h-2.5 w-2.5 mr-0.5" /> Repor Alterações
             </Button>
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <Undo className="h-2.5 w-2.5 mr-0.5" /> Undo
+              <Undo className="h-2.5 w-2.5 mr-0.5" /> Desfazer
             </Button>
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <Redo className="h-2.5 w-2.5 mr-0.5" /> Redo
+              <Redo className="h-2.5 w-2.5 mr-0.5" /> Refazer
             </Button>
           </div>
           <div className="overflow-auto flex-1 min-h-0">
@@ -93,8 +106,10 @@ const OrcamentacaoHorasPage = () => {
                 <TableRow className="bg-muted/30">
                   <TableHead className="text-[8px] w-6 py-0.5"></TableHead>
                   <TableHead className="text-[8px] w-28 py-0.5"></TableHead>
-                  {mesesAbrev.map(mes => (
-                    <TableHead key={mes} className="text-[8px] text-center px-0.5 py-0.5 min-w-[45px]">{mes}</TableHead>
+                  {mesesAbrev.map((mes) => (
+                    <TableHead key={mes} className="text-[8px] text-center px-0.5 py-0.5 min-w-[45px]">
+                      {mes}
+                    </TableHead>
                   ))}
                   <TableHead className="text-[8px] text-center font-bold py-0.5">Total</TableHead>
                 </TableRow>
@@ -104,7 +119,9 @@ const OrcamentacaoHorasPage = () => {
                   <TableCell className="text-[8px] py-0.5">☐</TableCell>
                   <TableCell className="text-[8px] py-0.5"></TableCell>
                   {mesesAbrev.map((_, i) => (
-                    <TableCell key={i} className="text-[8px] text-center font-bold py-0.5">0</TableCell>
+                    <TableCell key={i} className="text-[8px] text-center font-bold py-0.5">
+                      0
+                    </TableCell>
                   ))}
                   <TableCell className="text-[8px] text-center font-bold py-0.5">0</TableCell>
                 </TableRow>
@@ -128,16 +145,16 @@ const OrcamentacaoHorasPage = () => {
           <h3 className="text-[#8B1538] font-semibold text-xs mb-1">Orçamento €/hora</h3>
           <div className="flex gap-1 mb-2 flex-shrink-0">
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <Save className="h-2.5 w-2.5 mr-0.5" /> Save Changes
+              <Save className="h-2.5 w-2.5 mr-0.5" /> Guardar Alterações
             </Button>
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <RotateCcw className="h-2.5 w-2.5 mr-0.5" /> Reset Changes
+              <RotateCcw className="h-2.5 w-2.5 mr-0.5" /> Repor Alterações
             </Button>
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <Undo className="h-2.5 w-2.5 mr-0.5" /> Undo
+              <Undo className="h-2.5 w-2.5 mr-0.5" /> Desfazer
             </Button>
             <Button variant="outline" size="sm" className="text-[9px] h-5 px-2">
-              <Redo className="h-2.5 w-2.5 mr-0.5" /> Redo
+              <Redo className="h-2.5 w-2.5 mr-0.5" /> Refazer
             </Button>
           </div>
           <div className="overflow-auto flex-1 min-h-0">
@@ -146,8 +163,10 @@ const OrcamentacaoHorasPage = () => {
                 <TableRow className="bg-muted/30">
                   <TableHead className="text-[8px] w-6 py-0.5"></TableHead>
                   <TableHead className="text-[8px] w-28 py-0.5"></TableHead>
-                  {mesesAbrev.map(mes => (
-                    <TableHead key={mes} className="text-[8px] text-center px-0.5 py-0.5 min-w-[45px]">{mes}</TableHead>
+                  {mesesAbrev.map((mes) => (
+                    <TableHead key={mes} className="text-[8px] text-center px-0.5 py-0.5 min-w-[45px]">
+                      {mes}
+                    </TableHead>
                   ))}
                   <TableHead className="text-[8px] text-center font-bold py-0.5">Total</TableHead>
                 </TableRow>
