@@ -108,15 +108,12 @@ export const useFilteredData = () => {
       const mesCompleto = mesesCompletos[idx];
       const vendasMes = filteredVendas.filter(v => v.mes === mesCompleto).reduce((a, v) => a + v.quantidade, 0);
       const reservasMes = filteredReservas.filter(r => r.mes === mesCompleto).reduce((a, r) => a + r.quantidade, 0);
-      // Recomendações como ~15-25% das encomendas (simulando recomendações técnicas)
-      const recomendacoesMes = Math.floor(reservasMes * (0.15 + Math.random() * 0.1));
       
       // Multiplicar por valor médio para obter €
       return {
         name: mes,
         value: vendasMes * 12.5, // vendas em €
-        value2: reservasMes * 12.5, // encomendas em €
-        value3: recomendacoesMes * 12.5 // recomendações em €
+        value2: reservasMes * 12.5 // reservas em €
       };
     });
   }, [filteredVendas, filteredReservas]);
