@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOperacoesFilters } from "@/contexts/OperacoesFilterContext";
-import { organizacoes, espacos, locais, atividades, tiposProdutoOp, produtos, variedades } from "@/data/operacoesData";
+import { consultoresOp, organizacoes, espacos, locais, atividades, tiposProdutoOp, produtos, variedades } from "@/data/operacoesData";
 import { anos, meses } from "@/data/mockData";
 
 interface OperacoesFilterSidebarProps {
@@ -55,6 +55,24 @@ export const OperacoesFilterSidebar = ({
               <SelectItem value="Tudo">Tudo</SelectItem>
               {meses.filter(m => m !== "Todos").map(mes => (
                 <SelectItem key={mes} value={mes}>{mes}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Consultor */}
+        <div>
+          <label className="text-[#8B1538] text-xs">Consultor</label>
+          <Select 
+            value={filters.consultor} 
+            onValueChange={(v) => setFilters(prev => ({ ...prev, consultor: v }))}
+          >
+            <SelectTrigger className="h-7 text-xs mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {consultoresOp.map(cons => (
+                <SelectItem key={cons} value={cons}>{cons}</SelectItem>
               ))}
             </SelectContent>
           </Select>

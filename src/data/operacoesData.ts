@@ -1,5 +1,6 @@
 // Mock data for Operações pages
 
+export const consultoresOp = ["Tudo", "Carlos Silva", "Maria Santos", "João Pereira", "Ana Costa"];
 export const organizacoes = ["Vine & Wine", "AgroCorp", "FarmTech"];
 export const espacos = ["Tudo", "Espaço A", "Espaço B", "Espaço C"];
 export const locais = ["Tudo", "Tejo", "Lagar", "Arripiado", "Vinha do Tejo"];
