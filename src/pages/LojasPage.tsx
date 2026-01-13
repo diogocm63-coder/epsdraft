@@ -56,7 +56,7 @@ const LojasPage = () => {
 
         {/* Filters Compacto */}
         <div className="px-4 py-2 bg-card border-b">
-          <FilterBar showProduto hideDistrito />
+          <FilterBar showProduto hideZona />
         </div>
 
         {/* Content */}

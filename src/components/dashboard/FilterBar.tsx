@@ -9,10 +9,10 @@ interface FilterBarProps {
   showConsultor?: boolean;
   showConcelho?: boolean;
   showProduto?: boolean;
-  hideDistrito?: boolean;
+  hideZona?: boolean;
 }
 
-export const FilterBar = ({ showConsultor = false, showConcelho = false, showProduto = false, hideDistrito = false }: FilterBarProps) => {
+export const FilterBar = ({ showConsultor = false, showConcelho = false, showProduto = false, hideZona = false }: FilterBarProps) => {
   const { filters, setFilters, resetFilters } = useFilters();
 
   const activeFiltersCount = [
@@ -106,18 +106,18 @@ export const FilterBar = ({ showConsultor = false, showConcelho = false, showPro
         </Select>
       )}
 
-      {!hideDistrito && (
+      {!hideZona && (
         <Select 
           value={filters.zona} 
           onValueChange={(v) => setFilters(prev => ({ ...prev, zona: v, concelho: "Todos" }))}
         >
           <SelectTrigger className="w-[130px] h-9 bg-card">
-            <SelectValue placeholder="Distrito" />
+            <SelectValue placeholder="Zona" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Portugal">Distrito</SelectItem>
-            {distritos.filter(d => d !== "Portugal").map(distrito => (
-              <SelectItem key={distrito} value={distrito}>{distrito}</SelectItem>
+            <SelectItem value="Portugal">Zona</SelectItem>
+            {distritos.filter(d => d !== "Portugal").map(zona => (
+              <SelectItem key={zona} value={zona}>{zona}</SelectItem>
             ))}
           </SelectContent>
         </Select>
