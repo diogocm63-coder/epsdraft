@@ -7,7 +7,7 @@ import { Store, Package, ShoppingCart, TrendingUp, MapPin, Scale } from 'lucide-
 import logoAgripro from '@/assets/logo-agripro.png';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const ConsultoresPage = () => {
+const FlexbudgetPage = () => {
   const {
     filteredLojas,
     totalStock,
@@ -30,7 +30,7 @@ const ConsultoresPage = () => {
           <div className="flex items-center gap-3">
             <img src={logoAgripro} alt="Agripro" className="h-6 object-contain" />
             <div>
-              <h1 className="text-base font-bold text-foreground">Consultores</h1>
+              <h1 className="text-base font-bold text-foreground">Flexbudget</h1>
               <p className="text-xs text-muted-foreground">Análise de performance e gestão</p>
             </div>
           </div>
@@ -215,4 +215,4 @@ const ConsultoresPage = () => {
   );
 };
 
-export default ConsultoresPage;
+export default FlexbudgetPage;

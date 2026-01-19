@@ -66,14 +66,14 @@
     --chart-4: 45 90% 55%;
     --chart-5: 280 60% 55%;
     
-    --sidebar-background: 220 26% 14%;
-    --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 122 39% 49%;
+    --sidebar-background: 345 45% 12%;
+    --sidebar-foreground: 345 15% 85%;
+    --sidebar-primary: 345 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 22%;
+    --sidebar-accent: 345 35% 20%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 20% 25%;
-    --sidebar-ring: 122 39% 49%;
+    --sidebar-border: 345 30% 25%;
+    --sidebar-ring: 345 70% 45%;
   }
 
   .dark {
