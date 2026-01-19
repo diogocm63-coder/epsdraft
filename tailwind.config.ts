@@ -73,6 +73,7 @@ export default {
           green: "hsl(var(--agriloja-green))",
         },
         eps: {
+          primary: "hsl(var(--eps-primary))",
           dark: "hsl(var(--eps-dark))",
           card: "hsl(var(--eps-card))",
           hover: "hsl(var(--eps-hover))",
@@ -81,6 +82,8 @@ export default {
           light: "hsl(var(--eps-light))",
           muted: "hsl(var(--eps-muted))",
           glow: "hsl(var(--eps-glow))",
+          background: "hsl(var(--eps-background))",
+          gold: "hsl(var(--eps-gold))",
         },
         chart: {
           1: "hsl(var(--chart-1))",
