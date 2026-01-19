@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FilterProvider } from "@/contexts/FilterContext";
+import StartPage from "./pages/StartPage";
 import GestaoPage from "./pages/GestaoPage";
 import ConsultoresPage from "./pages/ConsultoresPage";
 import LojasPage from "./pages/LojasPage";
@@ -30,7 +31,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<GestaoPage />} />
+            <Route path="/" element={<StartPage />} />
+            <Route path="/gestao" element={<GestaoPage />} />
             <Route path="/consultores" element={<ConsultoresPage />} />
             <Route path="/lojas" element={<LojasPage />} />
             
