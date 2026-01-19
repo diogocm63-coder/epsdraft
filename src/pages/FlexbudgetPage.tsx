@@ -2,9 +2,9 @@ import { FilterBar } from '@/components/dashboard/FilterBar';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { AreaChartComponent, GroupedBarChart } from '@/components/dashboard/Charts';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { EPSHeader } from '@/components/layout/EPSHeader';
 import { useFilteredData } from '@/hooks/useFilteredData';
-import { Store, Package, ShoppingCart, TrendingUp, MapPin, Scale } from 'lucide-react';
-import logoAgripro from '@/assets/logo-agripro.png';
+import { Store, Package, ShoppingCart, TrendingUp, MapPin, Scale, Calculator } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const FlexbudgetPage = () => {
@@ -24,17 +24,8 @@ const FlexbudgetPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-screen flex flex-col overflow-hidden bg-background">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2 bg-card border-b">
-          <div className="flex items-center gap-3">
-            <img src={logoAgripro} alt="Agripro" className="h-6 object-contain" />
-            <div>
-              <h1 className="text-base font-bold text-foreground">Flexbudget</h1>
-              <p className="text-xs text-muted-foreground">Análise de performance e gestão</p>
-            </div>
-          </div>
-        </div>
+      <EPSHeader title="Flexbudget" icon={<Calculator className="w-4 h-4" />} />
+      <div className="flex-1 flex flex-col overflow-hidden bg-background">
 
         {/* Filters */}
         <div className="px-4 py-2 bg-card border-b">
