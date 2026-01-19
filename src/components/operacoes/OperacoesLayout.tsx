@@ -1,9 +1,10 @@
 import { ReactNode } from 'react';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { OperacoesFilterSidebar } from './OperacoesFilterSidebar';
-import { OperacoesHeader } from './OperacoesHeader';
+import { EPSHeader } from '@/components/layout/EPSHeader';
 import { OperacoesFilterProvider } from '@/contexts/OperacoesFilterContext';
 import { areaHa, percentExecucao } from '@/data/operacoesData';
+import { Settings } from 'lucide-react';
 
 interface OperacoesLayoutProps {
   children: ReactNode;
@@ -25,17 +26,18 @@ export const OperacoesLayout = ({
       <div className="flex h-screen bg-[#f8f8f8] overflow-hidden">
         <DashboardSidebar />
         
-        <div className="flex flex-1 overflow-hidden">
-          <OperacoesFilterSidebar 
-            showAtividade={showAtividade} 
-            showTipoProduto={showTipoProduto} 
-          />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <EPSHeader title="Operações" icon={<Settings className="w-4 h-4" />} />
           
-          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-            <OperacoesHeader />
+          <div className="flex flex-1 overflow-hidden">
+            <OperacoesFilterSidebar 
+              showAtividade={showAtividade} 
+              showTipoProduto={showTipoProduto} 
+            />
             
-            {/* Title Bar */}
-            <div className="flex items-center justify-between px-3 py-1 flex-shrink-0">
+            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+              {/* Title Bar */}
+              <div className="flex items-center justify-between px-3 py-1 flex-shrink-0">
               <div className="flex-1">
                 <div className="bg-gradient-to-r from-[#f5e6d3] via-[#f5e6d3]/50 to-transparent py-1.5 px-4 rounded inline-block">
                   <h1 className="text-[#8B1538] font-light text-base tracking-[0.25em]">{title}</h1>
@@ -56,9 +58,10 @@ export const OperacoesLayout = ({
               )}
             </div>
             
-            {/* Content - flex-1 with min-h-0 to allow shrinking */}
-            <div className="flex-1 min-h-0 overflow-hidden p-3">
-              {children}
+              {/* Content - flex-1 with min-h-0 to allow shrinking */}
+              <div className="flex-1 min-h-0 overflow-hidden p-3">
+                {children}
+              </div>
             </div>
           </div>
         </div>
