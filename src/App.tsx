@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FilterProvider } from "@/contexts/FilterContext";
 import StartPage from "./pages/StartPage";
 import ProducaoProcuraPage from "./pages/ProducaoProcuraPage";
-import ConsultoresPage from "./pages/ConsultoresPage";
+import FlexbudgetPage from "./pages/FlexbudgetPage";
 import LojasPage from "./pages/LojasPage";
 import NotFound from "./pages/NotFound";
 import ExecutivoPage from "./pages/ExecutivoPage";
@@ -39,8 +39,7 @@ const App = () => (
             <Route path="/controlo" element={<ControloPage />} />
             <Route path="/decisao" element={<DecisaoPage />} />
             <Route path="/producao-procura" element={<ProducaoProcuraPage />} />
-            <Route path="/consultores" element={<ConsultoresPage />} />
-            <Route path="/lojas" element={<LojasPage />} />
+            <Route path="/flexbudget" element={<FlexbudgetPage />} />
             
             {/* Operações */}
             <Route path="/operacoes/painel-geral" element={<PainelGeralPage />} />
