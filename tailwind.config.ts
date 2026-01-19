@@ -57,20 +57,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        agris: {
-          blue: "hsl(var(--agris-blue))",
-          green: "hsl(var(--agris-green))",
-          dark: "hsl(var(--agris-dark))",
-          light: "hsl(var(--agris-light-blue))",
-          lime: "hsl(var(--agris-lime))",
-        },
-        agripro: {
-          blue: "hsl(var(--agripro-blue))",
-          green: "hsl(var(--agripro-green))",
-        },
-        agriloja: {
-          blue: "hsl(var(--agriloja-blue))",
-          green: "hsl(var(--agriloja-green))",
+        burgundy: {
+          dark: "hsl(var(--burgundy-dark))",
+          DEFAULT: "hsl(var(--burgundy))",
+          light: "hsl(var(--burgundy-light))",
+          muted: "hsl(var(--burgundy-muted))",
+          bg: "hsl(var(--burgundy-bg))",
         },
         chart: {
           1: "hsl(var(--chart-1))",
