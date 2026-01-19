@@ -9,6 +9,9 @@ import GestaoPage from "./pages/GestaoPage";
 import ConsultoresPage from "./pages/ConsultoresPage";
 import LojasPage from "./pages/LojasPage";
 import NotFound from "./pages/NotFound";
+import ExecutivoPage from "./pages/ExecutivoPage";
+import ControloPage from "./pages/ControloPage";
+import DecisaoPage from "./pages/DecisaoPage";
 
 // Operações Pages
 import PainelGeralPage from "./pages/operacoes/PainelGeralPage";
@@ -32,6 +35,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<StartPage />} />
+            <Route path="/executivo" element={<ExecutivoPage />} />
+            <Route path="/controlo" element={<ControloPage />} />
+            <Route path="/decisao" element={<DecisaoPage />} />
             <Route path="/gestao" element={<GestaoPage />} />
             <Route path="/consultores" element={<ConsultoresPage />} />
             <Route path="/lojas" element={<LojasPage />} />
