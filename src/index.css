@@ -2,104 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Grupo Agris Design System - Based on brand colors */
+/* Enterprise Planning Solution (EPS) - Burgundy/Wine Design System */
 @layer base {
   :root {
-    --agris-blue: 214 65% 33%;
-    --agris-green: 122 39% 49%;
-    --agris-dark: 220 26% 14%;
-    --agris-light-blue: 200 70% 50%;
-    --agris-lime: 100 50% 50%;
+    --burgundy-dark: 345 60% 20%;
+    --burgundy: 345 55% 35%;
+    --burgundy-light: 345 45% 50%;
+    --burgundy-muted: 345 30% 65%;
+    --burgundy-bg: 345 20% 95%;
     
-    --agripro-blue: 214 55% 35%;
-    --agripro-green: 80 45% 45%;
-    
-    --agriloja-blue: 220 60% 35%;
-    --agriloja-green: 145 70% 40%;
-    
-    --background: 220 20% 97%;
-    --foreground: 220 26% 14%;
+    --background: 345 15% 97%;
+    --foreground: 345 40% 15%;
     
     --card: 0 0% 100%;
-    --card-foreground: 220 26% 14%;
+    --card-foreground: 345 40% 15%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 220 26% 14%;
+    --popover-foreground: 345 40% 15%;
     
-    --primary: 214 65% 33%;
+    --primary: 345 55% 35%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 122 39% 49%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 345 30% 65%;
+    --secondary-foreground: 345 40% 15%;
     
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 345 15% 92%;
+    --muted-foreground: 345 20% 45%;
     
-    --accent: 200 70% 50%;
+    --accent: 345 45% 50%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 214 65% 33%;
+    --border: 345 15% 88%;
+    --input: 345 15% 88%;
+    --ring: 345 55% 35%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     
-    --chart-1: 214 65% 33%;
-    --chart-2: 122 39% 49%;
-    --chart-3: 200 70% 50%;
-    --chart-4: 45 90% 55%;
-    --chart-5: 280 60% 55%;
+    --chart-1: 345 55% 35%;
+    --chart-2: 345 45% 50%;
+    --chart-3: 345 30% 65%;
+    --chart-4: 20 70% 50%;
+    --chart-5: 280 50% 45%;
     
-    --sidebar-background: 220 26% 14%;
-    --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 122 39% 49%;
+    --sidebar-background: 345 60% 20%;
+    --sidebar-foreground: 345 10% 90%;
+    --sidebar-primary: 345 45% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 22%;
+    --sidebar-accent: 345 50% 28%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 20% 25%;
-    --sidebar-ring: 122 39% 49%;
+    --sidebar-border: 345 45% 30%;
+    --sidebar-ring: 345 45% 50%;
   }
 
   .dark {
-    --background: 220 26% 10%;
-    --foreground: 220 15% 95%;
+    --background: 345 40% 8%;
+    --foreground: 345 10% 95%;
     
-    --card: 220 26% 14%;
-    --card-foreground: 220 15% 95%;
+    --card: 345 35% 12%;
+    --card-foreground: 345 10% 95%;
     
-    --popover: 220 26% 14%;
-    --popover-foreground: 220 15% 95%;
+    --popover: 345 35% 12%;
+    --popover-foreground: 345 10% 95%;
     
-    --primary: 200 70% 50%;
-    --primary-foreground: 220 26% 10%;
+    --primary: 345 45% 50%;
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 122 39% 49%;
+    --secondary: 345 30% 40%;
     --secondary-foreground: 0 0% 100%;
     
-    --muted: 220 20% 20%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 345 30% 18%;
+    --muted-foreground: 345 15% 60%;
     
-    --accent: 122 39% 49%;
+    --accent: 345 45% 50%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 220 20% 22%;
-    --input: 220 20% 22%;
-    --ring: 200 70% 50%;
+    --border: 345 30% 20%;
+    --input: 345 30% 20%;
+    --ring: 345 45% 50%;
     
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 345 50% 10%;
+    --sidebar-foreground: 345 10% 95%;
+    --sidebar-primary: 345 45% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 345 40% 18%;
+    --sidebar-accent-foreground: 345 10% 95%;
+    --sidebar-border: 345 35% 18%;
+    --sidebar-ring: 345 45% 50%;
   }
 }
 
@@ -145,5 +139,22 @@
   
   .kpi-negative {
     @apply text-destructive;
+  }
+  
+  .eps-button {
+    @apply relative overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground 
+           rounded-xl p-8 shadow-lg transition-all duration-300 
+           hover:shadow-2xl hover:scale-105 hover:from-accent hover:to-primary
+           flex flex-col items-center justify-center gap-4 min-h-[180px]
+           border border-primary/20;
+  }
+  
+  .eps-button::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300;
+  }
+  
+  .eps-button:hover::before {
+    @apply opacity-100;
   }
 }
