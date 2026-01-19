@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FilterProvider } from "@/contexts/FilterContext";
 import StartPage from "./pages/StartPage";
-import GestaoPage from "./pages/GestaoPage";
+import ProducaoProcuraPage from "./pages/ProducaoProcuraPage";
 import ConsultoresPage from "./pages/ConsultoresPage";
 import LojasPage from "./pages/LojasPage";
 import NotFound from "./pages/NotFound";
@@ -38,7 +38,7 @@ const App = () => (
             <Route path="/executivo" element={<ExecutivoPage />} />
             <Route path="/controlo" element={<ControloPage />} />
             <Route path="/decisao" element={<DecisaoPage />} />
-            <Route path="/gestao" element={<GestaoPage />} />
+            <Route path="/producao-procura" element={<ProducaoProcuraPage />} />
             <Route path="/consultores" element={<ConsultoresPage />} />
             <Route path="/lojas" element={<LojasPage />} />
             
