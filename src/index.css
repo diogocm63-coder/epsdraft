@@ -17,6 +17,16 @@
     --agriloja-blue: 220 60% 35%;
     --agriloja-green: 145 70% 40%;
     
+    /* EPS Burgundy/Wine Theme */
+    --eps-dark: 345 45% 12%;
+    --eps-card: 345 40% 18%;
+    --eps-hover: 345 42% 22%;
+    --eps-border: 345 35% 28%;
+    --eps-accent: 345 70% 55%;
+    --eps-light: 345 30% 75%;
+    --eps-muted: 345 20% 55%;
+    --eps-glow: 345 80% 45%;
+    
     --background: 220 20% 97%;
     --foreground: 220 26% 14%;
     
