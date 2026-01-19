@@ -17,7 +17,7 @@ import {
 import { useState } from "react";
 
 const mainNavItems = [
-  { path: "/", label: "Geral", subtitle: "Resumo geral", icon: LayoutDashboard },
+  { path: "/producao-procura", label: "Produção e Procura", subtitle: "Previsão e análise", icon: LayoutDashboard },
   { path: "/consultores", label: "Consultores", subtitle: "Gestão de consultores", icon: Users },
   { path: "/lojas", label: "Lojas", subtitle: "Gestão de lojas", icon: Store },
 ];
