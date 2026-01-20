@@ -25,10 +25,10 @@ import {
 } from 'recharts';
 
 const tipoPedidoData = [
-  { name: 'Endo Marketi...', value: 10000, color: '#4a5568' },
-  { name: 'Desconto', value: 6000, color: '#718096' },
-  { name: 'Promo', value: 2000, color: '#a0aec0' },
-  { name: 'Outro', value: 1000, color: '#cbd5e0' },
+  { name: 'Endo Marketi...', value: 10000, color: '#8B1538' },
+  { name: 'Desconto', value: 6000, color: '#C9A227' },
+  { name: 'Promo', value: 2000, color: '#D4A5A5' },
+  { name: 'Outro', value: 1000, color: '#E8C8C8' },
 ];
 
 const evolucaoData = [
@@ -143,7 +143,7 @@ export default function AtivacoesPage() {
                       <XAxis dataKey="mes" type="category" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}.000 €`} domain={[0, 25000]} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Scatter data={evolucaoData} dataKey="valor" fill="#4a5568" />
+                      <Scatter data={evolucaoData} dataKey="valor" fill="#8B1538" />
                     </ScatterChart>
                   </ResponsiveContainer>
                 </CardContent>

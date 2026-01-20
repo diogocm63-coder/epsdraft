@@ -202,7 +202,7 @@ export default function OrcamentoMarcaPage() {
                   <p className="text-2xl font-semibold text-gray-800">(Vazio)</p>
                 </CardContent>
               </Card>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white h-auto py-4">
+              <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white h-auto py-4">
                 Carregar Budget a partir das Vendas
               </Button>
             </div>

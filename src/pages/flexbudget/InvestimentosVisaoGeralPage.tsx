@@ -42,9 +42,9 @@ const evolucaoData = [
 ];
 
 const materialData = [
-  { name: 'Rotulos', value: 4900, color: '#4a5568' },
-  { name: 'e-Card (Newsletter)', value: 24, color: '#718096' },
-  { name: 'Banner (SWF)', value: 6, color: '#a0aec0' },
+  { name: 'Rotulos', value: 4900, color: '#8B1538' },
+  { name: 'e-Card (Newsletter)', value: 24, color: '#C9A227' },
+  { name: 'Banner (SWF)', value: 6, color: '#D4A5A5' },
 ];
 
 const topMarcasData = [
@@ -146,7 +146,7 @@ export default function InvestimentosVisaoGeralPage() {
                       <XAxis dataKey="mes" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
                       <YAxis tick={{ fontSize: 10 }} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Area type="monotone" dataKey="valor" stroke="#4a5568" fill="#4a5568" fillOpacity={0.3} />
+                      <Area type="monotone" dataKey="valor" stroke="#8B1538" fill="#8B1538" fillOpacity={0.3} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -191,7 +191,7 @@ export default function InvestimentosVisaoGeralPage() {
                         key={index}
                         className="flex items-center justify-center text-white text-xs font-medium"
                         style={{
-                          backgroundColor: index === 0 ? '#4a5568' : index === 1 ? '#718096' : '#a0aec0',
+                          backgroundColor: index === 0 ? '#8B1538' : index === 1 ? '#C9A227' : '#D4A5A5',
                           gridColumn: index === 2 ? 'span 2' : 'span 1',
                         }}
                       >
@@ -215,7 +215,7 @@ export default function InvestimentosVisaoGeralPage() {
                       <XAxis dataKey="marca" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v} €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Bar dataKey="valor" fill="#4a5568" label={{ position: 'top', fontSize: 10, formatter: (v: number) => formatCurrency(v) }} />
+                      <Bar dataKey="valor" fill="#8B1538" label={{ position: 'top', fontSize: 10, formatter: (v: number) => formatCurrency(v) }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -231,7 +231,7 @@ export default function InvestimentosVisaoGeralPage() {
                       <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v} €`} />
                       <YAxis type="category" dataKey="produtor" tick={{ fontSize: 10 }} width={80} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Bar dataKey="valor" fill="#4a5568" label={{ position: 'right', fontSize: 10, formatter: (v: number) => formatCurrency(v) }} />
+                      <Bar dataKey="valor" fill="#8B1538" label={{ position: 'right', fontSize: 10, formatter: (v: number) => formatCurrency(v) }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -247,7 +247,7 @@ export default function InvestimentosVisaoGeralPage() {
                       <XAxis dataKey="unidade" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000} K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Bar dataKey="valor" fill="#4a5568" />
+                      <Bar dataKey="valor" fill="#8B1538" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
