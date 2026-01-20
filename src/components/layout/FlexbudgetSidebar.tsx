@@ -149,17 +149,17 @@ export function FlexbudgetSidebar() {
   };
 
   return (
-    <Sidebar className="border-r-0 bg-[#2a7d8c]" collapsible="none">
+    <Sidebar className="border-r-0 bg-eps-primary" collapsible="none">
       <SidebarHeader className="p-0">
         <NavLink
           to="/flexbudget"
-          className="block px-4 py-3 text-white font-semibold text-base bg-[#1e5f6b] hover:bg-[#1a5560] transition-colors"
+          className="block px-4 py-3 text-white font-semibold text-base bg-[#6a0f2a] hover:bg-[#5a0d24] transition-colors"
         >
           Dashboard
         </NavLink>
       </SidebarHeader>
       
-      <SidebarContent className="bg-[#2a7d8c] px-0">
+      <SidebarContent className="bg-eps-primary px-0">
         <SidebarMenu className="gap-0">
           {menuStructure.map((item) => (
             <CollapsibleMenuItem

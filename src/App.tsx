@@ -24,6 +24,15 @@ import ControloOrcamentalPage from "./pages/operacoes/ControloOrcamentalPage";
 import OrcamentacaoHorasPage from "./pages/operacoes/OrcamentacaoHorasPage";
 import OrcamentacaoProdutosPage from "./pages/operacoes/OrcamentacaoProdutosPage";
 
+// Flexbudget Pages
+import VisaoGeralVendasPage from "./pages/flexbudget/VisaoGeralVendasPage";
+import HistoricoVendasPage from "./pages/flexbudget/HistoricoVendasPage";
+import ArtigosPage from "./pages/flexbudget/ArtigosPage";
+import ClientesPage from "./pages/flexbudget/ClientesPage";
+import VolumesPage from "./pages/flexbudget/VolumesPage";
+import PricingPage from "./pages/flexbudget/PricingPage";
+import AjusteClientePage from "./pages/flexbudget/AjusteClientePage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -40,6 +49,15 @@ const App = () => (
             <Route path="/decisao" element={<DecisaoPage />} />
             <Route path="/producao-procura" element={<ProducaoProcuraPage />} />
             <Route path="/flexbudget" element={<FlexbudgetPage />} />
+            
+            {/* Flexbudget Sub-pages */}
+            <Route path="/flexbudget/vendas/reporting/visao-geral" element={<VisaoGeralVendasPage />} />
+            <Route path="/flexbudget/vendas/reporting/historico" element={<HistoricoVendasPage />} />
+            <Route path="/flexbudget/vendas/reporting/artigos" element={<ArtigosPage />} />
+            <Route path="/flexbudget/vendas/reporting/clientes" element={<ClientesPage />} />
+            <Route path="/flexbudget/vendas/orcamento/volumes" element={<VolumesPage />} />
+            <Route path="/flexbudget/vendas/orcamento/pricing" element={<PricingPage />} />
+            <Route path="/flexbudget/vendas/orcamento/ajuste-cliente" element={<AjusteClientePage />} />
             
             {/* Operações */}
             <Route path="/operacoes/painel-geral" element={<PainelGeralPage />} />
