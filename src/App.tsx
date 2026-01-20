@@ -67,6 +67,21 @@ const App = () => (
             <Route path="/flexbudget/vendas/orcamento/pricing" element={<PricingPage />} />
             <Route path="/flexbudget/vendas/orcamento/ajuste-cliente" element={<AjusteClientePage />} />
             
+            {/* Investimentos */}
+            <Route path="/flexbudget/investimentos/visao-geral" element={<InvestimentosVisaoGeralPage />} />
+            <Route path="/flexbudget/investimentos/ativacoes" element={<AtivacoesPage />} />
+            <Route path="/flexbudget/investimentos/orcamento-canal" element={<OrcamentoCanalPage />} />
+            <Route path="/flexbudget/investimentos/orcamento-marca" element={<OrcamentoMarcaPage />} />
+            
+            {/* Dívidas */}
+            <Route path="/flexbudget/dividas/vista-geral" element={<DividasVisaoGeralPage />} />
+            <Route path="/flexbudget/dividas/clientes" element={<DividaClientesPage />} />
+            <Route path="/flexbudget/dividas/fornecedores" element={<DividaFornecedoresPage />} />
+            
+            {/* Demonstração de Resultados */}
+            <Route path="/flexbudget/demonstracao/resultados" element={<DemonstracaoResultadosPage />} />
+            <Route path="/flexbudget/demonstracao/analise-contas" element={<AnaliseContasPage />} />
+            
             {/* Operações */}
             <Route path="/operacoes/painel-geral" element={<PainelGeralPage />} />
             <Route path="/operacoes/controlo-producao" element={<ControloProducaoPage />} />
