@@ -32,7 +32,15 @@ import ClientesPage from "./pages/flexbudget/ClientesPage";
 import VolumesPage from "./pages/flexbudget/VolumesPage";
 import PricingPage from "./pages/flexbudget/PricingPage";
 import AjusteClientePage from "./pages/flexbudget/AjusteClientePage";
-
+import InvestimentosVisaoGeralPage from "./pages/flexbudget/InvestimentosVisaoGeralPage";
+import AtivacoesPage from "./pages/flexbudget/AtivacoesPage";
+import OrcamentoCanalPage from "./pages/flexbudget/OrcamentoCanalPage";
+import OrcamentoMarcaPage from "./pages/flexbudget/OrcamentoMarcaPage";
+import DividasVisaoGeralPage from "./pages/flexbudget/DividasVisaoGeralPage";
+import DividaClientesPage from "./pages/flexbudget/DividaClientesPage";
+import DividaFornecedoresPage from "./pages/flexbudget/DividaFornecedoresPage";
+import DemonstracaoResultadosPage from "./pages/flexbudget/DemonstracaoResultadosPage";
+import AnaliseContasPage from "./pages/flexbudget/AnaliseContasPage";
 const queryClient = new QueryClient();
 
 const App = () => (
