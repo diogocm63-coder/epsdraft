@@ -1,10 +1,10 @@
 import { EPSHeader } from '@/components/layout/EPSHeader';
-import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
+import { FlexbudgetSidebar } from '@/components/layout/FlexbudgetSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Calculator, ChevronDown, Minus, Plus } from 'lucide-react';
+import { Calculator, Minus, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Mock data for charts
@@ -172,7 +172,7 @@ const FlexbudgetPage = () => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-eps-background">
-        <DashboardSidebar />
+        <FlexbudgetSidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <EPSHeader title="Flexbudget" icon={<Calculator className="w-4 h-4" />} />
           
