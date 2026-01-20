@@ -19,13 +19,13 @@ const mediaDiasData = [
 ];
 
 const idadeDividaData = [
-  { idade: '<30 dias', valor: 0, color: '#4a5568' },
-  { idade: '30-60 dias', valor: 0, color: '#718096' },
-  { idade: '60-90 dias', valor: 0, color: '#a0aec0' },
-  { idade: '90-180 dias', valor: 0, color: '#63b3ed' },
-  { idade: '180-270 dias', valor: 0, color: '#ecc94b' },
-  { idade: '270-360 dias', valor: 0, color: '#48bb78' },
-  { idade: '>360', valor: 253477, color: '#4a5568' },
+  { idade: '<30 dias', valor: 0, color: '#8B1538' },
+  { idade: '30-60 dias', valor: 0, color: '#A52952' },
+  { idade: '60-90 dias', valor: 0, color: '#C9A227' },
+  { idade: '90-180 dias', valor: 0, color: '#D4B84A' },
+  { idade: '180-270 dias', valor: 0, color: '#D4A5A5' },
+  { idade: '270-360 dias', valor: 0, color: '#E8C8C8' },
+  { idade: '>360', valor: 253477, color: '#8B1538' },
 ];
 
 interface CanalItem {
@@ -174,7 +174,7 @@ export default function DividaClientesPage() {
                       <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 600]} />
                       <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={60} />
                       <Tooltip />
-                      <Bar dataKey="dias" fill="#4a5568" label={{ position: 'right', fontSize: 11 }} />
+                      <Bar dataKey="dias" fill="#8B1538" label={{ position: 'right', fontSize: 11 }} />
                     </BarChart>
                   </ResponsiveContainer>
                   <p className="text-center text-xs text-gray-500 mt-2">Dias</p>
@@ -187,13 +187,13 @@ export default function DividaClientesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-3 text-xs">
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-700"></span>&lt;30 dias</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-400"></span>30-60 dias</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-300"></span>60-90 dias</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-400"></span>90-180 dias</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-400"></span>180-270 dias</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-400"></span>270-360 dias</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-800"></span>&gt;360 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#8B1538'}}></span>&lt;30 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#A52952'}}></span>30-60 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#C9A227'}}></span>60-90 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#D4B84A'}}></span>90-180 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#D4A5A5'}}></span>180-270 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#E8C8C8'}}></span>270-360 dias</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#8B1538'}}></span>&gt;360 dias</span>
                   </div>
                   <ResponsiveContainer width="100%" height={150}>
                     <BarChart data={idadeDividaData}>

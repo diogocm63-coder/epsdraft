@@ -174,7 +174,7 @@ export default function DemonstracaoResultadosPage() {
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Bar 
                         dataKey="valor" 
-                        fill="#4a5568" 
+                        fill="#8B1538" 
                         label={{ 
                           position: 'right', 
                           fontSize: 11, 
