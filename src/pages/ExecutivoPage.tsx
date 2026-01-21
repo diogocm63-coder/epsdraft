@@ -1,14 +1,13 @@
 import EPSLayout from "@/components/layout/EPSLayout";
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
 import {
-  BarChart,
+  ComposedChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
   Line,
   AreaChart,
   Area,
@@ -112,7 +111,7 @@ const ExecutivoPage = () => {
               </div>
             </div>
             <ResponsiveContainer width="100%" height="85%">
-              <BarChart data={monthlyData}>
+              <ComposedChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v/1000}k€`} />
@@ -128,10 +127,10 @@ const ExecutivoPage = () => {
                 <Bar yAxisId="left" dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} name="real" />
                 <Bar yAxisId="left" dataKey="orcamento" fill="#C9A227" radius={[2, 2, 0, 0]} name="orcamento" />
                 <Bar yAxisId="left" dataKey="preditivo" fill="#5B8C5A" radius={[2, 2, 0, 0]} name="preditivo" />
-                <Line yAxisId="right" type="monotone" dataKey="producaoReal" stroke="#8B1538" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#8B1538", r: 3 }} name="producaoReal" />
-                <Line yAxisId="right" type="monotone" dataKey="producaoOrc" stroke="#C9A227" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#C9A227", r: 3 }} name="producaoOrc" />
-                <Line yAxisId="right" type="monotone" dataKey="producaoPred" stroke="#5B8C5A" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#5B8C5A", r: 3 }} name="producaoPred" />
-              </BarChart>
+                <Line yAxisId="right" type="monotone" dataKey="producaoReal" stroke="#8B1538" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#8B1538", r: 4 }} name="producaoReal" />
+                <Line yAxisId="right" type="monotone" dataKey="producaoOrc" stroke="#C9A227" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#C9A227", r: 4 }} name="producaoOrc" />
+                <Line yAxisId="right" type="monotone" dataKey="producaoPred" stroke="#5B8C5A" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#5B8C5A", r: 4 }} name="producaoPred" />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
 
