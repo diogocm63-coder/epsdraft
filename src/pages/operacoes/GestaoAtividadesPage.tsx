@@ -18,7 +18,7 @@ const GestaoAtividadesPage = () => {
   return (
     <OperacoesLayout title="Gestão de Atividades">
       <div className="flex flex-col h-full gap-2">
-        <OperacoesSummary showDashboardLabel={false} />
+        <OperacoesSummary />
         
         <div className="flex items-center justify-between border-b border-gray-200 pb-1">
           <h2 className="text-eps-primary font-bold text-sm tracking-[0.3em]">A T I V I D A D E S</h2>
