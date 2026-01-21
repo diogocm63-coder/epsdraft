@@ -99,14 +99,16 @@ const ExecutivoPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4 h-[48%]">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-800">Receita Vendas: Real vs Orçamento vs Preditivo</h3>
-                <p className="text-xs text-gray-500">Comparação financeira com KPI operacional (Produção em mil litros)</p>
+                <h3 className="font-semibold text-gray-800">Real vs Orçamento vs Preditivo</h3>
+                <p className="text-xs text-gray-500">Receita Vendas e Produção</p>
               </div>
               <div className="flex items-center gap-4 text-xs">
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#8B1538' }}></span> Real</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#C9A227' }}></span> Orçamento</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#5B8C5A' }}></span> Preditivo</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-1 rounded" style={{ backgroundColor: '#2E5A88', height: '3px' }}></span> Produção (kL)</span>
+                <span className="ml-2 border-l border-gray-300 pl-2 flex items-center gap-1"><span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#8B1538' }}></span> Prod. Real</span>
+                <span className="flex items-center gap-1"><span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#C9A227' }}></span> Prod. Orç.</span>
+                <span className="flex items-center gap-1"><span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#5B8C5A' }}></span> Prod. Pred.</span>
               </div>
             </div>
             <ResponsiveContainer width="100%" height="85%">
@@ -117,14 +119,18 @@ const ExecutivoPage = () => {
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}kL`} domain={[0, 600]} />
                 <Tooltip 
                   formatter={(value: number, name: string) => {
-                    if (name === 'producao') return [`${value} kL`, 'Produção'];
+                    if (name === 'producaoReal') return [`${value} kL`, 'Produção Real'];
+                    if (name === 'producaoOrc') return [`${value} kL`, 'Produção Orçamento'];
+                    if (name === 'producaoPred') return [`${value} kL`, 'Produção Preditivo'];
                     return [`${(value/1000).toFixed(0)}k€`, name === 'real' ? 'Real' : name === 'orcamento' ? 'Orçamento' : 'Preditivo'];
                   }}
                 />
                 <Bar yAxisId="left" dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} name="real" />
                 <Bar yAxisId="left" dataKey="orcamento" fill="#C9A227" radius={[2, 2, 0, 0]} name="orcamento" />
                 <Bar yAxisId="left" dataKey="preditivo" fill="#5B8C5A" radius={[2, 2, 0, 0]} name="preditivo" />
-                <Line yAxisId="right" type="monotone" dataKey="producao" stroke="#2E5A88" strokeWidth={3} dot={{ fill: "#2E5A88", r: 4 }} name="producao" />
+                <Line yAxisId="right" type="monotone" dataKey="producaoReal" stroke="#8B1538" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#8B1538", r: 3 }} name="producaoReal" />
+                <Line yAxisId="right" type="monotone" dataKey="producaoOrc" stroke="#C9A227" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#C9A227", r: 3 }} name="producaoOrc" />
+                <Line yAxisId="right" type="monotone" dataKey="producaoPred" stroke="#5B8C5A" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#5B8C5A", r: 3 }} name="producaoPred" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -137,9 +143,9 @@ const ExecutivoPage = () => {
                 <p className="text-xs text-gray-500">Eficiência, Utilização e Produtividade</p>
               </div>
               <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-primary"></span> Eficiência</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-gold"></span> Utilização</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-light"></span> Produtividade</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#8B1538' }}></span> Eficiência</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#2E5A88' }}></span> Utilização</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#C9A227' }}></span> Produtividade</span>
               </div>
             </div>
             <ResponsiveContainer width="100%" height="85%">
@@ -149,8 +155,8 @@ const ExecutivoPage = () => {
                 <YAxis domain={[70, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
                 <Tooltip formatter={(value: number) => `${value}%`} />
                 <Area type="monotone" dataKey="eficiencia" fill="#8B1538" fillOpacity={0.3} stroke="#8B1538" strokeWidth={2} />
-                <Area type="monotone" dataKey="utilizacao" fill="#C9A227" fillOpacity={0.3} stroke="#C9A227" strokeWidth={2} />
-                <Area type="monotone" dataKey="produtividade" fill="#D4A5A5" fillOpacity={0.3} stroke="#D4A5A5" strokeWidth={2} />
+                <Area type="monotone" dataKey="utilizacao" fill="#2E5A88" fillOpacity={0.3} stroke="#2E5A88" strokeWidth={2} />
+                <Area type="monotone" dataKey="produtividade" fill="#C9A227" fillOpacity={0.3} stroke="#C9A227" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
