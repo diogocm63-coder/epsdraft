@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ajusteClienteCategorias, ajusteClienteClientes, ajusteClienteProdutosData } from '@/data/wineData';
+import { LoadBudgetButton } from '@/components/flexbudget/LoadBudgetButton';
 
 const AjusteClientePage = () => {
   const [year, setYear] = useState('2025');
@@ -84,9 +85,7 @@ const AjusteClientePage = () => {
 
               {/* Action Button */}
               <div className="col-span-3 flex items-start justify-end">
-                <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white">
-                  Carregar Budget a partir das Vendas
-                </Button>
+                <LoadBudgetButton />
               </div>
             </div>
 
