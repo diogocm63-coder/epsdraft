@@ -448,9 +448,9 @@ const DecisaoPage = () => {
             </div>
           </div>
 
-          {/* Row 2: Simulator */}
-          <div className="grid grid-cols-[1fr_180px] gap-2 min-h-0">
-            <div className="bg-white rounded-lg border border-gray-200 p-3 flex flex-col min-h-0">
+          {/* Row 2: Simulator - centered */}
+          <div className="flex justify-center min-h-0">
+            <div className="bg-white rounded-lg border border-gray-200 p-3 flex flex-col min-h-0 w-full max-w-4xl">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-800">Simulador de Impacto</h3>
@@ -547,9 +547,6 @@ const DecisaoPage = () => {
                 </Button>
               )}
             </div>
-
-            {/* Empty space for alignment with alerts column */}
-            <div />
           </div>
         </div>
       </div>
