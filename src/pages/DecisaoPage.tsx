@@ -1,5 +1,5 @@
 import EPSLayout from "@/components/layout/EPSLayout";
-import { TrendingUp, TrendingDown, AlertTriangle, Info, ArrowRight, LayoutGrid } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Info, LayoutGrid } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -8,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { useState, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
@@ -32,24 +31,23 @@ const previsaoVendasData = [
 
 // Data for Stock chart (different values)
 const previsaoStockData = [
-  { month: 'Jan', historico: 120, ia: 125, clientes: 122, orcamento: 115 },
-  { month: 'Fev', historico: 118, ia: 128, clientes: 124, orcamento: 112 },
-  { month: 'Mar', historico: 115, ia: 130, clientes: 126, orcamento: 110 },
-  { month: 'Abr', historico: 125, ia: 135, clientes: 130, orcamento: 118 },
-  { month: 'Mai', historico: 130, ia: 142, clientes: 138, orcamento: 125 },
-  { month: 'Jun', historico: 138, ia: 150, clientes: 145, orcamento: 132 },
-  { month: 'Jul', historico: 145, ia: 158, clientes: 152, orcamento: 140 },
-  { month: 'Ago', historico: 152, ia: 165, clientes: 160, orcamento: 148 },
-  { month: 'Set', historico: 160, ia: 175, clientes: 168, orcamento: 155 },
-  { month: 'Out', historico: 168, ia: 182, clientes: 175, orcamento: 162 },
-  { month: 'Nov', historico: 175, ia: 190, clientes: 182, orcamento: 170 },
-  { month: 'Dez', historico: 180, ia: 198, clientes: 188, orcamento: 175 },
+  { month: 'Jan', historico: 28, ia: 32, clientes: 30, orcamento: 25 },
+  { month: 'Fev', historico: 30, ia: 35, clientes: 32, orcamento: 26 },
+  { month: 'Mar', historico: 32, ia: 38, clientes: 35, orcamento: 28 },
+  { month: 'Abr', historico: 35, ia: 42, clientes: 38, orcamento: 30 },
+  { month: 'Mai', historico: 38, ia: 45, clientes: 42, orcamento: 32 },
+  { month: 'Jun', historico: 42, ia: 50, clientes: 48, orcamento: 35 },
+  { month: 'Jul', historico: 48, ia: 55, clientes: 52, orcamento: 38 },
+  { month: 'Ago', historico: 52, ia: 60, clientes: 58, orcamento: 42 },
+  { month: 'Set', historico: 58, ia: 65, clientes: 62, orcamento: 48 },
+  { month: 'Out', historico: 62, ia: 70, clientes: 68, orcamento: 52 },
+  { month: 'Nov', historico: 68, ia: 75, clientes: 72, orcamento: 58 },
+  { month: 'Dez', historico: 72, ia: 80, clientes: 78, orcamento: 62 },
 ];
 
 // KPI data for Vendas
 const vendasKpis = [
   { 
-    label: 'Histórico', 
     badge: 'Histórico',
     badgeColor: 'bg-[#8B1538]',
     title: 'Previsão Total Anual',
@@ -59,7 +57,6 @@ const vendasKpis = [
     positive: true
   },
   { 
-    label: 'IA Preditiva', 
     badge: 'IA Preditiva',
     badgeColor: 'bg-[#3B82F6]',
     title: 'Previsão Total Anual',
@@ -69,7 +66,6 @@ const vendasKpis = [
     positive: true
   },
   { 
-    label: 'Orç. Clientes', 
     badge: 'Orç. Clientes',
     badgeColor: 'bg-[#22C55E]',
     title: 'Previsão Total Anual',
@@ -79,7 +75,6 @@ const vendasKpis = [
     positive: true
   },
   { 
-    label: 'Orçamento', 
     badge: 'Orçamento',
     badgeColor: 'bg-[#F59E0B]',
     title: 'Meta Orçamental',
@@ -93,7 +88,6 @@ const vendasKpis = [
 // KPI data for Stock
 const stockKpis = [
   { 
-    label: 'Histórico', 
     badge: 'Histórico',
     badgeColor: 'bg-[#8B1538]',
     title: 'Stock Total Anual',
@@ -103,7 +97,6 @@ const stockKpis = [
     positive: true
   },
   { 
-    label: 'IA Preditiva', 
     badge: 'IA Preditiva',
     badgeColor: 'bg-[#3B82F6]',
     title: 'Stock Total Anual',
@@ -113,7 +106,6 @@ const stockKpis = [
     positive: true
   },
   { 
-    label: 'Orç. Clientes', 
     badge: 'Orç. Clientes',
     badgeColor: 'bg-[#22C55E]',
     title: 'Stock Total Anual',
@@ -123,7 +115,6 @@ const stockKpis = [
     positive: true
   },
   { 
-    label: 'Orçamento', 
     badge: 'Orçamento',
     badgeColor: 'bg-[#F59E0B]',
     title: 'Meta Stock',
@@ -178,7 +169,7 @@ const alertasData = [
   },
 ];
 
-// KPI Card Component
+// Compact KPI Card Component
 const KPICard = ({ 
   badge, 
   badgeColor, 
@@ -187,7 +178,6 @@ const KPICard = ({
   change, 
   changeColor,
   positive,
-  iconBg
 }: { 
   badge: string;
   badgeColor: string;
@@ -196,23 +186,22 @@ const KPICard = ({
   change: string;
   changeColor: string;
   positive: boolean;
-  iconBg?: string;
 }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4 flex gap-3">
-    <div className={`w-12 h-12 rounded-lg ${iconBg || 'bg-gray-100'} flex items-center justify-center flex-shrink-0`}>
+  <div className="bg-white rounded-lg border border-gray-200 p-2 flex gap-2">
+    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
       {positive ? (
-        <TrendingUp className="w-5 h-5 text-eps-primary" />
+        <TrendingUp className="w-4 h-4 text-eps-primary" />
       ) : (
-        <div className="w-6 h-6 rounded-full border-4 border-[#F59E0B]" />
+        <div className="w-4 h-4 rounded-full border-2 border-[#F59E0B]" />
       )}
     </div>
     <div className="flex-1 min-w-0">
-      <span className={`inline-block px-2 py-0.5 text-xs font-medium text-white rounded ${badgeColor} mb-1`}>
+      <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium text-white rounded ${badgeColor}`}>
         {badge}
       </span>
-      <div className="text-xs text-gray-500">{title}</div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className={`text-xs font-medium ${changeColor} flex items-center gap-1`}>
+      <div className="text-[10px] text-gray-500 mt-0.5">{title}</div>
+      <div className="text-lg font-bold text-gray-900 leading-tight">{value}</div>
+      <div className={`text-[10px] font-medium ${changeColor} flex items-center gap-0.5`}>
         {positive && <span>↑</span>}
         {change}
       </div>
@@ -224,66 +213,68 @@ const KPICard = ({
 const ComparisonChart = ({ 
   data, 
   title, 
-  subtitle 
+  subtitle,
+  unit = 'K€'
 }: { 
   data: typeof previsaoVendasData;
   title: string;
   subtitle: string;
+  unit?: string;
 }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4">
-    <div className="flex items-center justify-between mb-4">
+  <div className="bg-white rounded-lg border border-gray-200 p-3">
+    <div className="flex items-center justify-between mb-2">
       <div>
-        <h3 className="font-semibold text-gray-800">{title}</h3>
-        <p className="text-xs text-gray-500">{subtitle}</p>
+        <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
+        <p className="text-[10px] text-gray-500">{subtitle}</p>
       </div>
-      <div className="flex items-center gap-4 text-xs">
+      <div className="flex items-center gap-3 text-[10px]">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-[#8B1538]" />
+          <div className="w-2 h-2 rounded-full bg-[#8B1538]" />
           <span>Histórico</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-[#3B82F6]" />
+          <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
           <span>IA</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-[#22C55E]" />
+          <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
           <span>Clientes</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-[#F59E0B]" />
+          <div className="w-2 h-2 rounded-full bg-[#F59E0B]" />
           <span>Orçamento</span>
         </div>
       </div>
     </div>
-    <ResponsiveContainer width="100%" height={180}>
+    <ResponsiveContainer width="100%" height={160}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-        <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-        <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `${value}K€`} />
+        <XAxis dataKey="month" tick={{ fontSize: 9 }} />
+        <YAxis tick={{ fontSize: 9 }} tickFormatter={(value) => `${value}${unit}`} />
         <Tooltip 
-          formatter={(value: number) => [`${value}K€`, '']}
-          contentStyle={{ fontSize: 11 }}
+          formatter={(value: number) => [`${value}${unit}`, '']}
+          contentStyle={{ fontSize: 10 }}
         />
         <Line 
           type="monotone" 
           dataKey="historico" 
           stroke="#8B1538" 
           strokeWidth={2} 
-          dot={{ fill: '#8B1538', r: 3 }} 
+          dot={{ fill: '#8B1538', r: 2 }} 
         />
         <Line 
           type="monotone" 
           dataKey="ia" 
           stroke="#3B82F6" 
           strokeWidth={2} 
-          dot={{ fill: '#3B82F6', r: 3 }} 
+          dot={{ fill: '#3B82F6', r: 2 }} 
         />
         <Line 
           type="monotone" 
           dataKey="clientes" 
           stroke="#22C55E" 
           strokeWidth={2} 
-          dot={{ fill: '#22C55E', r: 3 }} 
+          dot={{ fill: '#22C55E', r: 2 }} 
         />
         <Line 
           type="monotone" 
@@ -291,7 +282,7 @@ const ComparisonChart = ({
           stroke="#F59E0B" 
           strokeWidth={2} 
           strokeDasharray="5 5"
-          dot={{ fill: '#F59E0B', r: 3 }} 
+          dot={{ fill: '#F59E0B', r: 2 }} 
         />
       </LineChart>
     </ResponsiveContainer>
@@ -314,23 +305,22 @@ const SimulatorSourceCard = ({
 }) => (
   <button 
     onClick={onClick}
-    className={`bg-white rounded-lg border-2 p-4 text-center transition-all ${
+    className={`bg-white rounded-lg border-2 p-3 text-center transition-all flex-1 ${
       selected ? 'border-eps-primary shadow-md' : 'border-gray-200 hover:border-gray-300'
     }`}
   >
-    <div className={`w-3 h-3 rounded-full mx-auto mb-2`} style={{ backgroundColor: color }} />
-    <div className="text-xs text-gray-500">{label}</div>
-    <div className="text-lg font-bold text-gray-900">{value}</div>
+    <div className={`w-2 h-2 rounded-full mx-auto mb-1`} style={{ backgroundColor: color }} />
+    <div className="text-[10px] text-gray-500">{label}</div>
+    <div className="text-sm font-bold text-gray-900">{value}</div>
   </button>
 );
 
 const DecisaoPage = () => {
   const [selectedSource, setSelectedSource] = useState<string>('historico');
-  const [growthVariation, setGrowthVariation] = useState<number[]>([55]); // -20% to +30%, 0% is at 40
+  const [growthVariation, setGrowthVariation] = useState<number[]>([50]); // 0% default
 
   const variationPercent = useMemo(() => {
     const value = growthVariation[0];
-    // Map 0-100 to -20% to +30%
     return Math.round((value / 100) * 50 - 20);
   }, [growthVariation]);
 
@@ -354,120 +344,125 @@ const DecisaoPage = () => {
 
   return (
     <EPSLayout title="Decisão" icon="D">
-      <div className="space-y-4 h-[calc(100vh-100px)] overflow-auto">
-        {/* Section 1: Previsão de Vendas */}
-        <div>
-          {/* KPI Cards Row */}
-          <div className="grid grid-cols-4 gap-4 mb-4">
+      <div className="h-[calc(100vh-80px)] flex flex-col gap-3 overflow-hidden">
+        {/* Top Section: KPIs Row */}
+        <div className="grid grid-cols-[1fr_1fr_250px] gap-3">
+          {/* Vendas KPIs */}
+          <div className="grid grid-cols-4 gap-2">
             {vendasKpis.map((kpi, idx) => (
               <KPICard key={idx} {...kpi} />
             ))}
           </div>
           
-          {/* Chart */}
+          {/* Stock KPIs */}
+          <div className="grid grid-cols-4 gap-2">
+            {stockKpis.map((kpi, idx) => (
+              <KPICard key={idx} {...kpi} />
+            ))}
+          </div>
+
+          {/* Alerts Header */}
+          <div className="bg-white rounded-lg border border-gray-200 p-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <h3 className="text-sm font-semibold text-gray-800">Alertas Inteligentes</h3>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Section: Charts + Alerts */}
+        <div className="grid grid-cols-[1fr_1fr_250px] gap-3 flex-1 min-h-0">
+          {/* Vendas Chart */}
           <ComparisonChart 
             data={previsaoVendasData}
             title="Comparação de Previsões"
             subtitle="Valores em milhares de € • Período: 2025"
           />
-        </div>
-
-        {/* Section 2: Previsão de Stock */}
-        <div>
-          {/* KPI Cards Row */}
-          <div className="grid grid-cols-4 gap-4 mb-4">
-            {stockKpis.map((kpi, idx) => (
-              <KPICard key={idx} {...kpi} />
-            ))}
-          </div>
           
-          {/* Chart */}
+          {/* Stock Chart */}
           <ComparisonChart 
             data={previsaoStockData}
-            title="Comparação de Previsões de Stock"
+            title="Comparação de Previsão de Stock"
             subtitle="Valores em milhares de unidades • Período: 2025"
+            unit="K"
           />
-        </div>
 
-        {/* Section 3: Alertas Inteligentes */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
-            <h3 className="font-semibold text-gray-800">Alertas Inteligentes</h3>
-          </div>
-          <div className="space-y-2">
-            {alertasData.map((alerta, idx) => {
-              const IconComponent = alerta.icon;
-              return (
-                <div 
-                  key={idx}
-                  className={`${alerta.bgColor} ${alerta.borderColor} border-l-4 rounded-r-lg p-3 flex items-start gap-3`}
-                >
-                  <IconComponent className={`w-5 h-5 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
-                  <div>
-                    <div className={`font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
-                    <div className="text-sm text-gray-600">{alerta.description}</div>
+          {/* Alerts Content */}
+          <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto">
+            <div className="space-y-2">
+              {alertasData.map((alerta, idx) => {
+                const IconComponent = alerta.icon;
+                return (
+                  <div 
+                    key={idx}
+                    className={`${alerta.bgColor} ${alerta.borderColor} border-l-3 rounded-r-lg p-2 flex items-start gap-2`}
+                  >
+                    <IconComponent className={`w-4 h-4 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
+                    <div>
+                      <div className={`text-xs font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
+                      <div className="text-[10px] text-gray-600">{alerta.description}</div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Section 4: Simulador de Impacto */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between mb-4">
+        {/* Bottom Section: Simulator */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-semibold text-gray-800">Simulador de Impacto</h3>
-              <p className="text-xs text-gray-500">Selecione a fonte e ajuste a variação</p>
+              <h3 className="text-sm font-semibold text-gray-800">Simulador de Impacto</h3>
+              <p className="text-[10px] text-gray-500">Selecione a fonte e ajuste a variação</p>
             </div>
-            <div className="flex items-center gap-2 text-eps-primary text-sm font-medium">
+            <div className="flex items-center gap-2 text-eps-primary text-xs font-medium">
               <LayoutGrid className="w-4 h-4" />
               <span>What-If Analysis</span>
             </div>
           </div>
 
-          {/* Source Selection */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <SimulatorSourceCard 
-              color="#8B1538"
-              label="Histórico"
-              value="892K€"
-              selected={selectedSource === 'historico'}
-              onClick={() => setSelectedSource('historico')}
-            />
-            <SimulatorSourceCard 
-              color="#3B82F6"
-              label="IA Preditiva"
-              value="945K€"
-              selected={selectedSource === 'ia'}
-              onClick={() => setSelectedSource('ia')}
-            />
-            <SimulatorSourceCard 
-              color="#22C55E"
-              label="Orç. Clientes"
-              value="918K€"
-              selected={selectedSource === 'clientes'}
-              onClick={() => setSelectedSource('clientes')}
-            />
-            <SimulatorSourceCard 
-              color="#F59E0B"
-              label="Orçamento"
-              value="780K€"
-              selected={selectedSource === 'orcamento'}
-              onClick={() => setSelectedSource('orcamento')}
-            />
-          </div>
-
-          {/* Growth Variation Slider */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-700">Variação de Crescimento</span>
-              <span className={`text-xl font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
-                {variationPercent >= 0 ? '+' : ''}{variationPercent}%
-              </span>
+          <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+            {/* Source Selection */}
+            <div className="flex gap-2">
+              <SimulatorSourceCard 
+                color="#8B1538"
+                label="Histórico"
+                value="892K€"
+                selected={selectedSource === 'historico'}
+                onClick={() => setSelectedSource('historico')}
+              />
+              <SimulatorSourceCard 
+                color="#3B82F6"
+                label="IA Preditiva"
+                value="945K€"
+                selected={selectedSource === 'ia'}
+                onClick={() => setSelectedSource('ia')}
+              />
+              <SimulatorSourceCard 
+                color="#22C55E"
+                label="Orç. Clientes"
+                value="918K€"
+                selected={selectedSource === 'clientes'}
+                onClick={() => setSelectedSource('clientes')}
+              />
+              <SimulatorSourceCard 
+                color="#F59E0B"
+                label="Orçamento"
+                value="780K€"
+                selected={selectedSource === 'orcamento'}
+                onClick={() => setSelectedSource('orcamento')}
+              />
             </div>
-            <div className="relative">
+
+            {/* Growth Variation Slider */}
+            <div className="bg-gray-50 rounded-lg px-3 py-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-gray-700">Variação de Crescimento</span>
+                <span className={`text-sm font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
+                  {variationPercent >= 0 ? '+' : ''}{variationPercent}%
+                </span>
+              </div>
               <Slider
                 value={growthVariation}
                 onValueChange={setGrowthVariation}
@@ -476,33 +471,32 @@ const DecisaoPage = () => {
                 step={1}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-2">
+              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
                 <span>-20%</span>
                 <span>0%</span>
                 <span>+30%</span>
               </div>
             </div>
-          </div>
 
-          {/* Results Row */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-rose-50 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-1">Previsão Ajustada</div>
-              <div className="text-2xl font-bold text-gray-900">{previsaoAjustada}K€</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-sm text-green-700 mb-1">
-                <LayoutGrid className="w-4 h-4" />
-                <span>Impacto Cash-Flow</span>
+            {/* Results */}
+            <div className="flex gap-3">
+              <div className="bg-rose-50 rounded-lg p-2 flex-1">
+                <div className="text-[10px] text-gray-500 mb-0.5">Previsão Ajustada</div>
+                <div className="text-lg font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
               </div>
-              <div className="text-2xl font-bold text-green-700">{impactoCashFlow}</div>
+              <div className="bg-green-50 rounded-lg p-2 flex-1">
+                <div className="flex items-center gap-1 text-[10px] text-green-700 mb-0.5">
+                  <LayoutGrid className="w-3 h-3" />
+                  <span>Impacto Cash-Flow</span>
+                </div>
+                <div className="text-lg font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
+              </div>
             </div>
           </div>
 
           {/* Confirm Button */}
-          <Button className="w-full bg-eps-primary hover:bg-eps-primary/90 text-white py-3">
-            Confirmar Previsão
-            <ArrowRight className="w-4 h-4 ml-2" />
+          <Button className="w-full mt-3 bg-eps-primary hover:bg-eps-primary/90 text-white text-sm">
+            Confirmar Previsão +
           </Button>
         </div>
       </div>
