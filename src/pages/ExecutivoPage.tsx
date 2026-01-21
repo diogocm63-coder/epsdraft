@@ -15,57 +15,13 @@ import {
   Legend,
 } from "recharts";
 
-const monthlyData = [
-  { month: "Jan", real: 210000, orcamento: 195000, preditivo: 205000 },
-  { month: "Fev", real: 285000, orcamento: 280000, preditivo: 275000 },
-  { month: "Mar", real: 260000, orcamento: 285000, preditivo: 270000 },
-  { month: "Abr", real: 300000, orcamento: 295000, preditivo: 290000 },
-  { month: "Mai", real: 285000, orcamento: 310000, preditivo: 295000 },
-  { month: "Jun", real: 295000, orcamento: 305000, preditivo: 300000 },
-  { month: "Jul", real: 310000, orcamento: 320000, preditivo: 315000 },
-  { month: "Ago", real: 305000, orcamento: 315000, preditivo: 310000 },
-  { month: "Set", real: 340000, orcamento: 325000, preditivo: 335000 },
-  { month: "Out", real: 355000, orcamento: 340000, preditivo: 350000 },
-  { month: "Nov", real: 330000, orcamento: 350000, preditivo: 340000 },
-  { month: "Dez", real: 365000, orcamento: 360000, preditivo: 355000 },
-];
-
-const performanceData = [
-  { month: "Jan", eficiencia: 86, utilizacao: 82, produtividade: 84 },
-  { month: "Fev", eficiencia: 88, utilizacao: 85, produtividade: 86 },
-  { month: "Mar", eficiencia: 84, utilizacao: 80, produtividade: 82 },
-  { month: "Abr", eficiencia: 89, utilizacao: 86, produtividade: 87 },
-  { month: "Mai", eficiencia: 87, utilizacao: 84, produtividade: 85 },
-  { month: "Jun", eficiencia: 90, utilizacao: 87, produtividade: 88 },
-  { month: "Jul", eficiencia: 88, utilizacao: 85, produtividade: 86 },
-  { month: "Ago", eficiencia: 91, utilizacao: 88, produtividade: 89 },
-  { month: "Set", eficiencia: 89, utilizacao: 86, produtividade: 87 },
-  { month: "Out", eficiencia: 92, utilizacao: 89, produtividade: 90 },
-  { month: "Nov", eficiencia: 90, utilizacao: 87, produtividade: 88 },
-  { month: "Dez", eficiencia: 93, utilizacao: 90, produtividade: 91 },
-];
-
-const kpisFinanceiros = [
-  { label: "RECEITA", value: "67.260€", real: "Real: 23,17%", orc: "Orç: 66,30%", type: "REAL", change: 4.6, positive: true },
-  { label: "EBITDA", value: "62.930€", real: "Real: 7.516€", orc: "Orç: 21,1%", type: "ORÇAMENTO", change: -4.6, positive: false },
-  { label: "MARGEM EBITDA", value: "64.4%", real: "Real: 5,970%", orc: "Orç: 11,81%", type: "ORÇAMENTO", change: 9.9, positive: true },
-  { label: "CASH FLOW", value: "40.800€", real: "Real: 5,915€", orc: "Orç: 86,25%", type: "ORÇAMENTO", change: -3.8, positive: false },
-];
-
-const kpisOperacionais = [
-  { label: "MARGEM OPERACIONAL", value: "13.3%", real: "Real: 8,77%", orc: "Orç: 16,26%", type: "ORÇAMENTO", change: 4.4, positive: true },
-  { label: "EFICIÊNCIA PRODUTIVA", value: "94.9%", real: "Real: 91,78%", orc: "Orç: 96,0%", type: "ORÇAMENTO", change: -1.1, positive: false },
-  { label: "TAXA UTILIZAÇÃO", value: "87.2%", real: "Real: 85,4%", orc: "Orç: 90,0%", type: "REAL", change: -2.8, positive: false },
-];
-
-const alertas = [
-  { type: "high", title: "Correlação elevada detetada entre", detail: "\"Dias de Fornecimento e Receitas\"", level: "Alto" },
-  { type: "high", title: "Correlação elevada detetada entre", detail: "\"Volume de Produção e Margem\"", level: "Alto" },
-  { type: "high", title: "Desvio significativo identificado em", detail: "\"Variância de Receitas vs Orçamento\"", level: "Alto" },
-  { type: "medium", title: "Tendência de queda identificada em", detail: "\"Eficiência Operacional\"", level: "Médio" },
-  { type: "medium", title: "Correlação moderada detetada entre", detail: "\"Custos Energia e Produtividade\"", level: "Médio" },
-  { type: "low", title: "Indicador estável com desvio mínimo", detail: "\"Cash Flow Operacional\"", level: "Baixo" },
-];
+import {
+  executivoMonthlyData as monthlyData,
+  executivoPerformanceData as performanceData,
+  executivoKpisFinanceiros as kpisFinanceiros,
+  executivoKpisOperacionais as kpisOperacionais,
+  executivoAlertas as alertas,
+} from "@/data/wineData";
 
 const KPICard = ({ kpi }: { kpi: typeof kpisFinanceiros[0] }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-4">
