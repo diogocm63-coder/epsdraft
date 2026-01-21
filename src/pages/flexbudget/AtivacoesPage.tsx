@@ -88,16 +88,16 @@ export default function AtivacoesPage() {
                   <CardTitle className="text-sm font-medium text-gray-700">Investimento por Tipo de Ativação</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={220}>
+                  <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
                         data={ativacoesTipoPedidoData}
                         cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
+                        cy="45%"
+                        innerRadius={40}
+                        outerRadius={65}
                         dataKey="value"
-                        label={({ value }) => `${(value / 1000).toFixed(0)} K€`}
+                        label={({ value }) => `${(value / 1000).toFixed(0)}K €`}
                         labelLine={true}
                       >
                         {ativacoesTipoPedidoData.map((entry, index) => (
@@ -105,7 +105,7 @@ export default function AtivacoesPage() {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Legend wrapperStyle={{ fontSize: 10, paddingTop: '10px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </CardContent>
