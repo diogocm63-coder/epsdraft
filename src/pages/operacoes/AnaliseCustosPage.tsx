@@ -21,6 +21,16 @@ const AnaliseCustosPage = () => {
         
         <div className="flex items-center justify-between border-b border-gray-200 pb-1">
           <h2 className="text-eps-primary font-bold text-sm tracking-[0.3em]">C U S T O</h2>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <span className="text-gray-400 text-[10px]">Área (ha)</span>
+              <div className="font-bold text-sm">25,7</div>
+            </div>
+            <div className="text-right">
+              <span className="text-gray-400 text-[10px]">% Execução</span>
+              <div className="font-bold text-sm">2%</div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 flex-1 min-h-0">
