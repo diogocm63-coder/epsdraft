@@ -403,8 +403,8 @@ const DecisaoPage = () => {
           <div />
         </div>
 
-        {/* Middle Section: Charts + Alerts + Simulator - equal height */}
-        <div className="flex-1 grid grid-rows-2 gap-2 min-h-0">
+        {/* Middle Section: Charts + Alerts + Simulator */}
+        <div className="flex-1 grid grid-rows-[1fr_auto] gap-2 min-h-0">
           {/* Row 1: Charts + Alerts */}
           <div className="grid grid-cols-[1fr_1fr_180px] gap-2 min-h-0">
             {/* Vendas Chart */}
