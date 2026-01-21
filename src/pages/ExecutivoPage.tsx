@@ -102,9 +102,9 @@ const ExecutivoPage = () => {
                 <p className="text-xs text-gray-500">Receita Vendas e Produção</p>
               </div>
               <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#8B1538' }}></span> Real</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#C9A227' }}></span> Orçamento</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#5B8C5A' }}></span> Preditivo</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#C4758A' }}></span> Real</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#E0C55A' }}></span> Orçamento</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#8FC08E' }}></span> Preditivo</span>
                 <span className="ml-2 border-l border-gray-300 pl-2 flex items-center gap-1"><span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#8B1538' }}></span> Prod. Real</span>
                 <span className="flex items-center gap-1"><span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#C9A227' }}></span> Prod. Orç.</span>
                 <span className="flex items-center gap-1"><span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#5B8C5A' }}></span> Prod. Pred.</span>
@@ -124,9 +124,9 @@ const ExecutivoPage = () => {
                     return [`${(value/1000).toFixed(0)}k€`, name === 'real' ? 'Real' : name === 'orcamento' ? 'Orçamento' : 'Preditivo'];
                   }}
                 />
-                <Bar yAxisId="left" dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} name="real" />
-                <Bar yAxisId="left" dataKey="orcamento" fill="#C9A227" radius={[2, 2, 0, 0]} name="orcamento" />
-                <Bar yAxisId="left" dataKey="preditivo" fill="#5B8C5A" radius={[2, 2, 0, 0]} name="preditivo" />
+                <Bar yAxisId="left" dataKey="real" fill="#C4758A" radius={[2, 2, 0, 0]} name="real" />
+                <Bar yAxisId="left" dataKey="orcamento" fill="#E0C55A" radius={[2, 2, 0, 0]} name="orcamento" />
+                <Bar yAxisId="left" dataKey="preditivo" fill="#8FC08E" radius={[2, 2, 0, 0]} name="preditivo" />
                 <Line yAxisId="right" type="monotone" dataKey="producaoReal" stroke="#8B1538" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#8B1538", r: 4 }} name="producaoReal" />
                 <Line yAxisId="right" type="monotone" dataKey="producaoOrc" stroke="#C9A227" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#C9A227", r: 4 }} name="producaoOrc" />
                 <Line yAxisId="right" type="monotone" dataKey="producaoPred" stroke="#5B8C5A" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#5B8C5A", r: 4 }} name="producaoPred" />
