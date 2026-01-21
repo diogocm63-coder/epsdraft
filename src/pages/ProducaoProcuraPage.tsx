@@ -102,20 +102,39 @@ const productionPlanningData = [
   { task: "Expedição", status: "Pendente", jan: 0, fev: 0, mar: 0, abr: 0, mai: 40, jun: 100, jul: 100, ago: 80, set: 0, out: 0, nov: 0, dez: 50 }
 ];
 
-// Extended Product forecast table data
+// Extended Product forecast table data - 31 products
 const productForecastData = [
-  { produto: "V&W Douro Tinto", tipo: "Tinto", previsaoVendas: 12500, previsaoCapacidade: 14000, ocupacao: 89 },
-  { produto: "V&W Alentejo Tinto", tipo: "Tinto", previsaoVendas: 9800, previsaoCapacidade: 11000, ocupacao: 89 },
-  { produto: "V&W Douro Branco", tipo: "Branco", previsaoVendas: 8200, previsaoCapacidade: 9500, ocupacao: 86 },
-  { produto: "V&W Alvarinho", tipo: "Branco", previsaoVendas: 7500, previsaoCapacidade: 8000, ocupacao: 94 },
-  { produto: "V&W Douro Rosé", tipo: "Rosé", previsaoVendas: 4200, previsaoCapacidade: 5000, ocupacao: 84 },
-  { produto: "V&W Reserva Tinto", tipo: "Tinto", previsaoVendas: 6800, previsaoCapacidade: 7200, ocupacao: 94 },
-  { produto: "V&W Reserva Branco", tipo: "Branco", previsaoVendas: 5400, previsaoCapacidade: 6000, ocupacao: 90 },
-  { produto: "V&W Premium", tipo: "Tinto", previsaoVendas: 3200, previsaoCapacidade: 3500, ocupacao: 91 },
-  { produto: "V&W Grande Reserva", tipo: "Tinto", previsaoVendas: 2100, previsaoCapacidade: 2500, ocupacao: 84 },
+  { produto: "V&W Douro Tinto Regional", tipo: "Tinto", previsaoVendas: 12500, previsaoCapacidade: 14000, ocupacao: 89 },
+  { produto: "V&W Douro Tinto Reserva", tipo: "Tinto", previsaoVendas: 9800, previsaoCapacidade: 11000, ocupacao: 89 },
+  { produto: "V&W Douro Tinto Premium", tipo: "Tinto", previsaoVendas: 6200, previsaoCapacidade: 7000, ocupacao: 89 },
+  { produto: "V&W Alentejo Tinto Regional", tipo: "Tinto", previsaoVendas: 8500, previsaoCapacidade: 9500, ocupacao: 89 },
+  { produto: "V&W Alentejo Tinto Reserva", tipo: "Tinto", previsaoVendas: 5400, previsaoCapacidade: 6000, ocupacao: 90 },
+  { produto: "V&W Alentejo Tinto Premium", tipo: "Tinto", previsaoVendas: 3200, previsaoCapacidade: 3500, ocupacao: 91 },
+  { produto: "V&W Dão Tinto Regional", tipo: "Tinto", previsaoVendas: 7200, previsaoCapacidade: 8000, ocupacao: 90 },
+  { produto: "V&W Dão Tinto Reserva", tipo: "Tinto", previsaoVendas: 4800, previsaoCapacidade: 5200, ocupacao: 92 },
+  { produto: "V&W Dão Tinto Premium", tipo: "Tinto", previsaoVendas: 2800, previsaoCapacidade: 3200, ocupacao: 88 },
+  { produto: "V&W Douro Branco Regional", tipo: "Branco", previsaoVendas: 8200, previsaoCapacidade: 9500, ocupacao: 86 },
+  { produto: "V&W Douro Branco Reserva", tipo: "Branco", previsaoVendas: 5400, previsaoCapacidade: 6000, ocupacao: 90 },
+  { produto: "V&W Douro Branco Premium", tipo: "Branco", previsaoVendas: 3100, previsaoCapacidade: 3500, ocupacao: 89 },
+  { produto: "V&W Alvarinho Regional", tipo: "Branco", previsaoVendas: 7500, previsaoCapacidade: 8000, ocupacao: 94 },
+  { produto: "V&W Alvarinho Reserva", tipo: "Branco", previsaoVendas: 4200, previsaoCapacidade: 4800, ocupacao: 88 },
+  { produto: "V&W Alvarinho Premium", tipo: "Branco", previsaoVendas: 2400, previsaoCapacidade: 2800, ocupacao: 86 },
+  { produto: "V&W Vinho Verde Regional", tipo: "Branco", previsaoVendas: 9800, previsaoCapacidade: 11000, ocupacao: 89 },
+  { produto: "V&W Vinho Verde Reserva", tipo: "Branco", previsaoVendas: 5600, previsaoCapacidade: 6200, ocupacao: 90 },
+  { produto: "V&W Loureiro Regional", tipo: "Branco", previsaoVendas: 6800, previsaoCapacidade: 7500, ocupacao: 91 },
+  { produto: "V&W Encruzado Reserva", tipo: "Branco", previsaoVendas: 3800, previsaoCapacidade: 4200, ocupacao: 90 },
   { produto: "V&W Moscatel", tipo: "Branco", previsaoVendas: 4800, previsaoCapacidade: 5200, ocupacao: 92 },
-  { produto: "V&W Espumante", tipo: "Branco", previsaoVendas: 3600, previsaoCapacidade: 4000, ocupacao: 90 },
-  { produto: "V&W Rosé Premium", tipo: "Rosé", previsaoVendas: 2800, previsaoCapacidade: 3200, ocupacao: 88 }
+  { produto: "V&W Douro Rosé Regional", tipo: "Rosé", previsaoVendas: 4200, previsaoCapacidade: 5000, ocupacao: 84 },
+  { produto: "V&W Douro Rosé Reserva", tipo: "Rosé", previsaoVendas: 2800, previsaoCapacidade: 3200, ocupacao: 88 },
+  { produto: "V&W Douro Rosé Premium", tipo: "Rosé", previsaoVendas: 1600, previsaoCapacidade: 2000, ocupacao: 80 },
+  { produto: "V&W Alentejo Rosé Regional", tipo: "Rosé", previsaoVendas: 3600, previsaoCapacidade: 4200, ocupacao: 86 },
+  { produto: "V&W Alentejo Rosé Reserva", tipo: "Rosé", previsaoVendas: 2200, previsaoCapacidade: 2600, ocupacao: 85 },
+  { produto: "V&W Espumante Bruto", tipo: "Espumante", previsaoVendas: 3600, previsaoCapacidade: 4000, ocupacao: 90 },
+  { produto: "V&W Espumante Rosé", tipo: "Espumante", previsaoVendas: 2400, previsaoCapacidade: 2800, ocupacao: 86 },
+  { produto: "V&W Espumante Reserva", tipo: "Espumante", previsaoVendas: 1800, previsaoCapacidade: 2200, ocupacao: 82 },
+  { produto: "V&W Porto Tawny", tipo: "Porto", previsaoVendas: 5200, previsaoCapacidade: 5800, ocupacao: 90 },
+  { produto: "V&W Porto Ruby", tipo: "Porto", previsaoVendas: 4600, previsaoCapacidade: 5200, ocupacao: 88 },
+  { produto: "V&W Porto Vintage", tipo: "Porto", previsaoVendas: 2100, previsaoCapacidade: 2500, ocupacao: 84 }
 ];
 
 const getStatusColor = (status: string) => {
@@ -132,6 +151,8 @@ const getTypeColor = (tipo: string) => {
     case "Tinto": return "text-eps-primary";
     case "Branco": return "text-amber-600";
     case "Rosé": return "text-pink-500";
+    case "Espumante": return "text-blue-500";
+    case "Porto": return "text-purple-600";
     default: return "text-gray-600";
   }
 };
