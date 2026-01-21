@@ -78,7 +78,7 @@ const StartPage = () => {
                     </div>
                     
                     {/* Title */}
-                    <h2 className="text-sm font-semibold text-gray-800 mb-1.5">{module.title}</h2>
+                    <h2 className="font-semibold text-gray-800 mb-1.5 text-xl">{module.title}</h2>
                     
                     {/* Description */}
                     <p className="text-xs text-gray-500 leading-relaxed flex-1 line-clamp-3">{module.description}</p>
