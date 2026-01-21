@@ -17,49 +17,14 @@ import {
   Cell,
 } from "recharts";
 
-const produtoData = [
-  { name: "Prod A", rentabilidade: 95, custos: 45 },
-  { name: "Prod B", rentabilidade: 78, custos: 52 },
-  { name: "Prod C", rentabilidade: 72, custos: 48 },
-  { name: "Prod D", rentabilidade: 65, custos: 38 },
-  { name: "Prod E", rentabilidade: 58, custos: 42 },
-  { name: "Prod F", rentabilidade: 52, custos: 35 },
-];
-
-const canalData = [
-  { name: "Retalho", meta: 450, atual: 420 },
-  { name: "Online", meta: 350, atual: 280 },
-  { name: "Grossista", meta: 200, atual: 175 },
-  { name: "Direto", meta: 150, atual: 130 },
-];
-
-const mercadoData = [
-  { name: "Norte", penetracao: 72, competitividade: 45 },
-  { name: "Centro", penetracao: 68, competitividade: 38 },
-  { name: "Sul", penetracao: 55, competitividade: 52 },
-  { name: "Ilhas", penetracao: 42, competitividade: 35 },
-];
-
-const custosData = [
-  { name: "Produto A", diretos: 45, indiretos: 62 },
-  { name: "Produto B", diretos: 38, indiretos: 52 },
-  { name: "Produto C", diretos: 52, indiretos: 68 },
-  { name: "Produto D", diretos: 35, indiretos: 48 },
-];
-
-const eficienciaData = [
-  { name: "Retalho", eficiencia: 92, potencial: 15 },
-  { name: "Online", eficiencia: 78, potencial: 8 },
-  { name: "Grossista", eficiencia: 65, potencial: 18 },
-  { name: "Direto", eficiencia: 88, potencial: 5 },
-];
-
-const expansaoData = [
-  { name: "Norte", value: 35, color: "#8B1538" },
-  { name: "Centro", value: 28, color: "#B91C47" },
-  { name: "Sul", value: 22, color: "#D4A5A5" },
-  { name: "Ilhas", value: 15, color: "#C9A227" },
-];
+import {
+  controloProdutoData as produtoData,
+  controloCanalData as canalData,
+  controloMercadoData as mercadoData,
+  controloCustosData as custosData,
+  controloEficienciaData as eficienciaData,
+  controloExpansaoData as expansaoData,
+} from "@/data/wineData";
 
 const IndicatorSection = ({ 
   icon, 

@@ -15,50 +15,13 @@ import {
 } from "recharts";
 import { useState } from "react";
 
-const cashFlowData = [
-  { month: "Jan", value: 180, cumulative: 180 },
-  { month: "Fev", value: 320, cumulative: 500 },
-  { month: "Mar", value: 580, cumulative: 1080 },
-  { month: "Abr", value: 920, cumulative: 2000 },
-  { month: "Mai", value: 1450, cumulative: 3450 },
-  { month: "Jun", value: 2100, cumulative: 5550 },
-  { month: "Jul", value: 3200, cumulative: 8750 },
-  { month: "Ago", value: 3850, cumulative: 12600 },
-  { month: "Set", value: 4200, cumulative: 16800 },
-  { month: "Out", value: 4650, cumulative: 21450 },
-];
-
-const cashFlowItems = [
-  { name: "Vinho Tinto", inventario: 17.86, otimizacao: 124.95, color: "#8B1538" },
-  { name: "Espumante", inventario: 15.55, otimizacao: 116.50, color: "#B91C47" },
-  { name: "Reserva", inventario: 3.406, otimizacao: null, color: "#D4A5A5" },
-  { name: "Colheita", inventario: 8.005, otimizacao: 38.05, color: "#C9A227" },
-  { name: "Total", inventario: 10.870, otimizacao: null, color: "#4A5568" },
-];
-
-const cashFlowRight = [
-  { name: "Dose de 10/71", inventario: 6.593, kpn: -2, margem: "5,74%" },
-  { name: "Rostos 3.202", inventario: "$0050", kpn: -1, margem: "$3.55" },
-  { name: "Ractou 9.2091", inventario: "18.800", kpn: -2, margem: "$2.2%" },
-  { name: "Insalor 3/2018", inventario: "$138", kpn: 3, margem: "$3.2%" },
-  { name: "Batikot 3.209", inventario: "-", kpn: -1, margem: "$3.2%" },
-  { name: "Optianização", inventario: "18.050", kpn: 1, margem: "10.86" },
-];
-
-const cenarios = [
-  { name: "Autan Euói", cenarios: 2.038, margem: "$3.3%" },
-  { name: "Noseado delginço", cenarios: 1.900, margem: "$2.4%" },
-  { name: "Novélaclon Jánlife", cenarios: 4.906, margem: "$6.2%" },
-  { name: "Doeadodit riuola", cenarios: 4.950, margem: "$0.5%" },
-];
-
-const kpis = [
-  { value: "09.120", label: "Economias Ligadas", change: -6.3, color: "text-red-600" },
-  { value: "1.470", label: "Toneladas", change: 4.3, color: "text-green-600" },
-  { value: "$0560", label: "Mutao", change: -1.3, color: "text-red-600" },
-  { value: "1", label: "Kotao", change: -2.80, color: "text-red-600" },
-  { value: "$5.640", label: "Korojen", change: 37, color: "text-green-600" },
-];
+import {
+  decisaoCashFlowData as cashFlowData,
+  decisaoCashFlowItems as cashFlowItems,
+  decisaoCashFlowRight as cashFlowRight,
+  decisaoCenarios as cenarios,
+  decisaoKpis as kpis,
+} from "@/data/wineData";
 
 const ActionButton = ({ 
   icon, 
