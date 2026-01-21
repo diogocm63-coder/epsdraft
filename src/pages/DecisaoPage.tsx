@@ -239,82 +239,110 @@ const ComparisonChart = ({
   data, 
   title, 
   subtitle,
-  unit = 'K€'
+  unit = 'K€',
+  selectedSource,
+  onSourceClick
 }: { 
   data: typeof previsaoVendasData;
   title: string;
   subtitle: string;
   unit?: string;
-}) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-2 h-full flex flex-col">
-    <div className="flex items-center justify-between mb-1">
-      <div>
-        <h3 className="text-xs font-semibold text-gray-800">{title}</h3>
-        <p className="text-[9px] text-gray-500">{subtitle}</p>
+  selectedSource: string | null;
+  onSourceClick: (source: string) => void;
+}) => {
+  const sources = [
+    { key: 'historico', label: 'Histórico', color: '#8B1538' },
+    { key: 'ia', label: 'IA', color: '#3B82F6' },
+    { key: 'clientes', label: 'Clientes', color: '#22C55E' },
+    { key: 'orcamento', label: 'Orçamento', color: '#F59E0B' },
+  ];
+
+  const getOpacity = (sourceKey: string) => {
+    if (!selectedSource) return 1;
+    return selectedSource === sourceKey ? 1 : 0.15;
+  };
+
+  const getStrokeWidth = (sourceKey: string) => {
+    if (!selectedSource) return 2;
+    return selectedSource === sourceKey ? 3 : 1;
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-2 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <h3 className="text-xs font-semibold text-gray-800">{title}</h3>
+          <p className="text-[9px] text-gray-500">{subtitle}</p>
+        </div>
+        <div className="flex items-center gap-2 text-[9px]">
+          {sources.map((source) => (
+            <button
+              key={source.key}
+              onClick={() => onSourceClick(source.key)}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-all ${
+                selectedSource === source.key 
+                  ? 'bg-gray-100 ring-1 ring-gray-300' 
+                  : 'hover:bg-gray-50'
+              } ${!selectedSource || selectedSource === source.key ? 'opacity-100' : 'opacity-40'}`}
+            >
+              <div 
+                className="w-2 h-2 rounded-full" 
+                style={{ backgroundColor: source.color }}
+              />
+              <span>{source.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="flex items-center gap-2 text-[9px]">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#8B1538]" />
-          <span>Histórico</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-          <span>IA</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
-          <span>Clientes</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#F59E0B]" />
-          <span>Orçamento</span>
-        </div>
+      <div className="flex-1 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey="month" tick={{ fontSize: 8 }} />
+            <YAxis tick={{ fontSize: 8 }} tickFormatter={(value) => `${value}${unit}`} />
+            <Tooltip 
+              formatter={(value: number) => [`${value}${unit}`, '']}
+              contentStyle={{ fontSize: 10 }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="historico" 
+              stroke="#8B1538" 
+              strokeWidth={getStrokeWidth('historico')} 
+              strokeOpacity={getOpacity('historico')}
+              dot={{ fill: '#8B1538', r: selectedSource === 'historico' ? 3 : 2, fillOpacity: getOpacity('historico') }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="ia" 
+              stroke="#3B82F6" 
+              strokeWidth={getStrokeWidth('ia')} 
+              strokeOpacity={getOpacity('ia')}
+              dot={{ fill: '#3B82F6', r: selectedSource === 'ia' ? 3 : 2, fillOpacity: getOpacity('ia') }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="clientes" 
+              stroke="#22C55E" 
+              strokeWidth={getStrokeWidth('clientes')} 
+              strokeOpacity={getOpacity('clientes')}
+              dot={{ fill: '#22C55E', r: selectedSource === 'clientes' ? 3 : 2, fillOpacity: getOpacity('clientes') }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="orcamento" 
+              stroke="#F59E0B" 
+              strokeWidth={getStrokeWidth('orcamento')} 
+              strokeOpacity={getOpacity('orcamento')}
+              strokeDasharray="5 5"
+              dot={{ fill: '#F59E0B', r: selectedSource === 'orcamento' ? 3 : 2, fillOpacity: getOpacity('orcamento') }} 
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
-    <div className="flex-1 min-h-0">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="month" tick={{ fontSize: 8 }} />
-          <YAxis tick={{ fontSize: 8 }} tickFormatter={(value) => `${value}${unit}`} />
-          <Tooltip 
-            formatter={(value: number) => [`${value}${unit}`, '']}
-            contentStyle={{ fontSize: 10 }}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="historico" 
-            stroke="#8B1538" 
-            strokeWidth={2} 
-            dot={{ fill: '#8B1538', r: 2 }} 
-          />
-          <Line 
-            type="monotone" 
-            dataKey="ia" 
-            stroke="#3B82F6" 
-            strokeWidth={2} 
-            dot={{ fill: '#3B82F6', r: 2 }} 
-          />
-          <Line 
-            type="monotone" 
-            dataKey="clientes" 
-            stroke="#22C55E" 
-            strokeWidth={2} 
-            dot={{ fill: '#22C55E', r: 2 }} 
-          />
-          <Line 
-            type="monotone" 
-            dataKey="orcamento" 
-            stroke="#F59E0B" 
-            strokeWidth={2} 
-            strokeDasharray="5 5"
-            dot={{ fill: '#F59E0B', r: 2 }} 
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
+  );
+};
 
 // Simulator Source Card
 const SimulatorSourceCard = ({ 
@@ -343,9 +371,14 @@ const SimulatorSourceCard = ({
 );
 
 const DecisaoPage = () => {
-  const [selectedSource, setSelectedSource] = useState<string>('historico');
+  const [selectedSource, setSelectedSource] = useState<string | null>('historico');
   const [growthVariation, setGrowthVariation] = useState<number[]>([50]); // 0% default
   const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
+
+  const handleSourceClick = (source: string) => {
+    setSelectedSource(prev => prev === source ? null : source);
+    setIsConfirmed(false);
+  };
 
   const variationPercent = useMemo(() => {
     const value = growthVariation[0];
@@ -382,7 +415,7 @@ const DecisaoPage = () => {
                 key={idx} 
                 {...kpi} 
                 selected={selectedSource === kpi.sourceKey}
-                onClick={() => { setSelectedSource(kpi.sourceKey); setIsConfirmed(false); }}
+                onClick={() => handleSourceClick(kpi.sourceKey)}
               />
             ))}
           </div>
@@ -394,7 +427,7 @@ const DecisaoPage = () => {
                 key={idx} 
                 {...kpi} 
                 selected={selectedSource === kpi.sourceKey}
-                onClick={() => { setSelectedSource(kpi.sourceKey); setIsConfirmed(false); }}
+                onClick={() => handleSourceClick(kpi.sourceKey)}
               />
             ))}
           </div>
@@ -412,6 +445,8 @@ const DecisaoPage = () => {
               data={previsaoVendasData}
               title="Comparação de Previsões"
               subtitle="Valores em milhares de € • Período: 2025"
+              selectedSource={selectedSource}
+              onSourceClick={handleSourceClick}
             />
             
             {/* Stock Chart */}
@@ -420,6 +455,8 @@ const DecisaoPage = () => {
               title="Comparação de Previsão de Stock"
               subtitle="Valores em milhares de unidades • Período: 2025"
               unit="K"
+              selectedSource={selectedSource}
+              onSourceClick={handleSourceClick}
             />
 
             {/* Alerts Content */}
@@ -469,28 +506,28 @@ const DecisaoPage = () => {
                   label="Histórico"
                   value="892K€"
                   selected={selectedSource === 'historico'}
-                  onClick={() => { setSelectedSource('historico'); setIsConfirmed(false); }}
+                  onClick={() => handleSourceClick('historico')}
                 />
                 <SimulatorSourceCard 
                   color="#3B82F6"
                   label="IA Preditiva"
                   value="945K€"
                   selected={selectedSource === 'ia'}
-                  onClick={() => { setSelectedSource('ia'); setIsConfirmed(false); }}
+                  onClick={() => handleSourceClick('ia')}
                 />
                 <SimulatorSourceCard 
                   color="#22C55E"
                   label="Orç. Clientes"
                   value="918K€"
                   selected={selectedSource === 'clientes'}
-                  onClick={() => { setSelectedSource('clientes'); setIsConfirmed(false); }}
+                  onClick={() => handleSourceClick('clientes')}
                 />
                 <SimulatorSourceCard 
                   color="#F59E0B"
                   label="Orçamento"
                   value="780K€"
                   selected={selectedSource === 'orcamento'}
-                  onClick={() => { setSelectedSource('orcamento'); setIsConfirmed(false); }}
+                  onClick={() => handleSourceClick('orcamento')}
                 />
               </div>
 
