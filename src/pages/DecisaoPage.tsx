@@ -1,575 +1,219 @@
 import EPSLayout from "@/components/layout/EPSLayout";
-import { TrendingUp, TrendingDown, AlertTriangle, Info, LayoutGrid } from "lucide-react";
+import { ShoppingCart, Package, Settings, Wine, Grape, Droplets } from "lucide-react";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LineChart,
+  Line,
+  ComposedChart,
+  Area,
 } from "recharts";
-import { useState, useMemo } from "react";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { useState } from "react";
 
-// Data for Previsão de Vendas chart
-const previsaoVendasData = [
-  { month: 'Jan', historico: 45, ia: 48, clientes: 46, orcamento: 44 },
-  { month: 'Fev', historico: 52, ia: 56, clientes: 54, orcamento: 50 },
-  { month: 'Mar', historico: 58, ia: 62, clientes: 60, orcamento: 55 },
-  { month: 'Abr', historico: 65, ia: 68, clientes: 66, orcamento: 58 },
-  { month: 'Mai', historico: 62, ia: 65, clientes: 63, orcamento: 60 },
-  { month: 'Jun', historico: 68, ia: 72, clientes: 70, orcamento: 64 },
-  { month: 'Jul', historico: 75, ia: 80, clientes: 78, orcamento: 70 },
-  { month: 'Ago', historico: 78, ia: 85, clientes: 82, orcamento: 74 },
-  { month: 'Set', historico: 82, ia: 88, clientes: 85, orcamento: 76 },
-  { month: 'Out', historico: 85, ia: 92, clientes: 88, orcamento: 78 },
-  { month: 'Nov', historico: 90, ia: 96, clientes: 92, orcamento: 82 },
-  { month: 'Dez', historico: 95, ia: 100, clientes: 98, orcamento: 85 },
-];
+import {
+  decisaoCashFlowData as cashFlowData,
+  decisaoCashFlowItems as cashFlowItems,
+  decisaoCashFlowRight as cashFlowRight,
+  decisaoCenarios as cenarios,
+  decisaoKpis as kpis,
+} from "@/data/wineData";
 
-// Data for Stock chart (different values)
-const previsaoStockData = [
-  { month: 'Jan', historico: 28, ia: 32, clientes: 30, orcamento: 25 },
-  { month: 'Fev', historico: 30, ia: 35, clientes: 32, orcamento: 26 },
-  { month: 'Mar', historico: 32, ia: 38, clientes: 35, orcamento: 28 },
-  { month: 'Abr', historico: 35, ia: 42, clientes: 38, orcamento: 30 },
-  { month: 'Mai', historico: 38, ia: 45, clientes: 42, orcamento: 32 },
-  { month: 'Jun', historico: 42, ia: 50, clientes: 48, orcamento: 35 },
-  { month: 'Jul', historico: 48, ia: 55, clientes: 52, orcamento: 38 },
-  { month: 'Ago', historico: 52, ia: 60, clientes: 58, orcamento: 42 },
-  { month: 'Set', historico: 58, ia: 65, clientes: 62, orcamento: 48 },
-  { month: 'Out', historico: 62, ia: 70, clientes: 68, orcamento: 52 },
-  { month: 'Nov', historico: 68, ia: 75, clientes: 72, orcamento: 58 },
-  { month: 'Dez', historico: 72, ia: 80, clientes: 78, orcamento: 62 },
-];
-
-// KPI data for Vendas
-const vendasKpis = [
-  { 
-    sourceKey: 'historico',
-    badge: 'Histórico',
-    badgeColor: 'bg-[#8B1538]',
-    title: 'Previsão Total Anual',
-    value: '892K€',
-    change: '+5.2% vs ano anterior',
-    changeColor: 'text-[#8B1538]',
-    positive: true
-  },
-  { 
-    sourceKey: 'ia',
-    badge: 'IA Preditiva',
-    badgeColor: 'bg-[#3B82F6]',
-    title: 'Previsão Total Anual',
-    value: '945K€',
-    change: '+12% confiança alta',
-    changeColor: 'text-[#3B82F6]',
-    positive: true
-  },
-  { 
-    sourceKey: 'clientes',
-    badge: 'Orç. Clientes',
-    badgeColor: 'bg-[#22C55E]',
-    title: 'Previsão Total Anual',
-    value: '918K€',
-    change: '+8% compromisso',
-    changeColor: 'text-[#22C55E]',
-    positive: true
-  },
-  { 
-    sourceKey: 'orcamento',
-    badge: 'Orçamento',
-    badgeColor: 'bg-[#F59E0B]',
-    title: 'Meta Orçamental',
-    value: '780K€',
-    change: '↓ Base fiscal 2025',
-    changeColor: 'text-[#F59E0B]',
-    positive: false
-  },
-];
-
-// KPI data for Stock
-const stockKpis = [
-  { 
-    sourceKey: 'historico',
-    badge: 'Histórico',
-    badgeColor: 'bg-[#8B1538]',
-    title: 'Stock Total Anual',
-    value: '180K un',
-    change: '+3.8% vs ano anterior',
-    changeColor: 'text-[#8B1538]',
-    positive: true
-  },
-  { 
-    sourceKey: 'ia',
-    badge: 'IA Preditiva',
-    badgeColor: 'bg-[#3B82F6]',
-    title: 'Stock Total Anual',
-    value: '198K un',
-    change: '+10% confiança alta',
-    changeColor: 'text-[#3B82F6]',
-    positive: true
-  },
-  { 
-    sourceKey: 'clientes',
-    badge: 'Orç. Clientes',
-    badgeColor: 'bg-[#22C55E]',
-    title: 'Stock Total Anual',
-    value: '188K un',
-    change: '+6% compromisso',
-    changeColor: 'text-[#22C55E]',
-    positive: true
-  },
-  { 
-    sourceKey: 'orcamento',
-    badge: 'Orçamento',
-    badgeColor: 'bg-[#F59E0B]',
-    title: 'Meta Stock',
-    value: '175K un',
-    change: '↓ Base fiscal 2025',
-    changeColor: 'text-[#F59E0B]',
-    positive: false
-  },
-];
-
-// Alerts data
-const alertasData = [
-  { 
-    type: 'warning',
-    icon: AlertTriangle,
-    title: 'Desvio Significativo - Março',
-    description: 'IA prevê -12% vs Orçamento Clientes',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-l-amber-400',
-    iconColor: 'text-amber-500',
-    titleColor: 'text-amber-700'
-  },
-  { 
-    type: 'success',
-    icon: TrendingUp,
-    title: 'Tendência Positiva - Q3',
-    description: 'Todas as fontes convergem em +15%',
-    bgColor: 'bg-green-50',
-    borderColor: 'border-l-green-400',
-    iconColor: 'text-green-500',
-    titleColor: 'text-green-700'
-  },
-  { 
-    type: 'danger',
-    icon: TrendingDown,
-    title: 'Risco de Subprodução',
-    description: 'Histórico abaixo do orçamento em 8%',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-l-red-400',
-    iconColor: 'text-red-500',
-    titleColor: 'text-red-700'
-  },
-  { 
-    type: 'info',
-    icon: Info,
-    title: 'Sazonalidade Detectada',
-    description: 'Pico esperado em Nov-Dez',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-l-blue-400',
-    iconColor: 'text-blue-500',
-    titleColor: 'text-blue-700'
-  },
-];
-
-// Compact KPI Card Component
-const KPICard = ({ 
-  badge, 
-  badgeColor, 
-  title, 
-  value, 
-  change, 
-  changeColor,
-  positive,
-  selected,
-  onClick,
-}: { 
-  badge: string;
-  badgeColor: string;
-  title: string;
-  value: string;
-  change: string;
-  changeColor: string;
-  positive: boolean;
-  selected?: boolean;
-  onClick?: () => void;
-}) => (
-  <button 
-    onClick={onClick}
-    className={`bg-white rounded-lg border-2 p-2 flex gap-2 text-left transition-all w-full ${
-      selected ? 'border-eps-primary shadow-md ring-1 ring-eps-primary/20' : 'border-gray-200 hover:border-gray-300'
-    }`}
-  >
-    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
-      {positive ? (
-        <TrendingUp className="w-4 h-4 text-eps-primary" />
-      ) : (
-        <div className="w-4 h-4 rounded-full border-2 border-[#F59E0B]" />
-      )}
-    </div>
-    <div className="flex-1 min-w-0 relative">
-      {selected && (
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-eps-primary rounded-full flex items-center justify-center">
-          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-      )}
-      <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium text-white rounded ${badgeColor}`}>
-        {badge}
-      </span>
-      <div className="text-[10px] text-gray-500 mt-0.5">{title}</div>
-      <div className="text-lg font-bold text-gray-900 leading-tight">{value}</div>
-      <div className={`text-[10px] font-medium ${changeColor} flex items-center gap-0.5`}>
-        {positive && <span>↑</span>}
-        {change}
-      </div>
-    </div>
-  </button>
-);
-
-// Comparison Chart Component
-const ComparisonChart = ({ 
-  data, 
-  title, 
-  subtitle,
-  unit = 'K€',
-  selectedSource
-}: { 
-  data: typeof previsaoVendasData;
-  title: string;
-  subtitle: string;
-  unit?: string;
-  selectedSource?: string;
-}) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-2 h-full flex flex-col">
-    <div className="flex items-center justify-between mb-1">
-      <div>
-        <h3 className="text-xs font-semibold text-gray-800">{title}</h3>
-        <p className="text-[9px] text-gray-500">{subtitle}</p>
-      </div>
-      <div className="flex items-center gap-2 text-[9px]">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#8B1538]" />
-          <span>Histórico</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-          <span>IA</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
-          <span>Clientes</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[#F59E0B]" />
-          <span>Orçamento</span>
-        </div>
-      </div>
-    </div>
-    <div className="flex-1 min-h-0">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="month" tick={{ fontSize: 8 }} />
-          <YAxis tick={{ fontSize: 8 }} tickFormatter={(value) => `${value}${unit}`} />
-          <Tooltip 
-            formatter={(value: number) => [`${value}${unit}`, '']}
-            contentStyle={{ fontSize: 10 }}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="historico" 
-            stroke="#8B1538" 
-            strokeWidth={selectedSource === 'historico' ? 3 : 1.5} 
-            strokeOpacity={selectedSource === 'historico' ? 1 : 0.4}
-            dot={{ fill: '#8B1538', r: selectedSource === 'historico' ? 3 : 2 }} 
-          />
-          <Line 
-            type="monotone" 
-            dataKey="ia" 
-            stroke="#3B82F6" 
-            strokeWidth={selectedSource === 'ia' ? 3 : 1.5} 
-            strokeOpacity={selectedSource === 'ia' ? 1 : 0.4}
-            dot={{ fill: '#3B82F6', r: selectedSource === 'ia' ? 3 : 2 }} 
-          />
-          <Line 
-            type="monotone" 
-            dataKey="clientes" 
-            stroke="#22C55E" 
-            strokeWidth={selectedSource === 'clientes' ? 3 : 1.5} 
-            strokeOpacity={selectedSource === 'clientes' ? 1 : 0.4}
-            dot={{ fill: '#22C55E', r: selectedSource === 'clientes' ? 3 : 2 }} 
-          />
-          <Line 
-            type="monotone" 
-            dataKey="orcamento" 
-            stroke="#F59E0B" 
-            strokeWidth={selectedSource === 'orcamento' ? 3 : 1.5} 
-            strokeOpacity={selectedSource === 'orcamento' ? 1 : 0.4}
-            strokeDasharray="5 5"
-            dot={{ fill: '#F59E0B', r: selectedSource === 'orcamento' ? 3 : 2 }} 
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-// Simulator Source Card
-const SimulatorSourceCard = ({ 
-  color, 
+const ActionButton = ({ 
+  icon, 
   label, 
-  value, 
-  selected, 
+  active, 
   onClick 
 }: { 
-  color: string;
-  label: string;
-  value: string;
-  selected: boolean;
+  icon: React.ReactNode; 
+  label: string; 
+  active: boolean; 
   onClick: () => void;
 }) => (
-  <button 
+  <button
     onClick={onClick}
-    className={`bg-white rounded-lg border-2 p-3 text-center transition-all flex-1 ${
-      selected ? 'border-eps-primary shadow-md' : 'border-gray-200 hover:border-gray-300'
+    className={`flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all ${
+      active 
+        ? "bg-eps-light border-eps-primary" 
+        : "bg-white border-gray-200 hover:border-eps-primary hover:bg-eps-background"
     }`}
   >
-    <div className={`w-2 h-2 rounded-full mx-auto mb-1`} style={{ backgroundColor: color }} />
-    <div className="text-[10px] text-gray-500">{label}</div>
-    <div className="text-sm font-bold text-gray-900">{value}</div>
+    {icon}
+    <span className={`mt-2 text-sm font-medium ${active ? "text-eps-primary" : "text-gray-700"}`}>
+      {label}
+    </span>
   </button>
 );
 
 const DecisaoPage = () => {
-  const [selectedSource, setSelectedSource] = useState<string>('historico');
-  const [growthVariation, setGrowthVariation] = useState<number[]>([50]); // 0% default
-  const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
-
-  const variationPercent = useMemo(() => {
-    const value = growthVariation[0];
-    return Math.round((value / 100) * 50 - 20);
-  }, [growthVariation]);
-
-  const baseValues = {
-    historico: 892,
-    ia: 945,
-    clientes: 918,
-    orcamento: 780
-  };
-
-  const selectedBaseValue = baseValues[selectedSource as keyof typeof baseValues] || 892;
-  
-  const previsaoAjustada = useMemo(() => {
-    return Math.round(selectedBaseValue * (1 + variationPercent / 100));
-  }, [selectedBaseValue, variationPercent]);
-
-  const impactoCashFlow = useMemo(() => {
-    const diff = previsaoAjustada - selectedBaseValue;
-    return diff >= 0 ? `+${diff}K€` : `${diff}K€`;
-  }, [previsaoAjustada, selectedBaseValue]);
+  const [activeAction, setActiveAction] = useState<string>("vender");
 
   return (
     <EPSLayout title="Decisão" icon="D">
-      <div className="h-[calc(100vh-80px)] flex flex-col gap-2 overflow-hidden">
-        {/* Top Section: KPIs Row */}
-        <div className="grid grid-cols-[1fr_1fr_180px] gap-2">
-          {/* Vendas KPIs */}
-          <div className="grid grid-cols-4 gap-2">
-            {vendasKpis.map((kpi, idx) => (
-              <KPICard 
-                key={idx} 
-                {...kpi} 
-                selected={selectedSource === kpi.sourceKey}
-                onClick={() => { setSelectedSource(kpi.sourceKey); setIsConfirmed(false); }}
-              />
-            ))}
-          </div>
-          
-          {/* Stock KPIs */}
-          <div className="grid grid-cols-4 gap-2">
-            {stockKpis.map((kpi, idx) => (
-              <KPICard 
-                key={idx} 
-                {...kpi} 
-                selected={selectedSource === kpi.sourceKey}
-                onClick={() => { setSelectedSource(kpi.sourceKey); setIsConfirmed(false); }}
-              />
-            ))}
-          </div>
-
-          {/* Alerts Header */}
-          <div className="bg-white rounded-lg border border-gray-200 p-2">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <h3 className="text-xs font-semibold text-gray-800">Alertas Inteligentes</h3>
-            </div>
-          </div>
+      <div className="grid grid-cols-12 gap-4 h-[calc(100vh-100px)]">
+        {/* Action Buttons Row */}
+        <div className="col-span-12 grid grid-cols-3 gap-4">
+          <ActionButton
+            icon={<ShoppingCart className="w-8 h-8 text-eps-primary" />}
+            label="COMPRAR A GRANEL"
+            active={activeAction === "comprar"}
+            onClick={() => setActiveAction("comprar")}
+          />
+          <ActionButton
+            icon={<Package className="w-8 h-8 text-eps-primary" />}
+            label="VENDER A GRANEL"
+            active={activeAction === "vender"}
+            onClick={() => setActiveAction("vender")}
+          />
+          <ActionButton
+            icon={<Settings className="w-8 h-8 text-eps-primary" />}
+            label="AJUSTAR PRODUÇÃO"
+            active={activeAction === "ajustar"}
+            onClick={() => setActiveAction("ajustar")}
+          />
         </div>
 
-        {/* Middle Section: Charts + Alerts + Simulator - equal height */}
-        <div className="flex-1 grid grid-rows-2 gap-2 min-h-0">
-          {/* Row 1: Charts + Alerts */}
-          <div className="grid grid-cols-[1fr_1fr_180px] gap-2 min-h-0">
-            {/* Vendas Chart */}
-            <ComparisonChart 
-              data={previsaoVendasData}
-              title="Comparação de Previsões"
-              subtitle="Valores em milhares de € • Período: 2025"
-              selectedSource={selectedSource}
-            />
+        {/* Main Content */}
+        <div className="col-span-12 grid grid-cols-12 gap-4">
+          {/* Left Sidebar - Cash Flow */}
+          <div className="col-span-2 bg-white rounded-lg border border-gray-200 p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4">Cash Flow</h3>
+            <div className="space-y-3">
+              {cashFlowItems.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    {item.name === "Vinho Tinto" && <Wine className="w-3 h-3" style={{ color: item.color }} />}
+                    {item.name === "Espumante" && <Grape className="w-3 h-3" style={{ color: item.color }} />}
+                    {item.name === "Reserva" && <Droplets className="w-3 h-3" style={{ color: item.color }} />}
+                    {item.name === "Colheita" && <Wine className="w-3 h-3" style={{ color: item.color }} />}
+                    {item.name === "Total" && <Package className="w-3 h-3" style={{ color: item.color }} />}
+                    <span className={item.name === "Total" ? "font-semibold" : ""}>{item.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">{item.inventario}</div>
+                    <div className="text-gray-400">{item.otimizacao ?? "-"}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
             
-            {/* Stock Chart */}
-            <ComparisonChart 
-              data={previsaoStockData}
-              title="Comparação de Previsão de Stock"
-              subtitle="Valores em milhares de unidades • Período: 2025"
-              unit="K"
-              selectedSource={selectedSource}
-            />
-
-            {/* Alerts Content */}
-            <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto flex flex-col">
-              <div className="flex items-center gap-1.5 mb-1.5 pb-1.5 border-b border-gray-100">
-                <AlertTriangle className="w-3 h-3 text-amber-500" />
-                <h3 className="text-[10px] font-semibold text-gray-800">Alertas Inteligentes</h3>
-              </div>
-              <div className="space-y-1.5 flex-1">
-                {alertasData.map((alerta, idx) => {
-                  const IconComponent = alerta.icon;
-                  return (
-                    <div 
-                      key={idx}
-                      className={`${alerta.bgColor} ${alerta.borderColor} border-l-3 rounded-r-lg p-1.5 flex items-start gap-1.5`}
-                    >
-                      <IconComponent className={`w-3 h-3 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
-                      <div>
-                        <div className={`text-[10px] font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
-                        <div className="text-[9px] text-gray-600">{alerta.description}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* Portfolio Impact */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <h4 className="text-xs font-semibold text-gray-600 mb-3">▼ Impacto Portfólio</h4>
+              <div className="flex justify-around">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-16 bg-gradient-to-t from-eps-primary to-eps-light rounded"></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-12 bg-gradient-to-t from-eps-primary to-eps-light rounded"></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-gradient-to-t from-eps-gold to-yellow-200 rounded"></div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Row 2: Simulator */}
-          <div className="grid grid-cols-[1fr_180px] gap-2 min-h-0">
-            <div className="bg-white rounded-lg border border-gray-200 p-2 flex flex-col min-h-0">
-              <div className="flex items-center justify-between mb-1">
-                <div>
-                  <h3 className="text-xs font-semibold text-gray-800">Simulador de Impacto</h3>
-                  <p className="text-[9px] text-gray-500">Selecione a fonte e ajuste a variação</p>
-                </div>
-                <div className="flex items-center gap-1 text-eps-primary text-[10px] font-medium">
-                  <LayoutGrid className="w-3 h-3" />
-                  <span>What-If Analysis</span>
+          {/* Center - Main Chart */}
+          <div className="col-span-7 bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-800">CASH FLOW IMPACTO SIMULADOR</h3>
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  <span>Comprar a Granel</span>
+                  <span>BoS</span>
+                  <span>Alinto</span>
+                  <span>CompatR</span>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <button className="text-xs text-gray-500 px-2 py-1 border rounded">◇ Série</button>
+                <button className="text-xs text-white bg-eps-primary px-3 py-1 rounded font-medium">HERDADO</button>
+              </div>
+            </div>
+            
+            <ResponsiveContainer width="100%" height={280}>
+              <ComposedChart data={cashFlowData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8B1538" radius={[2, 2, 0, 0]} />
+                <Area type="monotone" dataKey="value" fill="#D4A5A5" fillOpacity={0.3} stroke="none" />
+                <Line type="monotone" dataKey="cumulative" stroke="#C9A227" strokeWidth={2} dot={{ fill: "#C9A227", r: 4 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
 
-              {/* Source Selection + Slider + Results in a row */}
-              <div className="flex gap-2 flex-1 min-h-0">
-                {/* Source Selection */}
-                <div className="grid grid-cols-4 gap-1.5 flex-1">
-                  <SimulatorSourceCard 
-                    color="#8B1538"
-                    label="Histórico"
-                    value="892K€"
-                    selected={selectedSource === 'historico'}
-                    onClick={() => { setSelectedSource('historico'); setIsConfirmed(false); }}
-                  />
-                  <SimulatorSourceCard 
-                    color="#3B82F6"
-                    label="IA Preditiva"
-                    value="945K€"
-                    selected={selectedSource === 'ia'}
-                    onClick={() => { setSelectedSource('ia'); setIsConfirmed(false); }}
-                  />
-                  <SimulatorSourceCard 
-                    color="#22C55E"
-                    label="Orç. Clientes"
-                    value="918K€"
-                    selected={selectedSource === 'clientes'}
-                    onClick={() => { setSelectedSource('clientes'); setIsConfirmed(false); }}
-                  />
-                  <SimulatorSourceCard 
-                    color="#F59E0B"
-                    label="Orçamento"
-                    value="780K€"
-                    selected={selectedSource === 'orcamento'}
-                    onClick={() => { setSelectedSource('orcamento'); setIsConfirmed(false); }}
-                  />
-                </div>
-
-                {/* Growth Variation Slider */}
-                <div className="bg-gray-50 rounded-lg px-2 py-1.5 w-48 flex flex-col justify-center">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-medium text-gray-700">Variação</span>
-                    <span className={`text-xs font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
-                      {variationPercent >= 0 ? '+' : ''}{variationPercent}%
-                    </span>
-                  </div>
-                  <Slider
-                    value={growthVariation}
-                    onValueChange={(val) => { setGrowthVariation(val); setIsConfirmed(false); }}
-                    max={100}
-                    min={0}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-[8px] text-gray-500 mt-0.5">
-                    <span>-20%</span>
-                    <span>0%</span>
-                    <span>+30%</span>
+            {/* KPIs Row */}
+            <div className="grid grid-cols-5 gap-4 mt-4 pt-4 border-t border-gray-100">
+              {kpis.map((kpi, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="text-xl font-bold text-gray-800">{kpi.value}</div>
+                  <div className="text-xs text-gray-500">{kpi.label}</div>
+                  <div className={`text-xs font-medium ${kpi.color}`}>
+                    {kpi.change > 0 ? "+" : ""}{kpi.change}%
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
 
-                {/* Results */}
-                <div className="flex gap-1.5 w-52">
-                  <div className="bg-rose-50 rounded-lg p-1.5 flex-1 flex flex-col justify-center">
-                    <div className="text-[9px] text-gray-500">Previsão Ajustada</div>
-                    <div className="text-sm font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-1.5 flex-1 flex flex-col justify-center">
-                    <div className="flex items-center gap-0.5 text-[9px] text-green-700">
-                      <LayoutGrid className="w-2.5 h-2.5" />
-                      <span>Cash-Flow</span>
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-4">
+            {/* Cash Flow Items */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-800">Cash Flow</h3>
+                <div className="flex gap-2 text-xs text-gray-500">
+                  <span>Inventário</span>
+                  <span>KPN</span>
+                  <span>Margem</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {cashFlowRight.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-gray-50 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${idx % 2 === 0 ? "bg-eps-primary" : "bg-eps-gold"}`}></div>
+                      <span>{item.name}</span>
                     </div>
-                    <div className="text-sm font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
+                    <div className="flex items-center gap-4">
+                      <span className="w-16 text-right">{item.inventario}</span>
+                      <span className={`w-8 text-center ${item.kpn > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {item.kpn}
+                      </span>
+                      <span className="w-12 text-right">{item.margem}</span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Confirm Button */}
-                <Button 
-                  onClick={() => setIsConfirmed(true)}
-                  className={`w-36 text-xs py-1 transition-all ${
-                    isConfirmed 
-                      ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'bg-eps-primary hover:bg-eps-primary/90 text-white'
-                  }`}
-                >
-                  {isConfirmed ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 mr-1" />
-                      Confirmado
-                    </>
-                  ) : (
-                    'Confirmar Previsão →'
-                  )}
-                </Button>
+                ))}
               </div>
             </div>
 
-            {/* Empty space to align with alerts column */}
-            <div />
+            {/* Cenários */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-800">Cenários</h3>
+                <div className="flex gap-2 text-xs text-gray-500">
+                  <span>Cenários</span>
+                  <span>Margem</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {cenarios.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-gray-50 last:border-0">
+                    <span>{item.name}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="w-12 text-right">{item.cenarios}</span>
+                      <span className="w-12 text-right">{item.margem}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
