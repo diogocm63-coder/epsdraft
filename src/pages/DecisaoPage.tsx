@@ -221,13 +221,13 @@ const ComparisonChart = ({
   subtitle: string;
   unit?: string;
 }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-3">
-    <div className="flex items-center justify-between mb-2">
+  <div className="bg-white rounded-lg border border-gray-200 p-2 h-full flex flex-col">
+    <div className="flex items-center justify-between mb-1">
       <div>
-        <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
-        <p className="text-[10px] text-gray-500">{subtitle}</p>
+        <h3 className="text-xs font-semibold text-gray-800">{title}</h3>
+        <p className="text-[9px] text-gray-500">{subtitle}</p>
       </div>
-      <div className="flex items-center gap-3 text-[10px]">
+      <div className="flex items-center gap-2 text-[9px]">
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-[#8B1538]" />
           <span>Histórico</span>
@@ -246,46 +246,48 @@ const ComparisonChart = ({
         </div>
       </div>
     </div>
-    <ResponsiveContainer width="100%" height={160}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-        <XAxis dataKey="month" tick={{ fontSize: 9 }} />
-        <YAxis tick={{ fontSize: 9 }} tickFormatter={(value) => `${value}${unit}`} />
-        <Tooltip 
-          formatter={(value: number) => [`${value}${unit}`, '']}
-          contentStyle={{ fontSize: 10 }}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="historico" 
-          stroke="#8B1538" 
-          strokeWidth={2} 
-          dot={{ fill: '#8B1538', r: 2 }} 
-        />
-        <Line 
-          type="monotone" 
-          dataKey="ia" 
-          stroke="#3B82F6" 
-          strokeWidth={2} 
-          dot={{ fill: '#3B82F6', r: 2 }} 
-        />
-        <Line 
-          type="monotone" 
-          dataKey="clientes" 
-          stroke="#22C55E" 
-          strokeWidth={2} 
-          dot={{ fill: '#22C55E', r: 2 }} 
-        />
-        <Line 
-          type="monotone" 
-          dataKey="orcamento" 
-          stroke="#F59E0B" 
-          strokeWidth={2} 
-          strokeDasharray="5 5"
-          dot={{ fill: '#F59E0B', r: 2 }} 
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="flex-1 min-h-0">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="month" tick={{ fontSize: 8 }} />
+          <YAxis tick={{ fontSize: 8 }} tickFormatter={(value) => `${value}${unit}`} />
+          <Tooltip 
+            formatter={(value: number) => [`${value}${unit}`, '']}
+            contentStyle={{ fontSize: 10 }}
+          />
+          <Line 
+            type="monotone" 
+            dataKey="historico" 
+            stroke="#8B1538" 
+            strokeWidth={2} 
+            dot={{ fill: '#8B1538', r: 2 }} 
+          />
+          <Line 
+            type="monotone" 
+            dataKey="ia" 
+            stroke="#3B82F6" 
+            strokeWidth={2} 
+            dot={{ fill: '#3B82F6', r: 2 }} 
+          />
+          <Line 
+            type="monotone" 
+            dataKey="clientes" 
+            stroke="#22C55E" 
+            strokeWidth={2} 
+            dot={{ fill: '#22C55E', r: 2 }} 
+          />
+          <Line 
+            type="monotone" 
+            dataKey="orcamento" 
+            stroke="#F59E0B" 
+            strokeWidth={2} 
+            strokeDasharray="5 5"
+            dot={{ fill: '#F59E0B', r: 2 }} 
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   </div>
 );
 
@@ -344,9 +346,9 @@ const DecisaoPage = () => {
 
   return (
     <EPSLayout title="Decisão" icon="D">
-      <div className="h-[calc(100vh-80px)] flex flex-col gap-3 overflow-hidden">
+      <div className="h-[calc(100vh-80px)] flex flex-col gap-2 overflow-hidden">
         {/* Top Section: KPIs Row */}
-        <div className="grid grid-cols-[1fr_1fr_250px] gap-3">
+        <div className="grid grid-cols-[1fr_1fr_220px] gap-2">
           {/* Vendas KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {vendasKpis.map((kpi, idx) => (
@@ -370,8 +372,8 @@ const DecisaoPage = () => {
           </div>
         </div>
 
-        {/* Middle Section: Charts + Alerts */}
-        <div className="grid grid-cols-[1fr_1fr_250px] gap-3 flex-1 min-h-0">
+        {/* Middle Section: Charts + Alerts - reduced height */}
+        <div className="grid grid-cols-[1fr_1fr_220px] gap-2 h-[140px]">
           {/* Vendas Chart */}
           <ComparisonChart 
             data={previsaoVendasData}
@@ -389,18 +391,18 @@ const DecisaoPage = () => {
 
           {/* Alerts Content */}
           <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {alertasData.map((alerta, idx) => {
                 const IconComponent = alerta.icon;
                 return (
                   <div 
                     key={idx}
-                    className={`${alerta.bgColor} ${alerta.borderColor} border-l-3 rounded-r-lg p-2 flex items-start gap-2`}
+                    className={`${alerta.bgColor} ${alerta.borderColor} border-l-3 rounded-r-lg p-1.5 flex items-start gap-1.5`}
                   >
-                    <IconComponent className={`w-4 h-4 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
+                    <IconComponent className={`w-3 h-3 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
                     <div>
-                      <div className={`text-xs font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
-                      <div className="text-[10px] text-gray-600">{alerta.description}</div>
+                      <div className={`text-[10px] font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
+                      <div className="text-[9px] text-gray-600">{alerta.description}</div>
                     </div>
                   </div>
                 );
@@ -409,94 +411,92 @@ const DecisaoPage = () => {
           </div>
         </div>
 
-        {/* Bottom Section: Simulator */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
-          <div className="flex items-center justify-between mb-3">
+        {/* Bottom Section: Simulator - expanded layout */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 flex-1 flex flex-col">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-gray-800">Simulador de Impacto</h3>
-              <p className="text-[10px] text-gray-500">Selecione a fonte e ajuste a variação</p>
+              <h3 className="text-base font-semibold text-gray-800">Simulador de Impacto</h3>
+              <p className="text-xs text-gray-500">Selecione a fonte e ajuste a variação</p>
             </div>
-            <div className="flex items-center gap-2 text-eps-primary text-xs font-medium">
+            <div className="flex items-center gap-2 text-eps-primary text-sm font-medium">
               <LayoutGrid className="w-4 h-4" />
               <span>What-If Analysis</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
-            {/* Source Selection */}
-            <div className="flex gap-2">
-              <SimulatorSourceCard 
-                color="#8B1538"
-                label="Histórico"
-                value="892K€"
-                selected={selectedSource === 'historico'}
-                onClick={() => setSelectedSource('historico')}
-              />
-              <SimulatorSourceCard 
-                color="#3B82F6"
-                label="IA Preditiva"
-                value="945K€"
-                selected={selectedSource === 'ia'}
-                onClick={() => setSelectedSource('ia')}
-              />
-              <SimulatorSourceCard 
-                color="#22C55E"
-                label="Orç. Clientes"
-                value="918K€"
-                selected={selectedSource === 'clientes'}
-                onClick={() => setSelectedSource('clientes')}
-              />
-              <SimulatorSourceCard 
-                color="#F59E0B"
-                label="Orçamento"
-                value="780K€"
-                selected={selectedSource === 'orcamento'}
-                onClick={() => setSelectedSource('orcamento')}
-              />
-            </div>
+          {/* Source Selection - full width row */}
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            <SimulatorSourceCard 
+              color="#8B1538"
+              label="Histórico"
+              value="892K€"
+              selected={selectedSource === 'historico'}
+              onClick={() => setSelectedSource('historico')}
+            />
+            <SimulatorSourceCard 
+              color="#3B82F6"
+              label="IA Preditiva"
+              value="945K€"
+              selected={selectedSource === 'ia'}
+              onClick={() => setSelectedSource('ia')}
+            />
+            <SimulatorSourceCard 
+              color="#22C55E"
+              label="Orç. Clientes"
+              value="918K€"
+              selected={selectedSource === 'clientes'}
+              onClick={() => setSelectedSource('clientes')}
+            />
+            <SimulatorSourceCard 
+              color="#F59E0B"
+              label="Orçamento"
+              value="780K€"
+              selected={selectedSource === 'orcamento'}
+              onClick={() => setSelectedSource('orcamento')}
+            />
+          </div>
 
-            {/* Growth Variation Slider */}
-            <div className="bg-gray-50 rounded-lg px-3 py-2">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-700">Variação de Crescimento</span>
-                <span className={`text-sm font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
-                  {variationPercent >= 0 ? '+' : ''}{variationPercent}%
-                </span>
-              </div>
-              <Slider
-                value={growthVariation}
-                onValueChange={setGrowthVariation}
-                max={100}
-                min={0}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
-                <span>-20%</span>
-                <span>0%</span>
-                <span>+30%</span>
-              </div>
+          {/* Growth Variation Slider - full width */}
+          <div className="bg-gray-50 rounded-lg px-4 py-3 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-700">Variação de Crescimento</span>
+              <span className={`text-xl font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
+                {variationPercent >= 0 ? '+' : ''}{variationPercent}%
+              </span>
             </div>
-
-            {/* Results */}
-            <div className="flex gap-3">
-              <div className="bg-rose-50 rounded-lg p-2 flex-1">
-                <div className="text-[10px] text-gray-500 mb-0.5">Previsão Ajustada</div>
-                <div className="text-lg font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
-              </div>
-              <div className="bg-green-50 rounded-lg p-2 flex-1">
-                <div className="flex items-center gap-1 text-[10px] text-green-700 mb-0.5">
-                  <LayoutGrid className="w-3 h-3" />
-                  <span>Impacto Cash-Flow</span>
-                </div>
-                <div className="text-lg font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
-              </div>
+            <Slider
+              value={growthVariation}
+              onValueChange={setGrowthVariation}
+              max={100}
+              min={0}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-2">
+              <span>-20%</span>
+              <span>0%</span>
+              <span>+30%</span>
             </div>
           </div>
 
-          {/* Confirm Button */}
-          <Button className="w-full mt-3 bg-eps-primary hover:bg-eps-primary/90 text-white text-sm">
-            Confirmar Previsão +
+          {/* Results - two columns */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-rose-50 rounded-lg p-4">
+              <div className="text-sm text-gray-500 mb-1">Previsão Ajustada</div>
+              <div className="text-2xl font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-sm text-green-700 mb-1">
+                <LayoutGrid className="w-4 h-4" />
+                <span>Impacto Cash-Flow</span>
+              </div>
+              <div className="text-2xl font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
+            </div>
+          </div>
+
+          {/* Confirm Button - at bottom */}
+          <Button className="w-full bg-eps-primary hover:bg-eps-primary/90 text-white py-3 text-base mt-auto">
+            Confirmar Previsão →
           </Button>
         </div>
       </div>
