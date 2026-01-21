@@ -148,45 +148,52 @@ const ProducaoProcuraPage = () => {
         
         <main className="flex-1 p-2 overflow-hidden">
           <div className="flex flex-col gap-2 h-full">
-            {/* Top KPI Row - Compact and Centered */}
-            <div className="flex justify-center gap-3">
-              <div className="bg-white rounded-lg border border-gray-200 px-3 py-1 flex items-center gap-2">
-                <Brain className="w-4 h-4 text-eps-primary" />
+            {/* Top KPI Row - Matching Image Exactly */}
+            <div className="flex justify-center gap-4 py-1">
+              {/* AI Insights */}
+              <div className="bg-white rounded-xl border border-gray-200 px-5 py-2 flex items-center gap-3 shadow-sm">
+                <Brain className="w-5 h-5 text-eps-primary" />
                 <div>
-                  <div className="text-[7px] text-gray-500 uppercase">AI Insights</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold">{kpiData.aiInsights.value}</span>
-                    <span className="text-[6px] text-gray-400">{kpiData.aiInsights.status}</span>
+                  <div className="text-[9px] text-gray-500 uppercase tracking-wide">AI Insights</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold">{kpiData.aiInsights.value}</span>
+                    <span className="text-[9px] text-gray-400">{kpiData.aiInsights.status}</span>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 px-3 py-1 flex items-center gap-2">
-                <Leaf className="w-4 h-4 text-eps-gold" />
+
+              {/* Estufas */}
+              <div className="bg-white rounded-xl border border-gray-200 px-5 py-2 flex items-center gap-3 shadow-sm">
+                <Leaf className="w-5 h-5 text-eps-gold" />
                 <div>
-                  <div className="text-[7px] text-gray-500 uppercase">Estufas</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold">{kpiData.greeneries.value}</span>
-                    <span className="text-[7px] text-red-500">▼{kpiData.greeneries.change}%</span>
+                  <div className="text-[9px] text-gray-500 uppercase tracking-wide">Estufas</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold">{kpiData.greeneries.value}</span>
+                    <span className="text-[9px] text-red-500 font-medium">▼{kpiData.greeneries.change}%</span>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 px-3 py-1 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-eps-primary" />
+
+              {/* Procura */}
+              <div className="bg-white rounded-xl border border-gray-200 px-5 py-2 flex items-center gap-3 shadow-sm">
+                <TrendingUp className="w-5 h-5 text-eps-primary" />
                 <div>
-                  <div className="text-[7px] text-gray-500 uppercase">Procura</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold">{kpiData.demand.value}</span>
-                    <span className="text-[7px] text-green-500">▲{kpiData.demand.change}%</span>
+                  <div className="text-[9px] text-gray-500 uppercase tracking-wide">Procura</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold">{kpiData.demand.value}</span>
+                    <span className="text-[9px] text-green-500 font-medium">▲{kpiData.demand.change}%</span>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 px-3 py-1 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-eps-gold" />
+
+              {/* Capacidade */}
+              <div className="bg-white rounded-xl border border-gray-200 px-5 py-2 flex items-center gap-3 shadow-sm">
+                <Zap className="w-5 h-5 text-eps-gold" />
                 <div>
-                  <div className="text-[7px] text-gray-500 uppercase">Capacidade</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold">{kpiData.capacity.value}</span>
-                    <span className="text-[6px] text-gray-400">{kpiData.capacity.stress}% Stress</span>
+                  <div className="text-[9px] text-gray-500 uppercase tracking-wide">Capacidade</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold">{kpiData.capacity.value}</span>
+                    <span className="text-[9px] text-gray-400">{kpiData.capacity.stress}% Stress</span>
                   </div>
                 </div>
               </div>
@@ -354,10 +361,10 @@ const ProducaoProcuraPage = () => {
                 </ScrollArea>
               </div>
 
-              {/* Right Column: Planeamento + Modelo */}
-              <div className="col-span-5 flex flex-col gap-2">
+              {/* Right Column: Planeamento + Modelo - Equal Height */}
+              <div className="col-span-5 grid grid-rows-2 gap-2">
                 {/* Planeamento de Produção */}
-                <div className="bg-white rounded-lg border border-gray-200 p-2 flex-1 flex flex-col">
+                <div className="bg-white rounded-lg border border-gray-200 p-2 flex flex-col min-h-0">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1">
                       <Leaf className="w-3 h-3 text-eps-primary" />
@@ -408,10 +415,10 @@ const ProducaoProcuraPage = () => {
                   </ScrollArea>
                 </div>
 
-                {/* Modelo de Previsão de Colheita */}
-                <div className="bg-white rounded-lg border border-gray-200 p-2">
+                {/* Modelo de Previsão de Colheita - Same Height */}
+                <div className="bg-white rounded-lg border border-gray-200 p-2 flex flex-col min-h-0">
                   <h3 className="text-[10px] font-semibold text-gray-700 mb-1.5">Modelo de Previsão de Colheita</h3>
-                  <div className="space-y-1.5">
+                  <div className="flex-1 flex flex-col justify-around">
                     {harvestPredictionData.map((item, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className="text-[8px] text-gray-600 w-24 truncate">{item.name}</span>
