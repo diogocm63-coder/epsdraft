@@ -17,7 +17,11 @@ const ControloOrcamentalPage = () => {
   return (
     <OperacoesLayout title="Controlo Orçamental" showAtividade>
       <div className="flex flex-col h-full gap-2">
-        <OperacoesSummary />
+        <OperacoesSummary showDashboardLabel={false} />
+        
+        <div className="flex items-center justify-between border-b border-gray-200 pb-1">
+          <h2 className="text-eps-primary font-bold text-sm tracking-[0.3em]">P E R F O R M A N C E</h2>
+        </div>
 
         <div className="grid grid-cols-2 gap-3 flex-1 min-h-0">
           {/* Custo Total */}
