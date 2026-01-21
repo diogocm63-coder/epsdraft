@@ -126,16 +126,16 @@ export default function InvestimentosVisaoGeralPage() {
                   <CardTitle className="text-sm font-medium text-gray-700">Distribuição de Investimentos por Tipo</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={180}>
+                  <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie
                         data={investimentosMaterialData}
                         cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={70}
+                        cy="45%"
+                        innerRadius={35}
+                        outerRadius={60}
                         dataKey="value"
-                        label={({ value }) => formatCurrency(value)}
+                        label={({ value }) => `${(value/1000).toFixed(0)}K €`}
                         labelLine={true}
                       >
                         {investimentosMaterialData.map((entry, index) => (
@@ -143,7 +143,7 @@ export default function InvestimentosVisaoGeralPage() {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend wrapperStyle={{ fontSize: 10 }} />
+                      <Legend wrapperStyle={{ fontSize: 10, paddingTop: '10px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </CardContent>

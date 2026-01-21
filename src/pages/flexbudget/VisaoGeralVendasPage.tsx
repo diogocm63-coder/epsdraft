@@ -94,7 +94,7 @@ const VisaoGeralVendasPage = () => {
                 <h3 className="text-sm font-medium mb-2">Evolução de Vendas nos Últimos 12 Meses</h3>
                 <div className="flex items-center gap-4 mb-2 text-xs">
                   <span className="flex items-center gap-1"><span className="w-2 h-2 bg-eps-primary rounded-full"></span> Vendas</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-eps-gold rounded-full"></span> Orçamento</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#2E5A88] rounded-full"></span> Orçamento</span>
                 </div>
                 <ResponsiveContainer width="100%" height={150}>
                   <AreaChart data={vendasChartData}>
@@ -103,7 +103,7 @@ const VisaoGeralVendasPage = () => {
                     <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v/1000}K €`} />
                     <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Area type="monotone" dataKey="vendas" stroke="#8B1538" fill="#8B1538" fillOpacity={0.3} />
-                    <Area type="monotone" dataKey="orcamento" stroke="#C9A227" fill="#C9A227" fillOpacity={0.2} />
+                    <Area type="monotone" dataKey="orcamento" stroke="#2E5A88" fill="#2E5A88" fillOpacity={0.2} strokeDasharray="5 5" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
