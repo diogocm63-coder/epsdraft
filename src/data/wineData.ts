@@ -102,6 +102,48 @@ export const executivoAlertas = [
 ];
 
 // ========== CONTROLO PAGE DATA ==========
+// All 31 products with full data
+export const controloProdutoTableData = [
+  { produto: 'V&W Douro Tinto', categoria: 'Regional', rentabilidade: 68, custos: 32, volume: 12500, valor: 156250, margem: 24.5 },
+  { produto: 'V&W Douro Branco', categoria: 'Regional', rentabilidade: 65, custos: 30, volume: 9800, valor: 117600, margem: 22.8 },
+  { produto: 'V&W Douro Rosé', categoria: 'Regional', rentabilidade: 62, custos: 28, volume: 5200, valor: 57200, margem: 21.2 },
+  { produto: 'V&W Alentejo Tinto', categoria: 'Regional', rentabilidade: 72, custos: 35, volume: 14200, valor: 184600, margem: 26.1 },
+  { produto: 'V&W Alentejo Branco', categoria: 'Regional', rentabilidade: 69, custos: 33, volume: 8900, valor: 106800, margem: 23.4 },
+  { produto: 'V&W Alentejo Rosé', categoria: 'Regional', rentabilidade: 64, custos: 29, volume: 4800, valor: 52800, margem: 20.8 },
+  { produto: 'V&W Dão Tinto', categoria: 'Regional', rentabilidade: 66, custos: 31, volume: 7600, valor: 91200, margem: 22.1 },
+  { produto: 'V&W Dão Branco', categoria: 'Regional', rentabilidade: 68, custos: 32, volume: 6200, valor: 74400, margem: 23.8 },
+  { produto: 'V&W Alvarinho/Loureiro', categoria: 'Regional', rentabilidade: 71, custos: 34, volume: 11500, valor: 149500, margem: 25.2 },
+  { produto: 'V&W Verde Rosé', categoria: 'Regional', rentabilidade: 63, custos: 28, volume: 4100, valor: 45100, margem: 19.5 },
+  { produto: 'V&W Lisboa Tinto', categoria: 'Regional', rentabilidade: 61, custos: 27, volume: 5800, valor: 63800, margem: 18.9 },
+  { produto: 'V&W Lisboa Branco', categoria: 'Regional', rentabilidade: 59, custos: 26, volume: 4500, valor: 49500, margem: 17.8 },
+  { produto: 'V&W Douro Reserva Tinto', categoria: 'Reserva', rentabilidade: 85, custos: 45, volume: 8500, valor: 178500, margem: 32.4 },
+  { produto: 'V&W Douro Reserva Branco', categoria: 'Reserva', rentabilidade: 82, custos: 42, volume: 5200, valor: 104000, margem: 30.1 },
+  { produto: 'V&W Alentejo Reserva Tinto', categoria: 'Reserva', rentabilidade: 88, custos: 48, volume: 9200, valor: 202400, margem: 34.2 },
+  { produto: 'V&W Alentejo Reserva Branco', categoria: 'Reserva', rentabilidade: 79, custos: 40, volume: 4800, valor: 96000, margem: 28.5 },
+  { produto: 'V&W Rosé Selection', categoria: 'Reserva', rentabilidade: 76, custos: 38, volume: 3500, valor: 66500, margem: 26.8 },
+  { produto: 'V&W Dão Reserva Tinto', categoria: 'Reserva', rentabilidade: 80, custos: 41, volume: 4200, valor: 84000, margem: 29.2 },
+  { produto: 'V&W Dão Reserva (Encruzado)', categoria: 'Reserva', rentabilidade: 83, custos: 44, volume: 3100, valor: 65100, margem: 31.5 },
+  { produto: 'V&W Alvarinho Reserva', categoria: 'Reserva', rentabilidade: 78, custos: 38, volume: 6800, valor: 142800, margem: 27.8 },
+  { produto: 'V&W Lisboa Reserva Tinto', categoria: 'Reserva', rentabilidade: 74, custos: 36, volume: 2800, valor: 53200, margem: 25.4 },
+  { produto: 'V&W Lisboa Reserva Branco', categoria: 'Reserva', rentabilidade: 72, custos: 35, volume: 2400, valor: 45600, margem: 24.1 },
+  { produto: 'V&W Heritage (Grande Reserva)', categoria: 'Premium', rentabilidade: 95, custos: 58, volume: 2200, valor: 110000, margem: 42.5 },
+  { produto: 'V&W Terroir Branco Premium', categoria: 'Premium', rentabilidade: 91, custos: 54, volume: 1800, valor: 86400, margem: 38.8 },
+  { produto: 'V&W Rosé Millésime', categoria: 'Premium', rentabilidade: 88, custos: 52, volume: 1200, valor: 54000, margem: 36.2 },
+  { produto: 'V&W Signature Edition', categoria: 'Premium', rentabilidade: 98, custos: 62, volume: 1500, valor: 82500, margem: 45.8 },
+  { produto: 'V&W Alentejo Private Select', categoria: 'Premium', rentabilidade: 92, custos: 55, volume: 1400, valor: 70000, margem: 39.5 },
+  { produto: 'V&W Nobre Tinto', categoria: 'Premium', rentabilidade: 90, custos: 53, volume: 1100, valor: 52800, margem: 37.4 },
+  { produto: 'V&W Encruzado Premium', categoria: 'Premium', rentabilidade: 87, custos: 50, volume: 900, valor: 43200, margem: 35.2 },
+  { produto: 'V&W Monovarietal Premium', categoria: 'Premium', rentabilidade: 89, custos: 51, volume: 1000, valor: 48000, margem: 36.8 },
+  { produto: 'V&W Atlantic Gold Premium', categoria: 'Premium', rentabilidade: 93, custos: 56, volume: 800, valor: 40000, margem: 40.2 },
+];
+
+// Summary data for Volume vs Valor vs Margem chart
+export const controloVolumeValorMargemData = [
+  { name: 'Regional', volume: 95100, valor: 1148750, margem: 22.1 },
+  { name: 'Reserva', volume: 50500, valor: 1038100, margem: 29.0 },
+  { name: 'Premium', volume: 11900, valor: 586900, margem: 39.2 },
+];
+
 export const controloProdutoData = [
   { name: 'V&W Douro Reserva', rentabilidade: 95, custos: 42 },
   { name: 'V&W Signature Edition', rentabilidade: 88, custos: 48 },
@@ -123,6 +165,22 @@ export const controloMercadoData = [
   { name: 'Brasil', penetracao: 45, competitividade: 52 },
   { name: 'Angola', penetracao: 38, competitividade: 42 },
   { name: 'Alemanha', penetracao: 28, competitividade: 35 },
+];
+
+// Riscos de Mercado data
+export const controloRiscosMercadoData = [
+  { name: 'Portugal', risco: 15, exposicao: 850000 },
+  { name: 'Brasil', risco: 42, exposicao: 320000 },
+  { name: 'Angola', risco: 58, exposicao: 185000 },
+  { name: 'Alemanha', risco: 22, exposicao: 145000 },
+];
+
+// Custos de Distribuição por Canal
+export const controloCustosDistribuicaoData = [
+  { name: 'Horeca', logistica: 45, marketing: 28, operacional: 15 },
+  { name: 'Retalho', logistica: 38, marketing: 35, operacional: 12 },
+  { name: 'Exportação', logistica: 62, marketing: 22, operacional: 25 },
+  { name: 'E-commerce', logistica: 28, marketing: 45, operacional: 8 },
 ];
 
 export const controloCustosData = [

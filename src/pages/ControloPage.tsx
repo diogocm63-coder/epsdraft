@@ -15,15 +15,29 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
+  ComposedChart,
 } from "recharts";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import {
-  controloProdutoData as produtoData,
-  controloCanalData as canalData,
-  controloMercadoData as mercadoData,
-  controloCustosData as custosData,
-  controloEficienciaData as eficienciaData,
-  controloExpansaoData as expansaoData,
+  controloProdutoTableData,
+  controloVolumeValorMargemData,
+  controloCanalData,
+  controloMercadoData,
+  controloCustosData,
+  controloEficienciaData,
+  controloExpansaoData,
+  controloRiscosMercadoData,
+  controloCustosDistribuicaoData,
 } from "@/data/wineData";
 
 const IndicatorSection = ({ 
@@ -54,6 +68,18 @@ const IndicatorSection = ({
     </div>
   </div>
 );
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('pt-PT', { 
+    style: 'decimal', 
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0 
+  }).format(value) + ' €';
+};
+
+const formatNumber = (value: number) => {
+  return new Intl.NumberFormat('pt-PT').format(value);
+};
 
 const ControloPage = () => {
   return (
@@ -95,32 +121,43 @@ const ControloPage = () => {
 
         {/* Middle Row - Charts */}
         <div className="grid grid-cols-3 gap-4">
-          {/* Rentabilidade por Produto */}
+          {/* Tabela de Produtos (31 produtos) */}
           <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-800 mb-4">Rentabilidade por Produto</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={produtoData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis type="number" tick={{ fontSize: 10 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={50} />
-                <Tooltip />
-                <Bar dataKey="rentabilidade" fill="#8B1538" radius={[0, 2, 2, 0]} />
-                <Bar dataKey="custos" fill="#C9A227" radius={[0, 2, 2, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">Rentabilidade por Produto ({controloProdutoTableData.length} produtos)</h3>
+            <ScrollArea className="h-[180px]">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="text-xs font-semibold">Produto</TableHead>
+                    <TableHead className="text-xs font-semibold text-right">Rent. %</TableHead>
+                    <TableHead className="text-xs font-semibold text-right">Custos %</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {controloProdutoTableData.map((row, idx) => (
+                    <TableRow key={idx} className="text-xs">
+                      <TableCell className="py-1.5 truncate max-w-[120px]" title={row.produto}>{row.produto}</TableCell>
+                      <TableCell className="py-1.5 text-right text-green-600 font-medium">{row.rentabilidade}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-red-500">{row.custos}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </div>
 
           {/* Desempenho vs Meta */}
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="text-sm font-semibold text-gray-800 mb-4">Desempenho vs Meta</h3>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={canalData}>
+              <BarChart data={controloCanalData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Bar dataKey="meta" fill="#8B1538" radius={[2, 2, 0, 0]} />
-                <Bar dataKey="atual" fill="#C9A227" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="meta" fill="#8B1538" radius={[2, 2, 0, 0]} name="Meta" />
+                <Bar dataKey="atual" fill="#C9A227" radius={[2, 2, 0, 0]} name="Atual" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -129,14 +166,81 @@ const ControloPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="text-sm font-semibold text-gray-800 mb-4">Penetração & Competitividade</h3>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mercadoData}>
+              <BarChart data={controloMercadoData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Bar dataKey="penetracao" fill="#8B1538" radius={[2, 2, 0, 0]} />
-                <Bar dataKey="competitividade" fill="#C9A227" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="penetracao" fill="#8B1538" radius={[2, 2, 0, 0]} name="Penetração" />
+                <Bar dataKey="competitividade" fill="#C9A227" radius={[2, 2, 0, 0]} name="Competitividade" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
               </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Third Row - New Charts */}
+        <div className="grid grid-cols-3 gap-4">
+          {/* Volume vs Valor e Margem Contributiva */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4">Volume vs Valor e Margem Contributiva</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <ComposedChart data={controloVolumeValorMargemData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
+                <Tooltip 
+                  formatter={(value: number, name: string) => {
+                    if (name === 'Volume') return formatNumber(value) + ' un';
+                    if (name === 'Valor') return formatCurrency(value);
+                    return value + '%';
+                  }}
+                />
+                <Bar yAxisId="left" dataKey="volume" fill="#8B1538" radius={[2, 2, 0, 0]} name="Volume" />
+                <Bar yAxisId="left" dataKey="valor" fill="#C9A227" radius={[2, 2, 0, 0]} name="Valor" />
+                <Line yAxisId="right" type="monotone" dataKey="margem" stroke="#4CAF50" strokeWidth={2} dot={{ fill: "#4CAF50", r: 4 }} name="Margem %" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Custos de Distribuição */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4">Custos de Distribuição</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={controloCustosDistribuicaoData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}K€`} />
+                <Tooltip formatter={(value: number) => `${value}K €`} />
+                <Bar dataKey="logistica" stackId="a" fill="#8B1538" name="Logística" />
+                <Bar dataKey="marketing" stackId="a" fill="#C9A227" name="Marketing" />
+                <Bar dataKey="operacional" stackId="a" fill="#D4A5A5" name="Operacional" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Riscos de Mercado */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4">Riscos de Mercado</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <ComposedChart data={controloRiscosMercadoData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}K€`} />
+                <Tooltip 
+                  formatter={(value: number, name: string) => {
+                    if (name === 'Risco') return value + '%';
+                    return formatCurrency(value);
+                  }}
+                />
+                <Bar yAxisId="right" dataKey="exposicao" fill="#D4A5A5" radius={[2, 2, 0, 0]} name="Exposição" />
+                <Line yAxisId="left" type="monotone" dataKey="risco" stroke="#8B1538" strokeWidth={2} dot={{ fill: "#8B1538", r: 4 }} name="Risco" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -147,13 +251,14 @@ const ControloPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="text-sm font-semibold text-gray-800 mb-4">Custos Diretos vs Indiretos</h3>
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={custosData}>
+              <AreaChart data={controloCustosData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Area type="monotone" dataKey="diretos" fill="#8B1538" fillOpacity={0.6} stroke="#8B1538" />
-                <Area type="monotone" dataKey="indiretos" fill="#D4A5A5" fillOpacity={0.6} stroke="#D4A5A5" />
+                <Area type="monotone" dataKey="diretos" fill="#8B1538" fillOpacity={0.6} stroke="#8B1538" name="Diretos" />
+                <Area type="monotone" dataKey="indiretos" fill="#D4A5A5" fillOpacity={0.6} stroke="#D4A5A5" name="Indiretos" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -162,13 +267,14 @@ const ControloPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="text-sm font-semibold text-gray-800 mb-4">Eficiência & Potencial</h3>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={eficienciaData}>
+              <LineChart data={controloEficienciaData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="eficiencia" stroke="#8B1538" strokeWidth={2} dot={{ fill: "#8B1538", r: 4 }} />
-                <Line type="monotone" dataKey="potencial" stroke="#C9A227" strokeWidth={2} dot={{ fill: "#C9A227", r: 4 }} />
+                <Line type="monotone" dataKey="eficiencia" stroke="#8B1538" strokeWidth={2} dot={{ fill: "#8B1538", r: 4 }} name="Eficiência" />
+                <Line type="monotone" dataKey="potencial" stroke="#C9A227" strokeWidth={2} dot={{ fill: "#C9A227", r: 4 }} name="Potencial" />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -179,7 +285,7 @@ const ControloPage = () => {
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
-                  data={expansaoData}
+                  data={controloExpansaoData}
                   cx="50%"
                   cy="50%"
                   innerRadius={50}
@@ -189,7 +295,7 @@ const ControloPage = () => {
                   label={({ name, value }) => `${name}: ${value}%`}
                   labelLine={false}
                 >
-                  {expansaoData.map((entry, index) => (
+                  {controloExpansaoData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
