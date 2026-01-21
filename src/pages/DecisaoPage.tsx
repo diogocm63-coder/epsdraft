@@ -1,5 +1,5 @@
 import EPSLayout from "@/components/layout/EPSLayout";
-import { TrendingUp, TrendingDown, AlertTriangle, Info, LayoutGrid, Check } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Info, LayoutGrid } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -92,7 +92,6 @@ const vendasKpis = [
 // KPI data for Stock
 const stockKpis = [
   { 
-    sourceKey: 'historico',
     badge: 'Histórico',
     badgeColor: 'bg-[#8B1538]',
     title: 'Stock Total Anual',
@@ -102,7 +101,6 @@ const stockKpis = [
     positive: true
   },
   { 
-    sourceKey: 'ia',
     badge: 'IA Preditiva',
     badgeColor: 'bg-[#3B82F6]',
     title: 'Stock Total Anual',
@@ -112,7 +110,6 @@ const stockKpis = [
     positive: true
   },
   { 
-    sourceKey: 'clientes',
     badge: 'Orç. Clientes',
     badgeColor: 'bg-[#22C55E]',
     title: 'Stock Total Anual',
@@ -122,7 +119,6 @@ const stockKpis = [
     positive: true
   },
   { 
-    sourceKey: 'orcamento',
     badge: 'Orçamento',
     badgeColor: 'bg-[#F59E0B]',
     title: 'Meta Stock',
@@ -344,7 +340,6 @@ const SimulatorSourceCard = ({
 const DecisaoPage = () => {
   const [selectedSource, setSelectedSource] = useState<string>('historico');
   const [growthVariation, setGrowthVariation] = useState<number[]>([50]); // 0% default
-  const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
 
   const variationPercent = useMemo(() => {
     const value = growthVariation[0];
@@ -369,20 +364,11 @@ const DecisaoPage = () => {
     return diff >= 0 ? `+${diff}K€` : `${diff}K€`;
   }, [previsaoAjustada, selectedBaseValue]);
 
-  const handleSourceChange = (source: string) => {
-    setSelectedSource(source);
-    setIsConfirmed(false);
-  };
-
-  const handleConfirm = () => {
-    setIsConfirmed(true);
-  };
-
   return (
     <EPSLayout title="Decisão" icon="D">
       <div className="h-[calc(100vh-80px)] flex flex-col gap-2 overflow-hidden">
         {/* Top Section: KPIs Row */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-[1fr_1fr_220px] gap-2">
           {/* Vendas KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {vendasKpis.map((kpi, idx) => (
@@ -390,7 +376,7 @@ const DecisaoPage = () => {
                 key={idx} 
                 {...kpi} 
                 selected={selectedSource === kpi.sourceKey}
-                onClick={() => handleSourceChange(kpi.sourceKey)}
+                onClick={() => setSelectedSource(kpi.sourceKey)}
               />
             ))}
           </div>
@@ -398,20 +384,23 @@ const DecisaoPage = () => {
           {/* Stock KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {stockKpis.map((kpi, idx) => (
-              <KPICard 
-                key={idx} 
-                {...kpi} 
-                selected={selectedSource === kpi.sourceKey}
-                onClick={() => handleSourceChange(kpi.sourceKey)}
-              />
+              <KPICard key={idx} {...kpi} />
             ))}
+          </div>
+
+          {/* Alerts Header */}
+          <div className="bg-white rounded-lg border border-gray-200 p-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <h3 className="text-sm font-semibold text-gray-800">Alertas Inteligentes</h3>
+            </div>
           </div>
         </div>
 
         {/* Middle Section: Charts + Alerts + Simulator - equal height */}
         <div className="flex-1 grid grid-rows-2 gap-2 min-h-0">
           {/* Row 1: Charts + Alerts */}
-          <div className="grid grid-cols-[1fr_1fr_200px] gap-2 min-h-0">
+          <div className="grid grid-cols-[1fr_1fr_220px] gap-2 min-h-0">
             {/* Vendas Chart */}
             <ComparisonChart 
               data={previsaoVendasData}
@@ -428,12 +417,8 @@ const DecisaoPage = () => {
             />
 
             {/* Alerts Content */}
-            <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto flex flex-col">
-              <div className="flex items-center gap-2 mb-1.5">
-                <AlertTriangle className="w-3 h-3 text-amber-500" />
-                <h3 className="text-xs font-semibold text-gray-800">Alertas Inteligentes</h3>
-              </div>
-              <div className="space-y-1.5 flex-1">
+            <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto">
+              <div className="space-y-1.5">
                 {alertasData.map((alerta, idx) => {
                   const IconComponent = alerta.icon;
                   return (
@@ -453,110 +438,93 @@ const DecisaoPage = () => {
             </div>
           </div>
 
-          {/* Row 2: Simulator - more compact layout */}
-          <div className="bg-white rounded-lg border border-gray-200 p-3 flex gap-4 min-h-0">
-            {/* Left side: Title + Sources */}
-            <div className="flex flex-col gap-2 min-w-0 w-[280px]">
+          {/* Row 2: Simulator */}
+          <div className="bg-white rounded-lg border border-gray-200 p-3 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <h3 className="text-sm font-semibold text-gray-800">Simulador de Impacto</h3>
                 <p className="text-[10px] text-gray-500">Selecione a fonte e ajuste a variação</p>
               </div>
-              
-              {/* Source Selection - 2x2 grid */}
-              <div className="grid grid-cols-2 gap-2 flex-1">
-                <SimulatorSourceCard 
-                  color="#8B1538"
-                  label="Histórico"
-                  value="892K€"
-                  selected={selectedSource === 'historico'}
-                  onClick={() => handleSourceChange('historico')}
-                />
-                <SimulatorSourceCard 
-                  color="#3B82F6"
-                  label="IA Preditiva"
-                  value="945K€"
-                  selected={selectedSource === 'ia'}
-                  onClick={() => handleSourceChange('ia')}
-                />
-                <SimulatorSourceCard 
-                  color="#22C55E"
-                  label="Orç. Clientes"
-                  value="918K€"
-                  selected={selectedSource === 'clientes'}
-                  onClick={() => handleSourceChange('clientes')}
-                />
-                <SimulatorSourceCard 
-                  color="#F59E0B"
-                  label="Orçamento"
-                  value="780K€"
-                  selected={selectedSource === 'orcamento'}
-                  onClick={() => handleSourceChange('orcamento')}
-                />
+              <div className="flex items-center gap-2 text-eps-primary text-xs font-medium">
+                <LayoutGrid className="w-3 h-3" />
+                <span>What-If Analysis</span>
               </div>
             </div>
 
-            {/* Middle: Slider */}
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="bg-gray-50 rounded-lg px-4 py-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-700">Variação de Crescimento</span>
-                  <span className={`text-lg font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
-                    {variationPercent >= 0 ? '+' : ''}{variationPercent}%
-                  </span>
-                </div>
-                <Slider
-                  value={growthVariation}
-                  onValueChange={(val) => {
-                    setGrowthVariation(val);
-                    setIsConfirmed(false);
-                  }}
-                  max={100}
-                  min={0}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-[10px] text-gray-500 mt-1">
-                  <span>-20%</span>
-                  <span>0%</span>
-                  <span>+30%</span>
-                </div>
+            {/* Source Selection - full width row */}
+            <div className="grid grid-cols-4 gap-3 mb-2">
+            <SimulatorSourceCard 
+              color="#8B1538"
+              label="Histórico"
+              value="892K€"
+              selected={selectedSource === 'historico'}
+              onClick={() => setSelectedSource('historico')}
+            />
+            <SimulatorSourceCard 
+              color="#3B82F6"
+              label="IA Preditiva"
+              value="945K€"
+              selected={selectedSource === 'ia'}
+              onClick={() => setSelectedSource('ia')}
+            />
+            <SimulatorSourceCard 
+              color="#22C55E"
+              label="Orç. Clientes"
+              value="918K€"
+              selected={selectedSource === 'clientes'}
+              onClick={() => setSelectedSource('clientes')}
+            />
+            <SimulatorSourceCard 
+              color="#F59E0B"
+              label="Orçamento"
+              value="780K€"
+              selected={selectedSource === 'orcamento'}
+              onClick={() => setSelectedSource('orcamento')}
+            />
+          </div>
+
+            {/* Growth Variation Slider - full width */}
+            <div className="bg-gray-50 rounded-lg px-3 py-2 mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-gray-700">Variação de Crescimento</span>
+                <span className={`text-base font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
+                  {variationPercent >= 0 ? '+' : ''}{variationPercent}%
+                </span>
+              </div>
+              <Slider
+                value={growthVariation}
+                onValueChange={setGrowthVariation}
+                max={100}
+                min={0}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                <span>-20%</span>
+                <span>0%</span>
+                <span>+30%</span>
               </div>
             </div>
 
-            {/* Right side: Results + Button */}
-            <div className="flex flex-col gap-2 w-[260px]">
-              <div className="grid grid-cols-2 gap-2 flex-1">
-                <div className="bg-rose-50 rounded-lg p-3 flex flex-col justify-center">
-                  <div className="text-[10px] text-gray-500 mb-0.5">Previsão Ajustada</div>
-                  <div className="text-xl font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
-                </div>
-                <div className="bg-green-50 rounded-lg p-3 flex flex-col justify-center">
-                  <div className="flex items-center gap-1 text-[10px] text-green-700 mb-0.5">
-                    <LayoutGrid className="w-3 h-3" />
-                    <span>Impacto Cash-Flow</span>
-                  </div>
-                  <div className="text-xl font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
-                </div>
+            {/* Results - two columns */}
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div className="bg-rose-50 rounded-lg p-2">
+                <div className="text-[10px] text-gray-500 mb-0.5">Previsão Ajustada</div>
+                <div className="text-lg font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
               </div>
-              
-              {/* Confirm Button with state */}
-              {isConfirmed ? (
-                <Button 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 text-sm flex items-center justify-center gap-2"
-                  onClick={() => setIsConfirmed(false)}
-                >
-                  <Check className="w-4 h-4" />
-                  Previsão Confirmada
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full bg-eps-primary hover:bg-eps-primary/90 text-white py-2 text-sm"
-                  onClick={handleConfirm}
-                >
-                  Confirmar Previsão →
-                </Button>
-              )}
+              <div className="bg-green-50 rounded-lg p-2">
+                <div className="flex items-center gap-1 text-[10px] text-green-700 mb-0.5">
+                  <LayoutGrid className="w-3 h-3" />
+                  <span>Impacto Cash-Flow</span>
+                </div>
+                <div className="text-lg font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
+              </div>
             </div>
+
+            {/* Confirm Button - at bottom */}
+            <Button className="w-full bg-eps-primary hover:bg-eps-primary/90 text-white py-2 text-sm mt-auto">
+              Confirmar Previsão →
+            </Button>
           </div>
         </div>
       </div>
