@@ -1,27 +1,36 @@
 import { EPSHeader } from '@/components/layout/EPSHeader';
 import { FlexbudgetSidebar } from '@/components/layout/FlexbudgetSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Calculator, ArrowDown } from 'lucide-react';
+import { Calculator, ArrowDown, ArrowUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-const chartData = [
-  { name: 'Janeiro', valor: 15907 },
-  { name: 'Fevereiro', valor: 3933 },
-  { name: 'Março', valor: 38109 },
-];
-
-const tableData = [
-  { mes: 'Janeiro', ano2024: '15.907,46 €', ano2025: '', desvio: '-100,00%' },
-  { mes: 'Fevereiro', ano2024: '3.933,25 €', ano2025: '', desvio: '-100,00%' },
-  { mes: 'Março', ano2024: '38.109,52 €', ano2025: '', desvio: '-100,00%' },
-];
+import { historicoChartData, historicoTableData } from '@/data/wineData';
 
 const HistoricoVendasPage = () => {
   const [year, setYear] = useState('2024');
   const [mes, setMes] = useState('tudo');
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-PT', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value) + ' €';
+  };
+
+  // Calculate growth rate
+  const totalAno2024 = historicoTableData.reduce((acc, item) => {
+    const value = parseInt(item.ano2024.replace(/[^\d]/g, ''));
+    return acc + value;
+  }, 0);
+  
+  const totalAno2025 = historicoTableData.reduce((acc, item) => {
+    const value = parseInt(item.ano2025.replace(/[^\d]/g, ''));
+    return acc + value;
+  }, 0);
+  
+  const growthRate = ((totalAno2025 - totalAno2024) / totalAno2024 * 100).toFixed(1);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -63,7 +72,7 @@ const HistoricoVendasPage = () => {
             <div className="grid grid-cols-3 gap-4 mb-4">
               {/* KPI Card */}
               <div className="bg-white rounded-lg border p-6 flex flex-col items-center justify-center">
-                <div className="text-5xl font-bold mb-2">0%</div>
+                <div className="text-5xl font-bold text-green-600">+{growthRate}%</div>
                 <div className="text-sm text-muted-foreground">Taxa de Crescimento Anual</div>
               </div>
 
@@ -71,19 +80,19 @@ const HistoricoVendasPage = () => {
               <div className="col-span-2 bg-white rounded-lg border p-4">
                 <h3 className="text-sm font-medium mb-2">Evolução de Vendas</h3>
                 <div className="flex items-center gap-2 mb-2 text-xs">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-gray-500 rounded-full"></span> Ano ● 2024</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-eps-primary rounded-full"></span> Ano 2025</span>
                 </div>
                 <ResponsiveContainer width="100%" height={180}>
-                  <AreaChart data={chartData}>
+                  <AreaChart data={historicoChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v/1000} K €`} />
-                    <Tooltip formatter={(value: number) => `${value.toLocaleString('pt-PT')} €`} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Area 
                       type="monotone" 
                       dataKey="valor" 
-                      stroke="#6b7280" 
-                      fill="#6b7280" 
+                      stroke="#8B1538" 
+                      fill="#8B1538" 
                       fillOpacity={0.3}
                     />
                   </AreaChart>
@@ -104,28 +113,28 @@ const HistoricoVendasPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {tableData.map((row) => (
+                  {historicoTableData.map((row) => (
                     <tr key={row.mes} className="border-b">
                       <td className="py-2">{row.mes}</td>
                       <td className="text-right font-medium">{row.ano2024}</td>
-                      <td className="text-right text-red-600 flex items-center justify-end gap-1">
-                        <ArrowDown className="w-3 h-3" /> {row.desvio}
+                      <td className="text-right text-green-600 flex items-center justify-end gap-1">
+                        <ArrowUp className="w-3 h-3" /> {row.desvio}
                       </td>
                       <td className="text-right">{row.ano2025}</td>
-                      <td className="text-right text-red-600 flex items-center justify-end gap-1">
-                        <ArrowDown className="w-3 h-3" /> {row.desvio}
+                      <td className="text-right text-green-600 flex items-center justify-end gap-1">
+                        <ArrowUp className="w-3 h-3" /> {row.desvio}
                       </td>
                     </tr>
                   ))}
                   <tr className="font-bold border-t-2">
                     <td className="py-2">Total</td>
-                    <td className="text-right">57.950,23 €</td>
-                    <td className="text-right text-red-600 flex items-center justify-end gap-1">
-                      <ArrowDown className="w-3 h-3" /> -100,00%
+                    <td className="text-right">{formatCurrency(totalAno2024)}</td>
+                    <td className="text-right text-green-600 flex items-center justify-end gap-1">
+                      <ArrowUp className="w-3 h-3" /> +{growthRate}%
                     </td>
-                    <td className="text-right"></td>
-                    <td className="text-right text-red-600 flex items-center justify-end gap-1">
-                      <ArrowDown className="w-3 h-3" /> -100,00%
+                    <td className="text-right">{formatCurrency(totalAno2025)}</td>
+                    <td className="text-right text-green-600 flex items-center justify-end gap-1">
+                      <ArrowUp className="w-3 h-3" /> +{growthRate}%
                     </td>
                   </tr>
                 </tbody>

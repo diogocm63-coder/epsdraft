@@ -12,28 +12,10 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { dividaFornecedoresData, dividasIdadeFornecedoresData } from '@/data/wineData';
 
 const mediaDiasData = [
-  { status: 'Vencida', dias: 524 },
-];
-
-const idadeDividaData = [
-  { idade: '<30 dias', valor: 0, color: '#8B1538' },
-  { idade: '30-60 dias', valor: 0, color: '#A52952' },
-  { idade: '60-90 dias', valor: 0, color: '#C9A227' },
-  { idade: '90-180 dias', valor: 0, color: '#D4B84A' },
-  { idade: '180-270 dias', valor: 0, color: '#D4A5A5' },
-  { idade: '270-360 dias', valor: 60701, color: '#E8C8C8' },
-  { idade: '>360', valor: 0, color: '#8B1538' },
-];
-
-const fornecedorData = [
-  { fornecedor: 'Adega Costa Atlântica, Lda', naoVencidas: null, vencidas: 12860, mais360: 12860 },
-  { fornecedor: 'Anselmo Mendes Vinhos, Lda', naoVencidas: null, vencidas: 6353, mais360: 6353 },
-  { fornecedor: 'Baron Philippe de Rothschild S.A.', naoVencidas: null, vencidas: 3504, mais360: 3504 },
-  { fornecedor: 'Bodegas De Lo Gerederos Del Marques De Riscal, S.L.U.', naoVencidas: null, vencidas: 13841, mais360: 13841 },
-  { fornecedor: 'Bodegas Emilio Moro, S.L.', naoVencidas: null, vencidas: 9890, mais360: 9890 },
-  { fornecedor: 'Caves Transmontanas, Lda', naoVencidas: null, vencidas: 14253, mais360: 14253 },
+  { status: 'Vencida', dias: 78 },
 ];
 
 const formatCurrency = (value: number | null) => {
@@ -46,7 +28,8 @@ const formatCurrency = (value: number | null) => {
 };
 
 export default function DividaFornecedoresPage() {
-  const totalVencidas = fornecedorData.reduce((acc, item) => acc + item.vencidas, 0);
+  const totalVencidas = dividaFornecedoresData.reduce((acc, item) => acc + item.vencidas, 0);
+  const totalMais360 = dividaFornecedoresData.reduce((acc, item) => acc + item.mais360, 0);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -62,12 +45,12 @@ export default function DividaFornecedoresPage() {
             <div className="grid grid-cols-2 gap-6 mb-6">
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Média de Dias das Dividas</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Média de Dias das Dívidas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={mediaDiasData} layout="vertical">
-                      <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 600]} />
+                      <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 120]} />
                       <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={60} />
                       <Tooltip />
                       <Bar dataKey="dias" fill="#8B1538" label={{ position: 'right', fontSize: 11 }} />
@@ -79,7 +62,7 @@ export default function DividaFornecedoresPage() {
 
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Idade da Divida</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Idade da Dívida</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-3 text-xs">
@@ -92,12 +75,12 @@ export default function DividaFornecedoresPage() {
                     <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#8B1538'}}></span>&gt;360 dias</span>
                   </div>
                   <ResponsiveContainer width="100%" height={150}>
-                    <BarChart data={idadeDividaData}>
+                    <BarChart data={dividasIdadeFornecedoresData}>
                       <XAxis dataKey="idade" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000} K €`} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Bar dataKey="valor">
-                        {idadeDividaData.map((entry, index) => (
+                        {dividasIdadeFornecedoresData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Bar>
@@ -127,7 +110,7 @@ export default function DividaFornecedoresPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {fornecedorData.map((item, index) => (
+                      {dividaFornecedoresData.map((item, index) => (
                         <tr key={index} className="border-b hover:bg-gray-50">
                           <td className="p-2 text-gray-700">{item.fornecedor}</td>
                           <td className="p-2 text-right text-gray-600">{formatCurrency(item.naoVencidas)}</td>
@@ -143,7 +126,7 @@ export default function DividaFornecedoresPage() {
                       ))}
                       <tr className="bg-gray-100 font-semibold">
                         <td className="p-2 text-gray-800">Total</td>
-                        <td className="p-2 text-right text-gray-800"></td>
+                        <td className="p-2 text-right text-gray-800">42.000 €</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalVencidas)}</td>
                         <td className="p-2 text-right text-gray-800"></td>
                         <td className="p-2 text-right text-gray-800"></td>
@@ -151,7 +134,7 @@ export default function DividaFornecedoresPage() {
                         <td className="p-2 text-right text-gray-800"></td>
                         <td className="p-2 text-right text-gray-800"></td>
                         <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800">{formatCurrency(totalVencidas)}</td>
+                        <td className="p-2 text-right text-gray-800">{formatCurrency(totalMais360)}</td>
                       </tr>
                     </tbody>
                   </table>

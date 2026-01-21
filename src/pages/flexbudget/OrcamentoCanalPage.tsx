@@ -14,78 +14,7 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-
-interface CanalItem {
-  id: string;
-  canal: string;
-  investimentoAno1: number | null;
-  orcamento: number;
-  orcVsInv: string | null;
-  vendas: number | null;
-  ativacoes: number | null;
-  net2: number | null;
-  percVendas: string | null;
-  children?: CanalItem[];
-  isExpanded?: boolean;
-  level: number;
-}
-
-const initialCanalData: CanalItem[] = [
-  {
-    id: '1',
-    canal: 'PFV - B2B',
-    investimentoAno1: null,
-    orcamento: 60,
-    orcVsInv: null,
-    vendas: 13089,
-    ativacoes: null,
-    net2: 13089,
-    percVendas: null,
-    level: 0,
-    isExpanded: true,
-    children: [
-      { id: '1.1', canal: 'PFV - B2B - PRODUTORES', investimentoAno1: null, orcamento: 60, orcVsInv: null, vendas: 13089, ativacoes: null, net2: 13089, percVendas: null, level: 1 },
-    ],
-  },
-  {
-    id: '2',
-    canal: 'PFV - MARKETING',
-    investimentoAno1: null,
-    orcamento: 914,
-    orcVsInv: null,
-    vendas: null,
-    ativacoes: null,
-    net2: null,
-    percVendas: null,
-    level: 0,
-    isExpanded: true,
-    children: [
-      { id: '2.1', canal: 'PFV - MARKETING - COMUNICAÇÃO', investimentoAno1: null, orcamento: 800, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '2.2', canal: 'PFV - MARKETING - EVENTOS|', investimentoAno1: null, orcamento: 114, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-    ],
-  },
-  {
-    id: '3',
-    canal: 'PFV - ON TRADE',
-    investimentoAno1: null,
-    orcamento: 133930,
-    orcVsInv: null,
-    vendas: 21226,
-    ativacoes: -1450,
-    net2: 19776,
-    percVendas: '6,83%',
-    level: 0,
-    isExpanded: true,
-    children: [
-      { id: '3.1', canal: 'PFV - ON TRADE - BARES', investimentoAno1: null, orcamento: 33333, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '3.2', canal: 'PFV - ON TRADE - CASH&CARRYs', investimentoAno1: null, orcamento: 297, orcVsInv: null, vendas: 21226, ativacoes: -1450, net2: 19776, percVendas: '6,83%', level: 1 },
-      { id: '3.3', canal: 'PFV - ON TRADE - CATERING', investimentoAno1: null, orcamento: 33333, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '3.4', canal: 'PFV - ON TRADE - DISTRIBUIDORES', investimentoAno1: null, orcamento: 300, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '3.5', canal: 'PFV - ON TRADE - HOTEIS', investimentoAno1: null, orcamento: 33333, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '3.6', canal: 'PFV - ON TRADE - RESTAURANTES', investimentoAno1: null, orcamento: 33333, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-    ],
-  },
-];
+import { orcamentoCanalData } from '@/data/wineData';
 
 const formatCurrency = (value: number | null) => {
   if (value === null) return '';
@@ -97,10 +26,10 @@ const formatCurrency = (value: number | null) => {
 };
 
 export default function OrcamentoCanalPage() {
-  const [selectedYear] = useState('2024');
-  const [canalData, setCanalData] = useState(initialCanalData);
-  const [selectedProdutor] = useState('Baron Philippe de Rothschild SA');
-  const [selectedMarca, setSelectedMarca] = useState('milon');
+  const [selectedYear] = useState('2025');
+  const [canalData, setCanalData] = useState(orcamentoCanalData);
+  const [selectedProdutor] = useState('V&W Quinta do Douro');
+  const [selectedMarca, setSelectedMarca] = useState('heritage');
 
   const toggleExpand = (id: string) => {
     setCanalData(prevData =>
@@ -110,12 +39,12 @@ export default function OrcamentoCanalPage() {
     );
   };
 
-  const totalOrcamento = 134905;
-  const totalVendas = 34316;
-  const totalAtivacoes = -1450;
-  const totalNet2 = 32866;
+  const totalOrcamento = canalData.reduce((acc, item) => acc + item.orcamento, 0);
+  const totalVendas = canalData.reduce((acc, item) => acc + (item.vendas || 0), 0);
+  const totalAtivacoes = canalData.reduce((acc, item) => acc + (item.ativacoes || 0), 0);
+  const totalNet2 = canalData.reduce((acc, item) => acc + (item.net2 || 0), 0);
 
-  const renderCanalRow = (item: CanalItem, isChild = false) => {
+  const renderCanalRow = (item: typeof orcamentoCanalData[0], isChild = false) => {
     const hasChildren = item.children && item.children.length > 0;
     const paddingLeft = item.level === 0 ? 'pl-3' : 'pl-8';
 
@@ -141,24 +70,10 @@ export default function OrcamentoCanalPage() {
           <td className="p-2 text-right text-gray-700">{formatCurrency(item.net2)}</td>
           <td className="p-2 text-right text-gray-700">{item.percVendas || ''}</td>
         </tr>
-        {hasChildren && item.isExpanded && item.children!.map(child => renderCanalRow(child, true))}
+        {hasChildren && item.isExpanded && item.children!.map(child => renderCanalRow(child as any, true))}
       </>
     );
   };
-
-  const budgetTableData = [
-    { canal: 'PFV - B2B', orcamento: 60, isParent: true },
-    { canal: 'PFV - B2B - PRODUTORES', orcamento: 60, isParent: false },
-    { canal: 'PFV - MARKETING', orcamento: 914, isParent: true },
-    { canal: 'PFV - MARKETING - COMUNICAÇÃO', orcamento: 800, isParent: false },
-    { canal: 'PFV - MARKETING - EVENTOS|', orcamento: 114, isParent: false },
-    { canal: 'PFV - ON TRADE', orcamento: 133930, isParent: true },
-    { canal: 'PFV - ON TRADE - BARES', orcamento: 33333, isParent: false },
-    { canal: 'PFV - ON TRADE - CASH&CARRYs', orcamento: 297, isParent: false },
-    { canal: 'PFV - ON TRADE - CATERING', orcamento: 33333, isParent: false },
-    { canal: 'PFV - ON TRADE - DISTRIBUIDORES', orcamento: 300, isParent: false },
-    { canal: 'PFV - ON TRADE - HOTEIS', orcamento: 33333, isParent: false },
-  ];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -177,8 +92,8 @@ export default function OrcamentoCanalPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="2025">2025</SelectItem>
                     <SelectItem value="2024">2024</SelectItem>
-                    <SelectItem value="2023">2023</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -189,19 +104,19 @@ export default function OrcamentoCanalPage() {
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Investimento Ano-1</p>
-                  <p className="text-2xl font-semibold text-gray-800">(Vazio)</p>
+                  <p className="text-2xl font-semibold text-gray-800">605.000 €</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Orçamento</p>
-                  <p className="text-2xl font-semibold text-gray-800">134.905 €</p>
+                  <p className="text-2xl font-semibold text-gray-800">{formatCurrency(totalOrcamento)}</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Orç Investimento vs Orçamento Vendas</p>
-                  <p className="text-2xl font-semibold text-gray-800">(Vazio)</p>
+                  <p className="text-2xl font-semibold text-gray-800">+12,4%</p>
                 </CardContent>
               </Card>
               <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white h-auto py-4">
@@ -222,7 +137,7 @@ export default function OrcamentoCanalPage() {
                         <th className="text-right p-2 font-medium text-gray-600">Orçamento vs Investimento Ano-1</th>
                         <th className="text-right p-2 font-medium text-gray-600">Vendas</th>
                         <th className="text-right p-2 font-medium text-gray-600">Ativações</th>
-                        <th className="text-right p-2 font-medium text-gray-600">2 Net</th>
+                        <th className="text-right p-2 font-medium text-gray-600">Net</th>
                         <th className="text-right p-2 font-medium text-gray-600">% Vendas</th>
                       </tr>
                     </thead>
@@ -230,13 +145,13 @@ export default function OrcamentoCanalPage() {
                       {canalData.map(item => renderCanalRow(item))}
                       <tr className="bg-gray-100 font-semibold">
                         <td className="p-2 pl-3 text-gray-800">Total</td>
-                        <td className="p-2 text-right text-gray-800"></td>
+                        <td className="p-2 text-right text-gray-800">605.000 €</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalOrcamento)}</td>
-                        <td className="p-2 text-right text-gray-800"></td>
+                        <td className="p-2 text-right text-gray-800">+12,4%</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalVendas)}</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalAtivacoes)}</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalNet2)}</td>
-                        <td className="p-2 text-right text-gray-800">4,23%</td>
+                        <td className="p-2 text-right text-gray-800">3,9%</td>
                       </tr>
                     </tbody>
                   </table>
@@ -250,14 +165,15 @@ export default function OrcamentoCanalPage() {
               <div className="space-y-4">
                 <Card className="bg-white border shadow-sm">
                   <CardContent className="p-4">
-                    <h3 className="font-medium text-gray-700 mb-3">Produtores</h3>
+                    <h3 className="font-medium text-gray-700 mb-3">Produtor/Adega</h3>
                     <Select defaultValue={selectedProdutor}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Baron Philippe de Rothschild SA">PROD - Baron Philippe de Rothschild SA</SelectItem>
-                        <SelectItem value="Anselmo Mendes">PROD - Anselmo Mendes Vinhos Lda</SelectItem>
+                        <SelectItem value="V&W Quinta do Douro">V&W Quinta do Douro</SelectItem>
+                        <SelectItem value="V&W Herdade Alentejana">V&W Herdade Alentejana</SelectItem>
+                        <SelectItem value="V&W Caves do Dão">V&W Caves do Dão</SelectItem>
                       </SelectContent>
                     </Select>
                   </CardContent>
@@ -265,15 +181,19 @@ export default function OrcamentoCanalPage() {
 
                 <Card className="bg-white border shadow-sm">
                   <CardContent className="p-4">
-                    <h3 className="font-medium text-gray-700 mb-3">Marcas</h3>
+                    <h3 className="font-medium text-gray-700 mb-3">Marcas V&W</h3>
                     <RadioGroup value={selectedMarca} onValueChange={setSelectedMarca}>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="milon" id="milon" />
-                        <Label htmlFor="milon">Chateau CLERC MILON Rouge</Label>
+                        <RadioGroupItem value="heritage" id="heritage" />
+                        <Label htmlFor="heritage">V&W Heritage (Grande Reserva)</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="armailhac" id="armailhac" />
-                        <Label htmlFor="armailhac">Chateau D'ARMAILHAC Rouge</Label>
+                        <RadioGroupItem value="signature" id="signature" />
+                        <Label htmlFor="signature">V&W Signature Edition</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="reserva" id="reserva" />
+                        <Label htmlFor="reserva">V&W Douro Reserva Tinto</Label>
                       </div>
                     </RadioGroup>
                   </CardContent>
@@ -285,10 +205,10 @@ export default function OrcamentoCanalPage() {
                 <CardContent className="p-0">
                   <div className="flex items-center gap-4 p-3 border-b bg-gray-50">
                     <Button variant="ghost" size="sm" className="text-xs">
-                      <Save className="w-3 h-3 mr-1" /> Save Changes
+                      <Save className="w-3 h-3 mr-1" /> Guardar
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs">
-                      <RotateCcw className="w-3 h-3 mr-1" /> Reset Changes
+                      <RotateCcw className="w-3 h-3 mr-1" /> Reset
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs">
                       <Undo className="w-3 h-3 mr-1" /> Undo
@@ -301,17 +221,21 @@ export default function OrcamentoCanalPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b bg-gray-50">
-                          <th className="text-left p-2 font-medium text-gray-600"></th>
+                          <th className="text-left p-2 font-medium text-gray-600">Canal</th>
                           <th className="text-right p-2 font-medium text-gray-600">Orçamento</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {budgetTableData.map((item, index) => (
-                          <tr key={index} className={`border-b ${item.isParent ? 'font-medium' : ''}`}>
-                            <td className={`p-2 text-gray-700 ${item.isParent ? '' : 'pl-6'}`}>{item.canal}</td>
+                        {canalData.map((item) => (
+                          <tr key={item.id} className="border-b font-medium">
+                            <td className="p-2 text-gray-700">{item.canal}</td>
                             <td className="p-2 text-right text-gray-700">{formatCurrency(item.orcamento)}</td>
                           </tr>
                         ))}
+                        <tr className="font-bold bg-gray-100">
+                          <td className="p-2 text-gray-800">Total</td>
+                          <td className="p-2 text-right text-gray-800">{formatCurrency(totalOrcamento)}</td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>

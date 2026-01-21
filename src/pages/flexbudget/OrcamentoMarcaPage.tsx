@@ -14,76 +14,7 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-
-interface ProdutorItem {
-  id: string;
-  produtor: string;
-  investimentoAno1: number | null;
-  orcamento: number;
-  orcVsInv: string | null;
-  vendas: number | null;
-  ativacoes: number | null;
-  net2: number | null;
-  percVendas: string | null;
-  children?: ProdutorItem[];
-  isExpanded?: boolean;
-  level: number;
-}
-
-const initialProdutorData: ProdutorItem[] = [
-  {
-    id: '1',
-    produtor: 'PROD - Baron Philippe de Rothschild SA',
-    investimentoAno1: null,
-    orcamento: 765,
-    orcVsInv: null,
-    vendas: 21226,
-    ativacoes: -1450,
-    net2: 19776,
-    percVendas: '6,83%',
-    level: 0,
-    isExpanded: true,
-    children: [
-      { id: '1.1', produtor: 'Chateau CLERC MILON Rouge', investimentoAno1: null, orcamento: 297, orcVsInv: null, vendas: 21226, ativacoes: -1450, net2: 19776, percVendas: '6,83%', level: 1 },
-      { id: '1.2', produtor: 'Chateau D\'ARMAILHAC Rouge', investimentoAno1: null, orcamento: 468, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-    ],
-  },
-  {
-    id: '2',
-    produtor: 'PROD - Anselmo Mendes Vinhos Lda',
-    investimentoAno1: null,
-    orcamento: 28803,
-    orcVsInv: null,
-    vendas: null,
-    ativacoes: -17,
-    net2: -17,
-    percVendas: null,
-    level: 0,
-    isExpanded: true,
-    children: [
-      { id: '2.1', produtor: 'ANSELMO MENDES 3 Rios Escolha', investimentoAno1: null, orcamento: 26724, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '2.2', produtor: 'ANSELMO MENDES Alvarinho Private', investimentoAno1: null, orcamento: 2079, orcVsInv: null, vendas: null, ativacoes: -17, net2: -17, percVendas: null, level: 1 },
-    ],
-  },
-  {
-    id: '3',
-    produtor: 'PROD - Adega Costa Atlântica Lda',
-    investimentoAno1: null,
-    orcamento: 14066,
-    orcVsInv: null,
-    vendas: null,
-    ativacoes: null,
-    net2: null,
-    percVendas: null,
-    level: 0,
-    isExpanded: true,
-    children: [
-      { id: '3.1', produtor: 'VICENTINO Alvarinho', investimentoAno1: null, orcamento: 728, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '3.2', produtor: 'VICENTINO Arinto Branco', investimentoAno1: null, orcamento: 13338, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-      { id: '3.3', produtor: 'VICENTINO Reserva Touriga Nacional Tinto', investimentoAno1: null, orcamento: 0, orcVsInv: null, vendas: null, ativacoes: null, net2: null, percVendas: null, level: 1 },
-    ],
-  },
-];
+import { orcamentoMarcaData } from '@/data/wineData';
 
 const formatCurrency = (value: number | null) => {
   if (value === null) return '';
@@ -95,10 +26,10 @@ const formatCurrency = (value: number | null) => {
 };
 
 export default function OrcamentoMarcaPage() {
-  const [selectedYear] = useState('2024');
-  const [produtorData, setProdutorData] = useState(initialProdutorData);
-  const [selectedCanal] = useState('ON TRADE');
-  const [selectedSubCanal, setSelectedSubCanal] = useState('cash');
+  const [selectedYear] = useState('2025');
+  const [produtorData, setProdutorData] = useState(orcamentoMarcaData);
+  const [selectedCanal] = useState('horeca');
+  const [selectedSubCanal, setSelectedSubCanal] = useState('restaurantes');
 
   const toggleExpand = (id: string) => {
     setProdutorData(prevData =>
@@ -108,12 +39,12 @@ export default function OrcamentoMarcaPage() {
     );
   };
 
-  const totalOrcamento = 43634;
-  const totalVendas = 21226;
-  const totalAtivacoes = -1467;
-  const totalNet2 = 19759;
+  const totalOrcamento = produtorData.reduce((acc, item) => acc + item.orcamento, 0);
+  const totalVendas = produtorData.reduce((acc, item) => acc + (item.vendas || 0), 0);
+  const totalAtivacoes = produtorData.reduce((acc, item) => acc + (item.ativacoes || 0), 0);
+  const totalNet2 = produtorData.reduce((acc, item) => acc + (item.net2 || 0), 0);
 
-  const renderProdutorRow = (item: ProdutorItem) => {
+  const renderProdutorRow = (item: typeof orcamentoMarcaData[0]) => {
     const hasChildren = item.children && item.children.length > 0;
     const paddingLeft = item.level === 0 ? 'pl-3' : 'pl-8';
 
@@ -139,24 +70,10 @@ export default function OrcamentoMarcaPage() {
           <td className="p-2 text-right text-gray-700">{formatCurrency(item.net2)}</td>
           <td className="p-2 text-right text-gray-700">{item.percVendas || ''}</td>
         </tr>
-        {hasChildren && item.isExpanded && item.children!.map(child => renderProdutorRow(child))}
+        {hasChildren && item.isExpanded && item.children!.map(child => renderProdutorRow(child as any))}
       </>
     );
   };
-
-  const budgetTableData = [
-    { item: 'PROD - Baron Philippe de Rothschild SA', orcamento: 765, isParent: true },
-    { item: 'Chateau CLERC MILON Rouge', orcamento: 297, isParent: false },
-    { item: 'Chateau D\'ARMAILHAC Rouge', orcamento: 468, isParent: false },
-    { item: 'PROD - Anselmo Mendes Vinhos Lda', orcamento: 28803, isParent: true },
-    { item: 'ANSELMO MENDES 3 Rios Escolha', orcamento: 26724, isParent: false },
-    { item: 'ANSELMO MENDES Alvarinho Private', orcamento: 2079, isParent: false },
-    { item: 'PROD - Adega Costa Atlântica Lda', orcamento: 14066, isParent: true },
-    { item: 'VICENTINO Alvarinho', orcamento: 728, isParent: false },
-    { item: 'VICENTINO Arinto Branco', orcamento: 13338, isParent: false },
-    { item: 'VICENTINO Reserva Touriga Nacional Tinto', orcamento: 0, isParent: false },
-    { item: 'Total', orcamento: 43634, isParent: true },
-  ];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -175,8 +92,8 @@ export default function OrcamentoMarcaPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="2025">2025</SelectItem>
                     <SelectItem value="2024">2024</SelectItem>
-                    <SelectItem value="2023">2023</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -187,19 +104,19 @@ export default function OrcamentoMarcaPage() {
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Investimento Ano-1</p>
-                  <p className="text-2xl font-semibold text-gray-800">(Vazio)</p>
+                  <p className="text-2xl font-semibold text-gray-800">425.000 €</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Orçamento</p>
-                  <p className="text-2xl font-semibold text-gray-800">43.634 €</p>
+                  <p className="text-2xl font-semibold text-gray-800">{formatCurrency(totalOrcamento)}</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Orç Investimento vs Orçamento Vendas</p>
-                  <p className="text-2xl font-semibold text-gray-800">(Vazio)</p>
+                  <p className="text-2xl font-semibold text-gray-800">+14,1%</p>
                 </CardContent>
               </Card>
               <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white h-auto py-4">
@@ -214,13 +131,13 @@ export default function OrcamentoMarcaPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-gray-50">
-                        <th className="text-left p-2 font-medium text-gray-600 w-72">Produtor</th>
+                        <th className="text-left p-2 font-medium text-gray-600 w-72">Marca/Vinho</th>
                         <th className="text-right p-2 font-medium text-gray-600">Investimentos Ano-1</th>
                         <th className="text-right p-2 font-medium text-gray-600">Orçamento</th>
                         <th className="text-right p-2 font-medium text-gray-600">Orçamento vs Investimento Ano-1</th>
                         <th className="text-right p-2 font-medium text-gray-600">Vendas</th>
                         <th className="text-right p-2 font-medium text-gray-600">Ativações</th>
-                        <th className="text-right p-2 font-medium text-gray-600">2 Net</th>
+                        <th className="text-right p-2 font-medium text-gray-600">Net</th>
                         <th className="text-right p-2 font-medium text-gray-600">% Vendas</th>
                       </tr>
                     </thead>
@@ -228,13 +145,13 @@ export default function OrcamentoMarcaPage() {
                       {produtorData.map(item => renderProdutorRow(item))}
                       <tr className="bg-gray-100 font-semibold">
                         <td className="p-2 pl-3 text-gray-800">Total</td>
-                        <td className="p-2 text-right text-gray-800"></td>
+                        <td className="p-2 text-right text-gray-800">425.000 €</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalOrcamento)}</td>
-                        <td className="p-2 text-right text-gray-800"></td>
+                        <td className="p-2 text-right text-gray-800">+14,1%</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalVendas)}</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalAtivacoes)}</td>
                         <td className="p-2 text-right text-gray-800">{formatCurrency(totalNet2)}</td>
-                        <td className="p-2 text-right text-gray-800">6,91%</td>
+                        <td className="p-2 text-right text-gray-800">3,7%</td>
                       </tr>
                     </tbody>
                   </table>
@@ -254,9 +171,9 @@ export default function OrcamentoMarcaPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ON TRADE">PFV - ON TRADE</SelectItem>
-                        <SelectItem value="B2B">PFV - B2B</SelectItem>
-                        <SelectItem value="MARKETING">PFV - MARKETING</SelectItem>
+                        <SelectItem value="horeca">Horeca</SelectItem>
+                        <SelectItem value="retalho">Retalho</SelectItem>
+                        <SelectItem value="exportacao">Exportação</SelectItem>
                       </SelectContent>
                     </Select>
                   </CardContent>
@@ -267,28 +184,16 @@ export default function OrcamentoMarcaPage() {
                     <h3 className="font-medium text-gray-700 mb-3">Sub-Canal</h3>
                     <RadioGroup value={selectedSubCanal} onValueChange={setSelectedSubCanal}>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="bares" id="bares" />
-                        <Label htmlFor="bares">PFV - ON TRADE - BARES</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="cash" id="cash" />
-                        <Label htmlFor="cash">PFV - ON TRADE - CASH&CARRYs</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="catering" id="catering" />
-                        <Label htmlFor="catering">PFV - ON TRADE - CATERING</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="distribuidores" id="distribuidores" />
-                        <Label htmlFor="distribuidores">PFV - ON TRADE - DISTRIBUIDORES</Label>
+                        <RadioGroupItem value="restaurantes" id="restaurantes" />
+                        <Label htmlFor="restaurantes">Restaurantes Premium</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="hoteis" id="hoteis" />
-                        <Label htmlFor="hoteis">PFV - ON TRADE - HOTEIS</Label>
+                        <Label htmlFor="hoteis">Hotéis 5 Estrelas</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="restaurantes" id="restaurantes" />
-                        <Label htmlFor="restaurantes">PFV - ON TRADE - RESTAURANTES</Label>
+                        <RadioGroupItem value="bares" id="bares" />
+                        <Label htmlFor="bares">Bares Enotecas</Label>
                       </div>
                     </RadioGroup>
                   </CardContent>
@@ -300,10 +205,10 @@ export default function OrcamentoMarcaPage() {
                 <CardContent className="p-0">
                   <div className="flex items-center gap-4 p-3 border-b bg-gray-50">
                     <Button variant="ghost" size="sm" className="text-xs">
-                      <Save className="w-3 h-3 mr-1" /> Save Changes
+                      <Save className="w-3 h-3 mr-1" /> Guardar
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs">
-                      <RotateCcw className="w-3 h-3 mr-1" /> Reset Changes
+                      <RotateCcw className="w-3 h-3 mr-1" /> Reset
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs">
                       <Undo className="w-3 h-3 mr-1" /> Undo
@@ -316,17 +221,21 @@ export default function OrcamentoMarcaPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b bg-gray-50">
-                          <th className="text-left p-2 font-medium text-gray-600"></th>
+                          <th className="text-left p-2 font-medium text-gray-600">Marca/Vinho V&W</th>
                           <th className="text-right p-2 font-medium text-gray-600">Orçamento</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {budgetTableData.map((item, index) => (
-                          <tr key={index} className={`border-b ${item.isParent ? 'font-medium' : ''}`}>
-                            <td className={`p-2 text-gray-700 ${item.isParent ? '' : 'pl-6'}`}>{item.item}</td>
+                        {produtorData.map((item) => (
+                          <tr key={item.id} className="border-b font-medium">
+                            <td className="p-2 text-gray-700">{item.produtor}</td>
                             <td className="p-2 text-right text-gray-700">{formatCurrency(item.orcamento)}</td>
                           </tr>
                         ))}
+                        <tr className="font-bold bg-gray-100">
+                          <td className="p-2 text-gray-800">Total</td>
+                          <td className="p-2 text-right text-gray-800">{formatCurrency(totalOrcamento)}</td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>

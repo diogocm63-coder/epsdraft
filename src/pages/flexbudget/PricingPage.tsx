@@ -7,25 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-
-const canais = ['(Blank)'];
-const categorias = [
-  '(Blank)', 'Acessórios', 'Bebidas Alcoólicas', 'CD Rom', 'Componentes', 
-  'Computadores', 'Equipamentos de fax e cópia', 'Ferramentas', 
-  'Grandes Eletrodomésticos', 'Impressoras', 'Matérias Primas', 'Microfones', 'Mobiliário'
-];
-
-const produtosData = [
-  'Aparelhagem e Máq. Eletrónicas',
-  'Caixote computador base 50*60*25',
-  'Contabilidade Geral',
-  'Instalação de rede Média',
-  'Manual do utilizador v.2006',
-  'Montagem Ar Condicionado',
-  'Prestação de projetos',
-  'Técnico de Assemblagem de Hardware',
-  'Transportes de fornecedor',
-];
+import { pricingCanais, pricingCategorias, pricingProdutosData } from '@/data/wineData';
 
 const PricingPage = () => {
   const [year, setYear] = useState('2025');
@@ -41,7 +23,7 @@ const PricingPage = () => {
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl font-light text-foreground">Definição de Pricing</h1>
               <div className="flex items-center gap-4">
-                <Button className="bg-[#4a5568] hover:bg-[#3a4558] text-white">
+                <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white">
                   Carregar Budget a partir das Vendas
                 </Button>
                 <div className="flex items-center gap-2">
@@ -63,7 +45,7 @@ const PricingPage = () => {
               <div className="col-span-2 bg-white rounded-lg border p-4">
                 <h3 className="text-sm font-medium mb-3">Canal</h3>
                 <div className="space-y-1">
-                  {canais.map((canal) => (
+                  {pricingCanais.map((canal) => (
                     <div key={canal} className="flex items-center gap-2 text-sm py-1">
                       <ChevronRight className="w-3 h-3" />
                       {canal}
@@ -77,7 +59,7 @@ const PricingPage = () => {
                 <h3 className="text-sm font-medium mb-3">Categoria</h3>
                 <ScrollArea className="h-[180px]">
                   <div className="space-y-1">
-                    {categorias.map((cat) => (
+                    {pricingCategorias.map((cat) => (
                       <div key={cat} className="flex items-center gap-2 text-sm py-1">
                         <ChevronRight className="w-3 h-3" />
                         <Checkbox id={cat} />
@@ -92,19 +74,19 @@ const PricingPage = () => {
               <div className="col-span-7 grid grid-cols-3 gap-4">
                 <div className="bg-white rounded-lg border p-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Vendas Ano-1</div>
-                  <div className="text-2xl font-bold">57.950 €</div>
+                  <div className="text-2xl font-bold">4.250.000 €</div>
                 </div>
                 <div className="bg-white rounded-lg border p-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Orçamento</div>
-                  <div className="text-2xl font-bold text-muted-foreground">(Vazio)</div>
+                  <div className="text-2xl font-bold">4.850.000 €</div>
                 </div>
                 <div className="bg-white rounded-lg border p-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Orçamento vs Vendas Ano-1</div>
-                  <div className="text-2xl font-bold text-red-600">-100%</div>
+                  <div className="text-2xl font-bold text-green-600">+14,1%</div>
                 </div>
                 <div className="col-span-3 bg-white rounded-lg border p-4">
                   <div className="text-xs text-muted-foreground mb-2">Categorias &nbsp; Total</div>
-                  <div className="text-sm font-medium">Total</div>
+                  <div className="text-sm font-medium">Vinhos V&W - Todas as Categorias</div>
                 </div>
               </div>
             </div>
@@ -134,19 +116,19 @@ const PricingPage = () => {
                     </tr>
                     <tr className="border-b">
                       <th className="text-left py-2 px-3"></th>
-                      <th className="text-center py-2 px-3 font-medium">SubCanal</th>
+                      <th className="text-center py-2 px-3 font-medium">Preço/Cx9L</th>
                       <th className="text-center py-2 px-3 font-medium">Total</th>
                     </tr>
                     <tr className="border-b bg-gray-50">
                       <td className="py-2 px-3">
                         <Minus className="w-3 h-3" />
                       </td>
-                      <td className="text-center py-2 px-3">0,00 €</td>
-                      <td className="text-center py-2 px-3">0,00 €</td>
+                      <td className="text-center py-2 px-3">Média: 72,50 €</td>
+                      <td className="text-center py-2 px-3">4.850.000 €</td>
                     </tr>
                   </thead>
                   <tbody>
-                    {produtosData.map((produto) => (
+                    {pricingProdutosData.map((produto) => (
                       <tr key={produto} className="border-b hover:bg-gray-50">
                         <td className="py-2 px-3 pl-6">{produto}</td>
                         <td className="text-center py-2 px-3">
@@ -154,6 +136,7 @@ const PricingPage = () => {
                             type="text" 
                             className="w-20 text-center border rounded px-2 py-1 text-sm"
                             defaultValue=""
+                            placeholder="€/Cx9L"
                           />
                         </td>
                         <td className="text-center py-2 px-3">0,00 €</td>
