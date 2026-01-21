@@ -439,11 +439,13 @@ export const vendasMonthlyData = [
 ];
 
 export const vendasFamiliaData = [
-  { familia: 'Tintos Premium', valor: 1850000 },
-  { familia: 'Brancos Reserva', valor: 1420000 },
-  { familia: 'Tintos Regional', valor: 980000 },
-  { familia: 'Rosés Selection', valor: 580000 },
-  { familia: 'Espumantes', valor: 420000 },
+  { familia: 'Tinto Regional', valor: 1850000 },
+  { familia: 'Tinto Reserva', valor: 1420000 },
+  { familia: 'Tinto Premium', valor: 980000 },
+  { familia: 'Branco Regional', valor: 720000 },
+  { familia: 'Branco Reserva', valor: 580000 },
+  { familia: 'Branco Premium', valor: 420000 },
+  { familia: 'Rosé', valor: 380000 },
 ];
 
 export const vendasCanalData = [
