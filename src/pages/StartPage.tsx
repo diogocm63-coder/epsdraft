@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { Briefcase, TrendingUp, BarChart3, Shield, Brain } from "lucide-react";
+import { Briefcase, TrendingUp, BarChart3, Shield, Brain, ArrowRight } from "lucide-react";
+
 const modules = [
   {
     id: "executivo",
+    step: 1,
     title: "Executivo",
     description: "Visão Unificada do Negócio",
     icon: Briefcase,
@@ -10,6 +12,7 @@ const modules = [
   },
   {
     id: "flexbudget",
+    step: 2,
     title: "Flexbudget",
     description: "Orçamentação flexível e previsões",
     icon: TrendingUp,
@@ -17,6 +20,7 @@ const modules = [
   },
   {
     id: "producao-procura",
+    step: 3,
     title: "Produção e Procura",
     description: "Inteligência Preditiva: Alinhamento Perfeito Entre Produção e Procura",
     icon: BarChart3,
@@ -24,6 +28,7 @@ const modules = [
   },
   {
     id: "controlo",
+    step: 4,
     title: "Controlo",
     description: "Controlo Correlacional: Intervenção Atempada e Estratégica",
     icon: Shield,
@@ -31,14 +36,17 @@ const modules = [
   },
   {
     id: "decisao",
+    step: 5,
     title: "Decisão",
     description: "Suporte à Tomada de Decisão Estratégica",
     icon: Brain,
     path: "/decisao",
   },
 ];
+
 const StartPage = () => {
   const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-eps-background via-white to-eps-background flex flex-col items-center justify-center p-8">
       {/* Logo */}
@@ -47,7 +55,7 @@ const StartPage = () => {
       </div>
 
       {/* Header */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16">
         <h1 className="text-4xl font-bold text-eps-primary mb-2 tracking-tight">Enterprise Planning Solution</h1>
         <div className="flex items-center justify-center gap-3">
           <div className="w-8 h-px bg-eps-muted"></div>
@@ -56,31 +64,78 @@ const StartPage = () => {
         </div>
       </div>
 
-      {/* Module Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl w-full px-4">
-        {modules.map((module) => {
-          const Icon = module.icon;
-          return (
-            <button
-              key={module.id}
-              onClick={() => navigate(module.path)}
-              className="group bg-white hover:bg-white border border-gray-100 rounded-xl p-6 transition-all duration-300 hover:shadow-xl flex flex-col items-center text-center min-h-[200px]"
-            >
-              <div className="w-14 h-14 rounded-full bg-eps-background flex items-center justify-center mb-4 group-hover:bg-eps-light transition-colors">
-                <Icon className="w-7 h-7 text-eps-primary" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">{module.title}</h2>
-              <p className="text-sm text-gray-500 leading-relaxed mb-4 flex-1">{module.description}</p>
-              <span className="text-eps-primary text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
-                Aceder <span className="text-lg">→</span>
-              </span>
-            </button>
-          );
-        })}
+      {/* Flow Process */}
+      <div className="w-full max-w-6xl px-4">
+        {/* Flow line background */}
+        <div className="relative">
+          {/* Connecting line */}
+          <div className="absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-eps-primary/20 via-eps-primary/40 to-eps-primary/20 hidden lg:block" />
+          
+          {/* Module cards in flow */}
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-2">
+            {modules.map((module, index) => {
+              const Icon = module.icon;
+              const isLast = index === modules.length - 1;
+              
+              return (
+                <div key={module.id} className="flex items-center gap-2 lg:gap-0">
+                  {/* Module card */}
+                  <button
+                    onClick={() => navigate(module.path)}
+                    className="group relative bg-white hover:bg-eps-background border border-gray-200 hover:border-eps-primary/30 rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col items-center text-center w-full lg:w-44 min-h-[180px]"
+                  >
+                    {/* Step number badge */}
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-eps-primary text-white text-xs font-bold flex items-center justify-center shadow-md">
+                      {module.step}
+                    </div>
+                    
+                    {/* Icon */}
+                    <div className="w-12 h-12 rounded-full bg-eps-background group-hover:bg-eps-light flex items-center justify-center mt-2 mb-3 transition-colors">
+                      <Icon className="w-6 h-6 text-eps-primary" />
+                    </div>
+                    
+                    {/* Title */}
+                    <h2 className="text-sm font-semibold text-gray-800 mb-1.5">{module.title}</h2>
+                    
+                    {/* Description */}
+                    <p className="text-xs text-gray-500 leading-relaxed flex-1 line-clamp-3">{module.description}</p>
+                    
+                    {/* Action */}
+                    <span className="mt-2 text-eps-primary text-xs font-medium flex items-center gap-1 group-hover:gap-2 transition-all opacity-0 group-hover:opacity-100">
+                      Aceder <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </button>
+                  
+                  {/* Arrow connector (hidden on last item and on mobile) */}
+                  {!isLast && (
+                    <div className="hidden lg:flex items-center justify-center w-8 text-eps-primary/40">
+                      <ArrowRight className="w-5 h-5" />
+                    </div>
+                  )}
+                  
+                  {/* Vertical arrow for mobile */}
+                  {!isLast && (
+                    <div className="lg:hidden flex items-center justify-center h-6 text-eps-primary/40 rotate-90">
+                      <ArrowRight className="w-5 h-5" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Flow label */}
+        <div className="flex items-center justify-center mt-8">
+          <div className="flex items-center gap-3 text-eps-muted text-sm">
+            <div className="w-12 h-px bg-eps-muted/30"></div>
+            <span className="italic">Fluxo do Processo de Planeamento</span>
+            <div className="w-12 h-px bg-eps-muted/30"></div>
+          </div>
+        </div>
       </div>
-
-      {/* Footer */}
     </div>
   );
 };
+
 export default StartPage;
