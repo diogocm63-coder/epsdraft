@@ -5,7 +5,6 @@ import { EPSHeader } from '@/components/layout/EPSHeader';
 import { OperacoesFilterProvider } from '@/contexts/OperacoesFilterContext';
 import { areaHa, percentExecucao } from '@/data/operacoesData';
 import { Settings } from 'lucide-react';
-
 interface OperacoesLayoutProps {
   children: ReactNode;
   title: string;
@@ -13,16 +12,14 @@ interface OperacoesLayoutProps {
   showTipoProduto?: boolean;
   showAreaExecucao?: boolean;
 }
-
-export const OperacoesLayout = ({ 
-  children, 
+export const OperacoesLayout = ({
+  children,
   title,
   showAtividade = false,
   showTipoProduto = false,
   showAreaExecucao = true
 }: OperacoesLayoutProps) => {
-  return (
-    <OperacoesFilterProvider>
+  return <OperacoesFilterProvider>
       <div className="flex h-screen bg-[#f8f8f8] overflow-hidden">
         <DashboardSidebar />
         
@@ -30,22 +27,16 @@ export const OperacoesLayout = ({
           <EPSHeader title="Operações" icon={<Settings className="w-4 h-4" />} />
           
           <div className="flex flex-1 overflow-hidden">
-            <OperacoesFilterSidebar 
-              showAtividade={showAtividade} 
-              showTipoProduto={showTipoProduto} 
-            />
+            <OperacoesFilterSidebar showAtividade={showAtividade} showTipoProduto={showTipoProduto} />
             
             <div className="flex-1 flex flex-col overflow-hidden min-h-0">
               {/* Title Bar */}
               <div className="flex items-center justify-between px-3 py-1 flex-shrink-0">
               <div className="flex-1">
-                <div className="bg-gradient-to-r from-[#f5e6d3] via-[#f5e6d3]/50 to-transparent py-1.5 px-4 rounded inline-block">
-                  <h1 className="text-[#8B1538] font-light text-base tracking-[0.25em]">{title}</h1>
-                </div>
+                
               </div>
               
-              {showAreaExecucao && (
-                <div className="flex gap-3 ml-4">
+              {showAreaExecucao && <div className="flex gap-3 ml-4">
                   <div className="border border-gray-300 rounded px-3 py-1 text-xs bg-white">
                     <span className="text-gray-600">Área (ha):</span>
                     <span className="font-bold ml-2">{areaHa}</span>
@@ -54,8 +45,7 @@ export const OperacoesLayout = ({
                     <span className="text-gray-600">% Execução:</span>
                     <span className="font-bold ml-2">{percentExecucao}%</span>
                   </div>
-                </div>
-              )}
+                </div>}
             </div>
             
               {/* Content - flex-1 with min-h-0 to allow shrinking */}
@@ -66,6 +56,5 @@ export const OperacoesLayout = ({
           </div>
         </div>
       </div>
-    </OperacoesFilterProvider>
-  );
+    </OperacoesFilterProvider>;
 };
