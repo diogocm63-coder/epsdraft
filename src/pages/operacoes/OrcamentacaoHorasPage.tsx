@@ -29,7 +29,7 @@ const OrcamentacaoHorasPage = () => {
   const grandTotalHoras = orcamentoData.reduce((sum, row) => sum + row.total, 0);
 
   return (
-    <OperacoesLayout title="Orçamentação de Horas" showAtividade showAreaExecucao={false}>
+    <OperacoesLayout title="Orçamentação de Horas" showAtividade>
       <div className="flex flex-col gap-2 h-full overflow-hidden">
         <OperacoesSummary showDashboardLabel={false} />
 

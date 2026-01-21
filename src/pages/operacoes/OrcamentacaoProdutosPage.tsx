@@ -27,7 +27,7 @@ const OrcamentacaoProdutosPage = () => {
   const grandTotalQuantidades = orcamentoData.reduce((sum, row) => sum + row.total, 0);
 
   return (
-    <OperacoesLayout title="Orçamentação de Produtos" showAtividade showTipoProduto showAreaExecucao={false}>
+    <OperacoesLayout title="Orçamentação de Produtos" showAtividade showTipoProduto>
       <div className="flex flex-col gap-2 h-full overflow-hidden">
         <OperacoesSummary showDashboardLabel={false} />
 

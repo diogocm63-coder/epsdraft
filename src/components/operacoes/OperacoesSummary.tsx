@@ -149,9 +149,15 @@ export const OperacoesSummary = ({
       {/* Dashboard Label and Metrics */}
       {showDashboardLabel && <div className="flex items-center justify-between border-b border-gray-200 pb-1">
           <h2 className="text-eps-primary font-bold text-sm tracking-[0.3em]">D A S H B O A R D</h2>
-          <div className="flex items-center gap-4 text-[10px]">
-            
-            
+          <div className="flex items-center gap-3">
+            <div className="border border-gray-300 rounded px-3 py-1 text-xs bg-white">
+              <span className="text-gray-600">Área (ha):</span>
+              <span className="font-bold ml-2">{summaryData.areaHa}</span>
+            </div>
+            <div className="border border-gray-300 rounded px-3 py-1 text-xs bg-white">
+              <span className="text-gray-600">% Execução:</span>
+              <span className="font-bold ml-2">{summaryData.execucao}%</span>
+            </div>
           </div>
         </div>}
     </div>;
