@@ -99,23 +99,32 @@ const ExecutivoPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4 h-[48%]">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-800">Real vs Orçamento vs Preditivo</h3>
-                <p className="text-xs text-gray-500">Comparação visual para identificar tendências e desvios</p>
+                <h3 className="font-semibold text-gray-800">Receita Vendas: Real vs Orçamento vs Preditivo</h3>
+                <p className="text-xs text-gray-500">Comparação financeira com KPI operacional (Produção em mil litros)</p>
               </div>
               <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-primary"></span> Real</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-gold"></span> Orçamento</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-gold opacity-60"></span> Preditivo</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#8B1538' }}></span> Real</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#C9A227' }}></span> Orçamento</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#5B8C5A' }}></span> Preditivo</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-1 rounded" style={{ backgroundColor: '#2E5A88', height: '3px' }}></span> Produção (kL)</span>
               </div>
             </div>
             <ResponsiveContainer width="100%" height="85%">
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v/1000}k€`} />
-                <Tooltip formatter={(value: number) => `${(value/1000).toFixed(0)}k€`} />
-                <Bar dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} />
-                <Line type="monotone" dataKey="preditivo" stroke="#C9A227" strokeWidth={2} dot={{ fill: "#C9A227", r: 4 }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v/1000}k€`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}kL`} domain={[0, 600]} />
+                <Tooltip 
+                  formatter={(value: number, name: string) => {
+                    if (name === 'producao') return [`${value} kL`, 'Produção'];
+                    return [`${(value/1000).toFixed(0)}k€`, name === 'real' ? 'Real' : name === 'orcamento' ? 'Orçamento' : 'Preditivo'];
+                  }}
+                />
+                <Bar yAxisId="left" dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} name="real" />
+                <Bar yAxisId="left" dataKey="orcamento" fill="#C9A227" radius={[2, 2, 0, 0]} name="orcamento" />
+                <Bar yAxisId="left" dataKey="preditivo" fill="#5B8C5A" radius={[2, 2, 0, 0]} name="preditivo" />
+                <Line yAxisId="right" type="monotone" dataKey="producao" stroke="#2E5A88" strokeWidth={3} dot={{ fill: "#2E5A88", r: 4 }} name="producao" />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -50,18 +50,18 @@ export const wineCategorias = ['Regional', 'Reserva', 'Premium'];
 
 // ========== EXECUTIVO PAGE DATA ==========
 export const executivoMonthlyData = [
-  { month: 'Jan', real: 185000, orcamento: 175000, preditivo: 180000 },
-  { month: 'Fev', real: 210000, orcamento: 200000, preditivo: 205000 },
-  { month: 'Mar', real: 245000, orcamento: 230000, preditivo: 235000 },
-  { month: 'Abr', real: 265000, orcamento: 255000, preditivo: 260000 },
-  { month: 'Mai', real: 290000, orcamento: 280000, preditivo: 285000 },
-  { month: 'Jun', real: 320000, orcamento: 310000, preditivo: 315000 },
-  { month: 'Jul', real: 380000, orcamento: 360000, preditivo: 370000 },
-  { month: 'Ago', real: 420000, orcamento: 400000, preditivo: 410000 },
-  { month: 'Set', real: 480000, orcamento: 450000, preditivo: 465000 },
-  { month: 'Out', real: 520000, orcamento: 490000, preditivo: 505000 },
-  { month: 'Nov', real: 450000, orcamento: 430000, preditivo: 440000 },
-  { month: 'Dez', real: 560000, orcamento: 530000, preditivo: 545000 },
+  { month: 'Jan', real: 185000, orcamento: 175000, preditivo: 180000, producao: 180 },
+  { month: 'Fev', real: 210000, orcamento: 200000, preditivo: 205000, producao: 195 },
+  { month: 'Mar', real: 245000, orcamento: 230000, preditivo: 235000, producao: 220 },
+  { month: 'Abr', real: 265000, orcamento: 255000, preditivo: 260000, producao: 240 },
+  { month: 'Mai', real: 290000, orcamento: 280000, preditivo: 285000, producao: 260 },
+  { month: 'Jun', real: 320000, orcamento: 310000, preditivo: 315000, producao: 285 },
+  { month: 'Jul', real: 380000, orcamento: 360000, preditivo: 370000, producao: 340 },
+  { month: 'Ago', real: 420000, orcamento: 400000, preditivo: 410000, producao: 380 },
+  { month: 'Set', real: 480000, orcamento: 450000, preditivo: 465000, producao: 420 },
+  { month: 'Out', real: 520000, orcamento: 490000, preditivo: 505000, producao: 460 },
+  { month: 'Nov', real: 450000, orcamento: 430000, preditivo: 440000, producao: 400 },
+  { month: 'Dez', real: 560000, orcamento: 530000, preditivo: 545000, producao: 490 },
 ];
 
 export const executivoPerformanceData = [
