@@ -48,6 +48,7 @@ const previsaoStockData = [
 // KPI data for Vendas
 const vendasKpis = [
   { 
+    sourceKey: 'historico',
     badge: 'Histórico',
     badgeColor: 'bg-[#8B1538]',
     title: 'Previsão Total Anual',
@@ -57,6 +58,7 @@ const vendasKpis = [
     positive: true
   },
   { 
+    sourceKey: 'ia',
     badge: 'IA Preditiva',
     badgeColor: 'bg-[#3B82F6]',
     title: 'Previsão Total Anual',
@@ -66,6 +68,7 @@ const vendasKpis = [
     positive: true
   },
   { 
+    sourceKey: 'clientes',
     badge: 'Orç. Clientes',
     badgeColor: 'bg-[#22C55E]',
     title: 'Previsão Total Anual',
@@ -75,6 +78,7 @@ const vendasKpis = [
     positive: true
   },
   { 
+    sourceKey: 'orcamento',
     badge: 'Orçamento',
     badgeColor: 'bg-[#F59E0B]',
     title: 'Meta Orçamental',
@@ -178,6 +182,8 @@ const KPICard = ({
   change, 
   changeColor,
   positive,
+  selected,
+  onClick,
 }: { 
   badge: string;
   badgeColor: string;
@@ -186,8 +192,15 @@ const KPICard = ({
   change: string;
   changeColor: string;
   positive: boolean;
+  selected?: boolean;
+  onClick?: () => void;
 }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-2 flex gap-2">
+  <button 
+    onClick={onClick}
+    className={`bg-white rounded-lg border-2 p-2 flex gap-2 text-left transition-all w-full ${
+      selected ? 'border-eps-primary shadow-md ring-1 ring-eps-primary/20' : 'border-gray-200 hover:border-gray-300'
+    }`}
+  >
     <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
       {positive ? (
         <TrendingUp className="w-4 h-4 text-eps-primary" />
@@ -195,7 +208,14 @@ const KPICard = ({
         <div className="w-4 h-4 rounded-full border-2 border-[#F59E0B]" />
       )}
     </div>
-    <div className="flex-1 min-w-0">
+    <div className="flex-1 min-w-0 relative">
+      {selected && (
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-eps-primary rounded-full flex items-center justify-center">
+          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      )}
       <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium text-white rounded ${badgeColor}`}>
         {badge}
       </span>
@@ -206,7 +226,7 @@ const KPICard = ({
         {change}
       </div>
     </div>
-  </div>
+  </button>
 );
 
 // Comparison Chart Component
@@ -352,7 +372,12 @@ const DecisaoPage = () => {
           {/* Vendas KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {vendasKpis.map((kpi, idx) => (
-              <KPICard key={idx} {...kpi} />
+              <KPICard 
+                key={idx} 
+                {...kpi} 
+                selected={selectedSource === kpi.sourceKey}
+                onClick={() => setSelectedSource(kpi.sourceKey)}
+              />
             ))}
           </div>
           
