@@ -17,7 +17,7 @@ const IndicadoresKPIsPage = () => {
   return (
     <OperacoesLayout title="Indicadores KPIs">
       <div className="flex flex-col h-full gap-2">
-        <OperacoesSummary showDashboardLabel={false} />
+        <OperacoesSummary />
         
         <div className="flex items-center justify-between border-b border-gray-200 pb-1">
           <h2 className="text-eps-primary font-bold text-sm tracking-[0.3em]">D E S E M P E N H O</h2>
