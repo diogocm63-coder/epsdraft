@@ -4,7 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Calculator, ArrowDown, ArrowUp, Minus, Plus, Lock } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { artigosFamiliaData, artigosData } from '@/data/wineData';
 
@@ -34,6 +34,13 @@ const ArtigosPage = () => {
   const totalAno1 = artigosData.reduce((acc, cat) => acc + cat.ano1, 0);
   const totalCx9l = artigosData.reduce((acc, cat) => acc + cat.cx9l, 0);
   const totalCx9l1 = artigosData.reduce((acc, cat) => acc + cat.cx9l1, 0);
+
+  // Data for pie chart - aggregate by wine type
+  const tipoVinhoData = [
+    { name: 'Tinto', value: 3250, color: '#8B1538' },
+    { name: 'Branco', value: 1720, color: '#C9A227' },
+    { name: 'Rosé', value: 380, color: '#D4A5A5' },
+  ];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -80,21 +87,44 @@ const ArtigosPage = () => {
                 </ResponsiveContainer>
               </div>
               <div className="bg-white rounded-lg border p-4">
-                <div className="flex gap-8 mb-4">
-                  <div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                      <Lock className="w-3 h-3" /> Categoria
+                <h3 className="text-sm font-medium mb-3">Vendas por Tipo de Vinho</h3>
+                <div className="flex items-center gap-4">
+                  <ResponsiveContainer width={120} height={120}>
+                    <PieChart>
+                      <Pie
+                        data={tipoVinhoData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={30}
+                        outerRadius={50}
+                        dataKey="value"
+                        strokeWidth={0}
+                      >
+                        {tipoVinhoData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => `${value}K €`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex-1 space-y-2">
+                    {tipoVinhoData.map((tipo) => (
+                      <div key={tipo.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded" style={{ backgroundColor: tipo.color }}></span>
+                          <span className="text-xs">{tipo.name}</span>
+                        </div>
+                        <span className="text-xs font-medium">{tipo.value.toLocaleString('pt-PT')}K €</span>
+                      </div>
+                    ))}
+                    <div className="border-t pt-2 mt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium">Total</span>
+                        <span className="text-xs font-bold">{tipoVinhoData.reduce((acc, t) => acc + t.value, 0).toLocaleString('pt-PT')}K €</span>
+                      </div>
                     </div>
-                    <div className="text-sm">Vinhos V&W</div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                      <Lock className="w-3 h-3" /> Produtos
-                    </div>
-                    <div className="text-sm">&nbsp;</div>
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">Vendas por Categoria de Vinho</div>
               </div>
             </div>
 

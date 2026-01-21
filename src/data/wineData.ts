@@ -490,10 +490,13 @@ export const historicoTableData = [
 
 // ========== ARTIGOS DATA ==========
 export const artigosFamiliaData = [
-  { familia: 'Tintos Premium', valor: 1850 },
-  { familia: 'Brancos Reserva', valor: 1420 },
-  { familia: 'Tintos Regional', valor: 980 },
-  { familia: 'Rosés Selection', valor: 580 },
+  { familia: 'Tinto Regional', valor: 980 },
+  { familia: 'Tinto Reserva', valor: 1420 },
+  { familia: 'Tinto Premium', valor: 1850 },
+  { familia: 'Branco Regional', valor: 720 },
+  { familia: 'Branco Reserva', valor: 580 },
+  { familia: 'Branco Premium', valor: 420 },
+  { familia: 'Rosé', valor: 380 },
 ];
 
 export const artigosData = [
