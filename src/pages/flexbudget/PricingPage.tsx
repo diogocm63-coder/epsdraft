@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { pricingCanais, pricingCategorias, pricingProdutosData } from '@/data/wineData';
+import { LoadBudgetButton } from '@/components/flexbudget/LoadBudgetButton';
 
 const PricingPage = () => {
   const [year, setYear] = useState('2025');
@@ -23,9 +24,7 @@ const PricingPage = () => {
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl font-light text-foreground">Definição de Pricing</h1>
               <div className="flex items-center gap-4">
-                <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white">
-                  Carregar Budget a partir das Vendas
-                </Button>
+                <LoadBudgetButton />
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Ano</span>
                   <Select value={year} onValueChange={setYear}>

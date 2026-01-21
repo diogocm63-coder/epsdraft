@@ -15,6 +15,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { orcamentoCanalData } from '@/data/wineData';
+import { LoadBudgetButton } from '@/components/flexbudget/LoadBudgetButton';
 
 const formatCurrency = (value: number | null) => {
   if (value === null) return '';
@@ -119,9 +120,7 @@ export default function OrcamentoCanalPage() {
                   <p className="text-2xl font-semibold text-gray-800">+12,4%</p>
                 </CardContent>
               </Card>
-              <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white h-auto py-4">
-                Carregar Budget a partir das Vendas
-              </Button>
+              <LoadBudgetButton className="h-auto py-4" />
             </div>
 
             {/* Main Table */}
