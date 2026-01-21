@@ -25,47 +25,14 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-
-const evolucaoData = [
-  { mes: '2024-07', valor: 0 },
-  { mes: '2024-08', valor: 0 },
-  { mes: '2024-09', valor: 0 },
-  { mes: '2024-10', valor: 0 },
-  { mes: '2024-11', valor: 1 },
-  { mes: '2024-12', valor: 1 },
-  { mes: '2025-01', valor: 0 },
-  { mes: '2025-02', valor: 0 },
-  { mes: '2025-03', valor: 0 },
-  { mes: '2025-04', valor: 0 },
-  { mes: '2025-05', valor: 0 },
-  { mes: '2025-06', valor: 0 },
-];
-
-const materialData = [
-  { name: 'Rotulos', value: 4900, color: '#8B1538' },
-  { name: 'e-Card (Newsletter)', value: 24, color: '#C9A227' },
-  { name: 'Banner (SWF)', value: 6, color: '#D4A5A5' },
-];
-
-const topMarcasData = [
-  { marca: '(Vazio)', valor: 4930 },
-];
-
-const produtorData = [
-  { produtor: 'Commop', valor: 4624 },
-  { produtor: '(Vazio)', valor: 303 },
-  { produtor: 'Auchan Portugal', valor: 3 },
-];
-
-const unidadeData = [
-  { unidade: '(Vazio)', valor: 4000 },
-];
-
-const clienteData = [
-  { cliente: 'Teste Ines', percentage: 60 },
-  { cliente: 'Teste COMMOP', percentage: 30 },
-  { cliente: 'Lda', percentage: 10 },
-];
+import {
+  investimentosEvolucaoData,
+  investimentosMaterialData,
+  investimentosTopMarcasData,
+  investimentosProdutorData,
+  investimentosUnidadeData,
+  investimentosClienteData,
+} from '@/data/wineData';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-PT', {
@@ -76,7 +43,9 @@ const formatCurrency = (value: number) => {
 };
 
 export default function InvestimentosVisaoGeralPage() {
-  const [selectedYear] = useState('2024');
+  const [selectedYear] = useState('2025');
+
+  const totalInvestimento = investimentosEvolucaoData.reduce((acc, item) => acc + item.valor, 0);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -93,9 +62,9 @@ export default function InvestimentosVisaoGeralPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="2025">2025</SelectItem>
                   <SelectItem value="2024">2024</SelectItem>
                   <SelectItem value="2023">2023</SelectItem>
-                  <SelectItem value="2022">2022</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -105,31 +74,31 @@ export default function InvestimentosVisaoGeralPage() {
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Investimento Ano-1</p>
-                  <p className="text-2xl font-semibold text-gray-800">18.502</p>
+                  <p className="text-2xl font-semibold text-gray-800">485.000 €</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Investimento Ano</p>
-                  <p className="text-2xl font-semibold text-gray-800">4.930 €</p>
+                  <p className="text-2xl font-semibold text-gray-800">{formatCurrency(totalInvestimento)}</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Investimento Mês</p>
-                  <p className="text-2xl font-semibold text-gray-800">4.930 €</p>
+                  <p className="text-2xl font-semibold text-gray-800">52.000 €</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Orçamento</p>
-                  <p className="text-2xl font-semibold text-gray-800">1.317.593 €</p>
+                  <p className="text-2xl font-semibold text-gray-800">680.000 €</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Investimento vs Orçamento</p>
-                  <p className="text-2xl font-semibold text-gray-800">0,32%</p>
+                  <p className="text-2xl font-semibold text-gray-800">77,2%</p>
                 </CardContent>
               </Card>
             </div>
@@ -142,9 +111,9 @@ export default function InvestimentosVisaoGeralPage() {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
-                    <AreaChart data={evolucaoData}>
+                    <AreaChart data={investimentosEvolucaoData}>
                       <XAxis dataKey="mes" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
-                      <YAxis tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v/1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Area type="monotone" dataKey="valor" stroke="#8B1538" fill="#8B1538" fillOpacity={0.3} />
                     </AreaChart>
@@ -154,13 +123,13 @@ export default function InvestimentosVisaoGeralPage() {
 
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Distribuição de Investimentos por Material</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Distribuição de Investimentos por Tipo</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                       <Pie
-                        data={materialData}
+                        data={investimentosMaterialData}
                         cx="50%"
                         cy="50%"
                         innerRadius={40}
@@ -169,7 +138,7 @@ export default function InvestimentosVisaoGeralPage() {
                         label={({ value }) => formatCurrency(value)}
                         labelLine={true}
                       >
-                        {materialData.map((entry, index) => (
+                        {investimentosMaterialData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -186,7 +155,7 @@ export default function InvestimentosVisaoGeralPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-2 h-[180px]">
-                    {clienteData.map((cliente, index) => (
+                    {investimentosClienteData.map((cliente, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-center text-white text-xs font-medium"
@@ -195,7 +164,7 @@ export default function InvestimentosVisaoGeralPage() {
                           gridColumn: index === 2 ? 'span 2' : 'span 1',
                         }}
                       >
-                        {cliente.cliente}
+                        {cliente.cliente} ({cliente.percentage}%)
                       </div>
                     ))}
                   </div>
@@ -207,15 +176,15 @@ export default function InvestimentosVisaoGeralPage() {
             <div className="grid grid-cols-3 gap-4">
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Top Marcas</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Top Marcas V&W</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={topMarcasData}>
-                      <XAxis dataKey="marca" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v} €`} />
+                    <BarChart data={investimentosTopMarcasData}>
+                      <XAxis dataKey="marca" tick={{ fontSize: 9 }} angle={-15} textAnchor="end" height={50} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v/1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Bar dataKey="valor" fill="#8B1538" label={{ position: 'top', fontSize: 10, formatter: (v: number) => formatCurrency(v) }} />
+                      <Bar dataKey="valor" fill="#8B1538" label={{ position: 'top', fontSize: 9, formatter: (v: number) => `${(v/1000).toFixed(0)}K` }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -223,15 +192,15 @@ export default function InvestimentosVisaoGeralPage() {
 
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Distribuição de Investimentos por Produtor</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Distribuição por Produtor/Adega</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={produtorData} layout="vertical">
-                      <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v} €`} />
-                      <YAxis type="category" dataKey="produtor" tick={{ fontSize: 10 }} width={80} />
+                    <BarChart data={investimentosProdutorData} layout="vertical">
+                      <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v/1000}K €`} />
+                      <YAxis type="category" dataKey="produtor" tick={{ fontSize: 9 }} width={100} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Bar dataKey="valor" fill="#8B1538" label={{ position: 'right', fontSize: 10, formatter: (v: number) => formatCurrency(v) }} />
+                      <Bar dataKey="valor" fill="#8B1538" label={{ position: 'right', fontSize: 9, formatter: (v: number) => `${(v/1000).toFixed(0)}K` }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -239,13 +208,13 @@ export default function InvestimentosVisaoGeralPage() {
 
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Distribuição de Investimentos por Unidade</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Distribuição por Região</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={unidadeData}>
+                    <BarChart data={investimentosUnidadeData}>
                       <XAxis dataKey="unidade" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000} K €`} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Bar dataKey="valor" fill="#8B1538" />
                     </BarChart>

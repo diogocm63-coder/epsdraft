@@ -1,98 +1,19 @@
 import { EPSHeader } from '@/components/layout/EPSHeader';
 import { FlexbudgetSidebar } from '@/components/layout/FlexbudgetSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Calculator, ArrowDown, Minus, Plus, Lock } from 'lucide-react';
+import { Calculator, ArrowDown, ArrowUp, Minus, Plus, Lock } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-const familiaData = [
-  { familia: 'Vinhos Tintos', valor: 45 },
-  { familia: 'Vinhos Brancos', valor: 32 },
-  { familia: 'Espumantes', valor: 18 },
-  { familia: 'Rosés', valor: 12 },
-];
-
-const artigosData = [
-  {
-    categoria: 'Aparelhagem e Máq. Eletrónicas',
-    expanded: true,
-    ano1: 123,
-    ano: 0,
-    vsAno1: '-100%',
-    cx9l1: 7,
-    cx9l: 0,
-    vsAno1_2: '-100%',
-    euroCx1: 17.51,
-    euroCx: 0,
-    vsAno1_3: '-100%',
-    children: [
-      { nome: 'Aparelhagem e Máq. Eletrónicas', ano1: -120, ano: 0, vsAno1: '-100%', cx9l1: -1, cx9l: 0, vsAno1_2: '-100%', euroCx1: 120.00, euroCx: 0, vsAno1_3: '-100%' },
-      { nome: 'Técnico de Assemblagem de Hardware', ano1: 243, ano: 0, vsAno1: '-100%', cx9l1: 8, cx9l: 0, vsAno1_2: '-100%', euroCx1: 30.32, euroCx: 0, vsAno1_3: '-100%' },
-    ],
-  },
-  {
-    categoria: 'Acessórios',
-    expanded: true,
-    ano1: 10,
-    ano: 0,
-    vsAno1: '-100%',
-    cx9l1: 2,
-    cx9l: 0,
-    vsAno1_2: '-100%',
-    euroCx1: 5.24,
-    euroCx: 0,
-    vsAno1_3: '-100%',
-    children: [
-      { nome: 'Cabo Paralelo', ano1: 10, ano: 0, vsAno1: '-100%', cx9l1: 1, cx9l: 0, vsAno1_2: '-100%', euroCx1: 9.98, euroCx: 0, vsAno1_3: '-100%' },
-      { nome: 'Tapete de Rato 2.ª Geração', ano1: 1, ano: 0, vsAno1: '-100%', cx9l1: 1, cx9l: 0, vsAno1_2: '-100%', euroCx1: 0.50, euroCx: 0, vsAno1_3: '-100%' },
-    ],
-  },
-  {
-    categoria: 'Bebidas Alcoólicas',
-    expanded: true,
-    ano1: 474,
-    ano: 0,
-    vsAno1: '-100%',
-    cx9l1: 7,
-    cx9l: 0,
-    vsAno1_2: '-100%',
-    euroCx1: 67.73,
-    euroCx: 0,
-    vsAno1_3: '-100%',
-    children: [
-      { nome: 'Garrafa Bagaceira Regional - Caves Altas', ano1: 39, ano: 0, vsAno1: '-100%', cx9l1: 2, cx9l: 0, vsAno1_2: '-100%', euroCx1: 19.26, euroCx: 0, vsAno1_3: '-100%' },
-      { nome: 'Grarrafa de Whisky 15 anos B&A', ano1: 194, ano: 0, vsAno1: '-100%', cx9l1: 1, cx9l: 0, vsAno1_2: '-100%', euroCx1: 194.40, euroCx: 0, vsAno1_3: '-100%' },
-      { nome: 'Vinho do Porto Vintage/1994 - Gold Grapes', ano1: 241, ano: 0, vsAno1: '-100%', cx9l1: 4, cx9l: 0, vsAno1_2: '-100%', euroCx1: 60.30, euroCx: 0, vsAno1_3: '-100%' },
-    ],
-  },
-  {
-    categoria: 'CD Rom',
-    expanded: true,
-    ano1: -176,
-    ano: 0,
-    vsAno1: '-100%',
-    cx9l1: 0,
-    cx9l: 0,
-    vsAno1_2: '-Infinity',
-    euroCx1: 0,
-    euroCx: 0,
-    vsAno1_3: '-Infinity',
-    children: [
-      { nome: 'Ddram2 1024Mb 533Mhz PC2 4200', ano1: 126, ano: 0, vsAno1: '-100%', cx9l1: 1, cx9l: 0, vsAno1_2: '-100%', euroCx1: 126.42, euroCx: 0, vsAno1_3: '-100%' },
-      { nome: 'Gravador DVD Usb 2.0 Super Multi Drive', ano1: -303, ano: 0, vsAno1: '-100%', cx9l1: -1, cx9l: 0, vsAno1_2: '-100%', euroCx1: 302.82, euroCx: 0, vsAno1_3: '-100%' },
-    ],
-  },
-];
+import { artigosFamiliaData, artigosData } from '@/data/wineData';
 
 const ArtigosPage = () => {
   const [year, setYear] = useState('2025');
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({
-    'Aparelhagem e Máq. Eletrónicas': true,
-    'Acessórios': true,
-    'Bebidas Alcoólicas': true,
-    'CD Rom': true,
+    'Tintos Premium': true,
+    'Brancos Reserva': true,
+    'Tintos Regional': true,
   });
 
   const toggleRow = (cat: string) => {
@@ -101,8 +22,18 @@ const ArtigosPage = () => {
 
   const formatCurrency = (value: number) => {
     if (value === 0) return '';
-    return `${value.toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} €`;
+    return new Intl.NumberFormat('pt-PT', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value) + ' €';
   };
+
+  // Calculate totals
+  const totalAno = artigosData.reduce((acc, cat) => acc + cat.ano, 0);
+  const totalAno1 = artigosData.reduce((acc, cat) => acc + cat.ano1, 0);
+  const totalCx9l = artigosData.reduce((acc, cat) => acc + cat.cx9l, 0);
+  const totalCx9l1 = artigosData.reduce((acc, cat) => acc + cat.cx9l1, 0);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -140,10 +71,11 @@ const ArtigosPage = () => {
               <div className="bg-white rounded-lg border p-4">
                 <h3 className="text-sm font-medium mb-3">Distribuição de Vendas por Família</h3>
                 <ResponsiveContainer width="100%" height={120}>
-                  <BarChart data={familiaData} layout="vertical">
-                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                  <BarChart data={artigosFamiliaData} layout="vertical">
+                    <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}K €`} />
                     <YAxis type="category" dataKey="familia" tick={{ fontSize: 9 }} width={90} />
-                    <Bar dataKey="valor" fill="hsl(345, 70%, 32%)" />
+                    <Tooltip formatter={(value: number) => `${value}K €`} />
+                    <Bar dataKey="valor" fill="#8B1538" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -153,7 +85,7 @@ const ArtigosPage = () => {
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                       <Lock className="w-3 h-3" /> Categoria
                     </div>
-                    <div className="text-sm">Mota eletrica</div>
+                    <div className="text-sm">Vinhos V&W</div>
                   </div>
                   <div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
@@ -162,7 +94,7 @@ const ArtigosPage = () => {
                     <div className="text-sm">&nbsp;</div>
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">Vendas</div>
+                <div className="text-xs text-muted-foreground">Vendas por Categoria de Vinho</div>
               </div>
             </div>
 
@@ -193,42 +125,42 @@ const ArtigosPage = () => {
                             {cat.categoria}
                           </td>
                           <td className="text-right px-2 font-bold">{formatCurrency(cat.ano1)}</td>
-                          <td className="text-right px-2"></td>
-                          <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> {cat.vsAno1}</td>
-                          <td className="text-right px-2 font-bold">{cat.cx9l1}</td>
-                          <td className="text-right px-2"></td>
-                          <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> {cat.vsAno1_2}</td>
+                          <td className="text-right px-2 font-bold">{formatCurrency(cat.ano)}</td>
+                          <td className="text-right px-2 text-green-600"><ArrowUp className="w-3 h-3 inline" /> {cat.vsAno1}</td>
+                          <td className="text-right px-2 font-bold">{cat.cx9l1.toLocaleString('pt-PT')}</td>
+                          <td className="text-right px-2 font-bold">{cat.cx9l.toLocaleString('pt-PT')}</td>
+                          <td className="text-right px-2 text-green-600"><ArrowUp className="w-3 h-3 inline" /> {cat.vsAno1_2}</td>
                           <td className="text-right px-2 font-bold">{formatCurrency(cat.euroCx1)}</td>
-                          <td className="text-right px-2"></td>
-                          <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> {cat.vsAno1_3}</td>
+                          <td className="text-right px-2 font-bold">{formatCurrency(cat.euroCx)}</td>
+                          <td className="text-right px-2 text-green-600">{cat.vsAno1_3}</td>
                         </tr>
                         {expandedRows[cat.categoria] && cat.children?.map((child) => (
                           <tr key={child.nome} className="border-b">
                             <td className="py-1.5 px-3 pl-8">{child.nome}</td>
                             <td className="text-right px-2">{formatCurrency(child.ano1)}</td>
-                            <td className="text-right px-2"></td>
-                            <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> {child.vsAno1}</td>
-                            <td className="text-right px-2">{child.cx9l1}</td>
-                            <td className="text-right px-2"></td>
-                            <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> {child.vsAno1_2}</td>
+                            <td className="text-right px-2">{formatCurrency(child.ano)}</td>
+                            <td className="text-right px-2 text-green-600"><ArrowUp className="w-3 h-3 inline" /> {child.vsAno1}</td>
+                            <td className="text-right px-2">{child.cx9l1.toLocaleString('pt-PT')}</td>
+                            <td className="text-right px-2">{child.cx9l.toLocaleString('pt-PT')}</td>
+                            <td className="text-right px-2 text-green-600"><ArrowUp className="w-3 h-3 inline" /> {child.vsAno1_2}</td>
                             <td className="text-right px-2">{formatCurrency(child.euroCx1)}</td>
-                            <td className="text-right px-2"></td>
-                            <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> {child.vsAno1_3}</td>
+                            <td className="text-right px-2">{formatCurrency(child.euroCx)}</td>
+                            <td className="text-right px-2 text-green-600">{child.vsAno1_3}</td>
                           </tr>
                         ))}
                       </>
                     ))}
                     <tr className="font-bold border-t-2">
                       <td className="py-2 px-3">Total</td>
-                      <td className="text-right px-2">57.950 €</td>
-                      <td className="text-right px-2"></td>
-                      <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> -100%</td>
-                      <td className="text-right px-2">159</td>
-                      <td className="text-right px-2"></td>
-                      <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> -100%</td>
-                      <td className="text-right px-2">364,47 €</td>
-                      <td className="text-right px-2"></td>
-                      <td className="text-right px-2 text-red-600"><ArrowDown className="w-3 h-3 inline" /> -100%</td>
+                      <td className="text-right px-2">{formatCurrency(totalAno1)}</td>
+                      <td className="text-right px-2">{formatCurrency(totalAno)}</td>
+                      <td className="text-right px-2 text-green-600"><ArrowUp className="w-3 h-3 inline" /> +11,5%</td>
+                      <td className="text-right px-2">{totalCx9l1.toLocaleString('pt-PT')}</td>
+                      <td className="text-right px-2">{totalCx9l.toLocaleString('pt-PT')}</td>
+                      <td className="text-right px-2 text-green-600"><ArrowUp className="w-3 h-3 inline" /> +11,5%</td>
+                      <td className="text-right px-2">67,70 €</td>
+                      <td className="text-right px-2">67,75 €</td>
+                      <td className="text-right px-2 text-green-600">+0,1%</td>
                     </tr>
                   </tbody>
                 </table>

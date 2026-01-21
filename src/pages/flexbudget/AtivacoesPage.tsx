@@ -23,32 +23,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-
-const tipoPedidoData = [
-  { name: 'Endo Marketi...', value: 10000, color: '#8B1538' },
-  { name: 'Desconto', value: 6000, color: '#C9A227' },
-  { name: 'Promo', value: 2000, color: '#D4A5A5' },
-  { name: 'Outro', value: 1000, color: '#E8C8C8' },
-];
-
-const evolucaoData = [
-  { mes: 'Novembro', valor: 15000 },
-];
-
-const materialData = [
-  { material: 'Cartaz A3', novembro: 35, total: 35 },
-  { material: 'Lona Pequena (1,5m x 0,5m)', novembro: 17, total: 17 },
-  { material: 'PFV - Amostras de Produto', novembro: 1500, total: 1500 },
-  { material: 'PFV - Feiras de Vinho', novembro: 1000, total: 1000 },
-  { material: 'PFV - Goodwill Fee', novembro: 6000, total: 6000 },
-  { material: 'PFV - Institucional', novembro: 150, total: 150 },
-  { material: 'PFV - Material POS', novembro: 300, total: 300 },
-  { material: 'PFV - Patrocínios', novembro: 0, total: 0 },
-  { material: 'PFV - Plataformas Digitais', novembro: 0, total: 0 },
-  { material: 'PFV - Promocionais', novembro: 6500, total: 6500 },
-  { material: 'PFV - Promotores', novembro: 2000, total: 2000 },
-  { material: 'PFV - Publicidade', novembro: 1000, total: 1000 },
-];
+import { ativacoesTipoPedidoData, ativacoesEvolucaoData, ativacoesMaterialData } from '@/data/wineData';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-PT', {
@@ -59,10 +34,10 @@ const formatCurrency = (value: number) => {
 };
 
 export default function AtivacoesPage() {
-  const [selectedYear] = useState('2024');
+  const [selectedYear] = useState('2025');
   const [selectedMonth] = useState('Tudo');
 
-  const totalGeral = materialData.reduce((acc, item) => acc + item.total, 0);
+  const totalGeral = ativacoesMaterialData.reduce((acc, item) => acc + item.total, 0);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -83,7 +58,10 @@ export default function AtivacoesPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Tudo">Tudo</SelectItem>
-                      <SelectItem value="Janeiro">Janeiro</SelectItem>
+                      <SelectItem value="Julho">Julho</SelectItem>
+                      <SelectItem value="Agosto">Agosto</SelectItem>
+                      <SelectItem value="Setembro">Setembro</SelectItem>
+                      <SelectItem value="Outubro">Outubro</SelectItem>
                       <SelectItem value="Novembro">Novembro</SelectItem>
                     </SelectContent>
                   </Select>
@@ -95,8 +73,8 @@ export default function AtivacoesPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="2025">2025</SelectItem>
                       <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2023">2023</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -107,13 +85,13 @@ export default function AtivacoesPage() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Investimento por Tipo de Pedido</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Investimento por Tipo de Ativação</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie
-                        data={tipoPedidoData}
+                        data={ativacoesTipoPedidoData}
                         cx="50%"
                         cy="50%"
                         innerRadius={50}
@@ -122,7 +100,7 @@ export default function AtivacoesPage() {
                         label={({ value }) => `${(value / 1000).toFixed(0)} K€`}
                         labelLine={true}
                       >
-                        {tipoPedidoData.map((entry, index) => (
+                        {ativacoesTipoPedidoData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -135,15 +113,15 @@ export default function AtivacoesPage() {
 
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Evolução de Investimento</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Evolução de Ativações</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={220}>
                     <ScatterChart>
                       <XAxis dataKey="mes" type="category" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}.000 €`} domain={[0, 25000]} />
+                      <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K €`} domain={[0, 100000]} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Scatter data={evolucaoData} dataKey="valor" fill="#8B1538" />
+                      <Scatter data={ativacoesEvolucaoData} dataKey="valor" fill="#8B1538" />
                     </ScatterChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -158,17 +136,17 @@ export default function AtivacoesPage() {
                     <thead>
                       <tr className="border-b bg-gray-50">
                         <th className="text-left p-3 font-medium text-gray-600">Ano</th>
-                        <th className="text-center p-3 font-medium text-gray-600">2024</th>
+                        <th className="text-center p-3 font-medium text-gray-600">2025</th>
                         <th className="text-right p-3 font-medium text-gray-600">Total</th>
                       </tr>
                       <tr className="border-b bg-gray-50">
-                        <th className="text-left p-3 font-medium text-gray-600">Material</th>
-                        <th className="text-center p-3 font-medium text-gray-600">Janeiro ... Novembro</th>
+                        <th className="text-left p-3 font-medium text-gray-600">Tipo de Ativação (Vinhos V&W)</th>
+                        <th className="text-center p-3 font-medium text-gray-600">Novembro</th>
                         <th className="text-right p-3 font-medium text-gray-600"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {materialData.map((item, index) => (
+                      {ativacoesMaterialData.map((item, index) => (
                         <tr key={index} className="border-b hover:bg-gray-50">
                           <td className="p-3 text-gray-700">{item.material}</td>
                           <td className="p-3 text-right text-gray-700">

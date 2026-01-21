@@ -13,77 +13,10 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { dividaClientesCanalData, dividasIdadeClientesData } from '@/data/wineData';
 
 const mediaDiasData = [
-  { status: 'Vencida', dias: 522 },
-];
-
-const idadeDividaData = [
-  { idade: '<30 dias', valor: 0, color: '#8B1538' },
-  { idade: '30-60 dias', valor: 0, color: '#A52952' },
-  { idade: '60-90 dias', valor: 0, color: '#C9A227' },
-  { idade: '90-180 dias', valor: 0, color: '#D4B84A' },
-  { idade: '180-270 dias', valor: 0, color: '#D4A5A5' },
-  { idade: '270-360 dias', valor: 0, color: '#E8C8C8' },
-  { idade: '>360', valor: 253477, color: '#8B1538' },
-];
-
-interface CanalItem {
-  id: string;
-  canal: string;
-  naoVencidas: number | null;
-  vencidas: number;
-  menos30: number | null;
-  de30a60: number | null;
-  de60a90: number | null;
-  de90a180: number | null;
-  de180a270: number | null;
-  de270a360: number | null;
-  mais360: number;
-  children?: CanalItem[];
-  isExpanded?: boolean;
-  level: number;
-}
-
-const initialCanalData: CanalItem[] = [
-  {
-    id: '1',
-    canal: '',
-    naoVencidas: null,
-    vencidas: 253477,
-    menos30: null,
-    de30a60: null,
-    de60a90: null,
-    de90a180: null,
-    de180a270: null,
-    de270a360: null,
-    mais360: 253477,
-    level: 0,
-    isExpanded: true,
-    children: [
-      {
-        id: '1.1',
-        canal: '',
-        naoVencidas: null,
-        vencidas: 135396,
-        menos30: null,
-        de30a60: null,
-        de60a90: null,
-        de90a180: null,
-        de180a270: null,
-        de270a360: null,
-        mais360: 135396,
-        level: 1,
-        isExpanded: true,
-        children: [
-          { id: '1.1.1', canal: 'Bares', naoVencidas: null, vencidas: 11057, menos30: null, de30a60: null, de60a90: null, de90a180: null, de180a270: null, de270a360: null, mais360: 11057, level: 2 },
-          { id: '1.1.2', canal: 'Soft Discount', naoVencidas: null, vencidas: 65544, menos30: null, de30a60: null, de60a90: null, de90a180: null, de180a270: null, de270a360: null, mais360: 65544, level: 2 },
-          { id: '1.1.3', canal: 'Supermercados', naoVencidas: null, vencidas: 1582, menos30: null, de30a60: null, de60a90: null, de90a180: null, de180a270: null, de270a360: null, mais360: 1582, level: 2 },
-          { id: '1.1.4', canal: 'Trader', naoVencidas: null, vencidas: 39898, menos30: null, de30a60: null, de60a90: null, de90a180: null, de180a270: null, de270a360: null, mais360: 39898, level: 2 },
-        ],
-      },
-    ],
-  },
+  { status: 'Vencida', dias: 85 },
 ];
 
 const formatCurrency = (value: number | null) => {
@@ -96,15 +29,15 @@ const formatCurrency = (value: number | null) => {
 };
 
 export default function DividaClientesPage() {
-  const [canalData, setCanalData] = useState(initialCanalData);
+  const [canalData, setCanalData] = useState(dividaClientesCanalData);
 
-  const toggleExpand = (id: string, data: CanalItem[]): CanalItem[] => {
+  const toggleExpand = (id: string, data: typeof dividaClientesCanalData): typeof dividaClientesCanalData => {
     return data.map(item => {
       if (item.id === id) {
         return { ...item, isExpanded: !item.isExpanded };
       }
       if (item.children) {
-        return { ...item, children: toggleExpand(id, item.children) };
+        return { ...item, children: toggleExpand(id, item.children as any) as any };
       }
       return item;
     });
@@ -114,7 +47,7 @@ export default function DividaClientesPage() {
     setCanalData(prev => toggleExpand(id, prev));
   };
 
-  const renderRow = (item: CanalItem): JSX.Element[] => {
+  const renderRow = (item: typeof dividaClientesCanalData[0]): JSX.Element[] => {
     const hasChildren = item.children && item.children.length > 0;
     const paddingLeft = item.level === 0 ? 'pl-2' : item.level === 1 ? 'pl-6' : 'pl-10';
 
@@ -145,12 +78,15 @@ export default function DividaClientesPage() {
 
     if (hasChildren && item.isExpanded) {
       item.children!.forEach(child => {
-        rows.push(...renderRow(child));
+        rows.push(...renderRow(child as any));
       });
     }
 
     return rows;
   };
+
+  const totalVencidas = canalData.reduce((acc, item) => acc + item.vencidas, 0);
+  const totalMais360 = canalData.reduce((acc, item) => acc + item.mais360, 0);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -166,12 +102,12 @@ export default function DividaClientesPage() {
             <div className="grid grid-cols-2 gap-6 mb-6">
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Média de Dias das Dividas</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Média de Dias das Dívidas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={mediaDiasData} layout="vertical">
-                      <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 600]} />
+                      <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 120]} />
                       <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={60} />
                       <Tooltip />
                       <Bar dataKey="dias" fill="#8B1538" label={{ position: 'right', fontSize: 11 }} />
@@ -183,7 +119,7 @@ export default function DividaClientesPage() {
 
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Idade da Divida</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-700">Idade da Dívida</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-3 text-xs">
@@ -196,12 +132,12 @@ export default function DividaClientesPage() {
                     <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#8B1538'}}></span>&gt;360 dias</span>
                   </div>
                   <ResponsiveContainer width="100%" height={150}>
-                    <BarChart data={idadeDividaData}>
+                    <BarChart data={dividasIdadeClientesData}>
                       <XAxis dataKey="idade" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000} K €`} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Bar dataKey="valor">
-                        {idadeDividaData.map((entry, index) => (
+                        {dividasIdadeClientesData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Bar>
@@ -227,22 +163,22 @@ export default function DividaClientesPage() {
                         <th className="text-right p-2 font-medium text-gray-600">90-180</th>
                         <th className="text-right p-2 font-medium text-gray-600">180-270</th>
                         <th className="text-right p-2 font-medium text-gray-600">270-360</th>
-                        <th className="text-right p-2 font-medium text-gray-600">&lt;360</th>
+                        <th className="text-right p-2 font-medium text-gray-600">&gt;360</th>
                       </tr>
                     </thead>
                     <tbody>
                       {canalData.flatMap(item => renderRow(item))}
                       <tr className="bg-gray-100 font-semibold">
                         <td className="p-2 pl-2 text-gray-800">Total</td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800">253.477 €</td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800"></td>
-                        <td className="p-2 text-right text-gray-800">253.477 €</td>
+                        <td className="p-2 text-right text-gray-800">77.000 €</td>
+                        <td className="p-2 text-right text-gray-800">{formatCurrency(totalVencidas)}</td>
+                        <td className="p-2 text-right text-gray-800">22.000 €</td>
+                        <td className="p-2 text-right text-gray-800">23.000 €</td>
+                        <td className="p-2 text-right text-gray-800">24.000 €</td>
+                        <td className="p-2 text-right text-gray-800">33.000 €</td>
+                        <td className="p-2 text-right text-gray-800">22.000 €</td>
+                        <td className="p-2 text-right text-gray-800">16.000 €</td>
+                        <td className="p-2 text-right text-gray-800">{formatCurrency(totalMais360)}</td>
                       </tr>
                     </tbody>
                   </table>

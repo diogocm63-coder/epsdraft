@@ -7,36 +7,11 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-
-const categorias = [
-  '(Blank)', 'Acessórios', 'Bebidas Alcoólicas', 'CD Rom', 'Componentes', 
-  'Computadores', 'Equipamentos de fax e cópia', 'Ferramentas', 
-  'Grandes Eletrodomésticos', 'Impressoras', 'Matérias Primas', 'Microfones', 'Mobiliário'
-];
-
-const clientes = [
-  'Companhia de Hardware',
-  'Supermercado Central',
-  'Loja de Vinhos Premium',
-  'Restaurante Gourmet',
-  'Hotel Lisboa',
-];
-
-const produtosData = [
-  'Aparelhagem e Máq. Eletrónicas',
-  'Caixote computador base 50*60*25',
-  'Contabilidade Geral',
-  'Instalação de rede Média',
-  'Manual do utilizador v.2006',
-  'Montagem Ar Condicionado',
-  'Prestação de projetos',
-  'Técnico de Assemblagem de Hardware',
-  'Transportes de fornecedor',
-];
+import { ajusteClienteCategorias, ajusteClienteClientes, ajusteClienteProdutosData } from '@/data/wineData';
 
 const AjusteClientePage = () => {
   const [year, setYear] = useState('2025');
-  const [cliente, setCliente] = useState('Companhia de Hardware');
+  const [cliente, setCliente] = useState('Makro Portugal');
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -54,7 +29,7 @@ const AjusteClientePage = () => {
                   <Select value={cliente} onValueChange={setCliente}>
                     <SelectTrigger className="w-48 bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {clientes.map((c) => (
+                      {ajusteClienteClientes.map((c) => (
                         <SelectItem key={c} value={c}>{c}</SelectItem>
                       ))}
                     </SelectContent>
@@ -80,7 +55,7 @@ const AjusteClientePage = () => {
                 <h3 className="text-sm font-medium mb-3">Categoria</h3>
                 <ScrollArea className="h-[180px]">
                   <div className="space-y-1">
-                    {categorias.map((cat) => (
+                    {ajusteClienteCategorias.map((cat) => (
                       <div key={cat} className="flex items-center gap-2 text-sm py-1">
                         <ChevronRight className="w-3 h-3" />
                         <Checkbox id={`cat-${cat}`} />
@@ -95,21 +70,21 @@ const AjusteClientePage = () => {
               <div className="col-span-6 grid grid-cols-3 gap-4">
                 <div className="bg-white rounded-lg border p-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Vendas Ano-1</div>
-                  <div className="text-2xl font-bold text-muted-foreground">(Vazio)</div>
+                  <div className="text-2xl font-bold">485.000 €</div>
                 </div>
                 <div className="bg-white rounded-lg border p-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Orçamento</div>
-                  <div className="text-2xl font-bold text-muted-foreground">(Vazio)</div>
+                  <div className="text-2xl font-bold">540.000 €</div>
                 </div>
                 <div className="bg-white rounded-lg border p-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Orçamento vs Vendas Ano-1</div>
-                  <div className="text-2xl font-bold text-muted-foreground">(Vazio)</div>
+                  <div className="text-2xl font-bold text-green-600">+11,3%</div>
                 </div>
               </div>
 
               {/* Action Button */}
               <div className="col-span-3 flex items-start justify-end">
-                <Button className="bg-[#4a5568] hover:bg-[#3a4558] text-white">
+                <Button className="bg-eps-primary hover:bg-eps-primary/90 text-white">
                   Carregar Budget a partir das Vendas
                 </Button>
               </div>
@@ -128,12 +103,33 @@ const AjusteClientePage = () => {
                   </tr>
                 </thead>
                 <tbody>
+                  <tr className="border-b">
+                    <td className="py-2 px-3">Tintos Premium</td>
+                    <td className="text-right py-2 px-3">185.000 €</td>
+                    <td className="text-right py-2 px-3">175.000 €</td>
+                    <td className="text-right py-2 px-3">2.050</td>
+                    <td className="text-right py-2 px-3">205.000 €</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3">Brancos Reserva</td>
+                    <td className="text-right py-2 px-3">142.000 €</td>
+                    <td className="text-right py-2 px-3">135.000 €</td>
+                    <td className="text-right py-2 px-3">1.775</td>
+                    <td className="text-right py-2 px-3">158.000 €</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3">Tintos Regional</td>
+                    <td className="text-right py-2 px-3">98.000 €</td>
+                    <td className="text-right py-2 px-3">92.000 €</td>
+                    <td className="text-right py-2 px-3">2.450</td>
+                    <td className="text-right py-2 px-3">108.000 €</td>
+                  </tr>
                   <tr className="font-bold">
                     <td className="py-2 px-3">Total</td>
-                    <td className="text-right py-2 px-3"></td>
-                    <td className="text-right py-2 px-3"></td>
-                    <td className="text-right py-2 px-3"></td>
-                    <td className="text-right py-2 px-3"></td>
+                    <td className="text-right py-2 px-3">485.000 €</td>
+                    <td className="text-right py-2 px-3">460.000 €</td>
+                    <td className="text-right py-2 px-3">6.275</td>
+                    <td className="text-right py-2 px-3">540.000 €</td>
                   </tr>
                 </tbody>
               </table>
@@ -164,17 +160,17 @@ const AjusteClientePage = () => {
                   <thead className="sticky top-0 bg-white z-10">
                     <tr className="border-b bg-gray-100">
                       <th className="text-left py-2 px-3 font-medium"></th>
-                      <th className="text-center py-2 px-3 font-medium">Qtd</th>
+                      <th className="text-center py-2 px-3 font-medium">Qtd (Cx9L)</th>
                     </tr>
                     <tr className="border-b">
                       <td className="py-2 px-3">
                         <Checkbox />
                       </td>
-                      <td className="text-center py-2 px-3 font-medium">0,00</td>
+                      <td className="text-center py-2 px-3 font-medium">Total: 6.275</td>
                     </tr>
                   </thead>
                   <tbody>
-                    {produtosData.map((produto) => (
+                    {ajusteClienteProdutosData.map((produto) => (
                       <tr key={produto} className="border-b hover:bg-gray-50">
                         <td className="py-2 px-3 pl-6">{produto}</td>
                         <td className="text-center py-2 px-3">
@@ -182,6 +178,7 @@ const AjusteClientePage = () => {
                             type="text" 
                             className="w-20 text-center border rounded px-2 py-1 text-sm"
                             defaultValue=""
+                            placeholder="0"
                           />
                         </td>
                       </tr>

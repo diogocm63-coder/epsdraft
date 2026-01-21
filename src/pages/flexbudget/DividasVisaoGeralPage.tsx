@@ -11,38 +11,13 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  Legend,
 } from 'recharts';
-
-const clientesBarData = [
-  { status: 'Não Vencida', valor: 0 },
-  { status: 'Vencida', valor: 253480 },
-];
-
-const fornecedoresBarData = [
-  { status: 'Não Vencida', valor: 0 },
-  { status: 'Vencida', valor: 60700 },
-];
-
-const idadeClientesData = [
-  { idade: '<30 dias', valor: 0, color: '#8B1538' },
-  { idade: '30-60 dias', valor: 0, color: '#A52952' },
-  { idade: '60-90 dias', valor: 0, color: '#C9A227' },
-  { idade: '90-180 dias', valor: 0, color: '#D4B84A' },
-  { idade: '180-270 dias', valor: 0, color: '#D4A5A5' },
-  { idade: '270-360 dias', valor: 0, color: '#E8C8C8' },
-  { idade: '>360 dias', valor: 253480, color: '#8B1538' },
-];
-
-const idadeFornecedoresData = [
-  { idade: '<30 dias', valor: 0, color: '#8B1538' },
-  { idade: '30-60 dias', valor: 0, color: '#A52952' },
-  { idade: '60-90 dias', valor: 0, color: '#C9A227' },
-  { idade: '90-180 dias', valor: 0, color: '#D4B84A' },
-  { idade: '180-270 dias', valor: 0, color: '#D4A5A5' },
-  { idade: '270-360 dias', valor: 0, color: '#E8C8C8' },
-  { idade: '>360 dias', valor: 60700, color: '#8B1538' },
-];
+import {
+  dividasClientesBarData,
+  dividasFornecedoresBarData,
+  dividasIdadeClientesData,
+  dividasIdadeFornecedoresData,
+} from '@/data/wineData';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-PT', {
@@ -57,6 +32,9 @@ const formatCurrencyK = (value: number) => {
 };
 
 export default function DividasVisaoGeralPage() {
+  const totalClientes = dividasClientesBarData.reduce((acc, item) => acc + item.valor, 0);
+  const totalFornecedores = dividasFornecedoresBarData.reduce((acc, item) => acc + item.valor, 0);
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-gray-100">
@@ -72,13 +50,13 @@ export default function DividasVisaoGeralPage() {
               <Card className="bg-white border shadow-sm w-64">
                 <CardContent className="p-6 text-center">
                   <p className="text-sm text-gray-500 mb-2">Dívida Total de Clientes</p>
-                  <p className="text-3xl font-bold text-gray-800">253.477 €</p>
+                  <p className="text-3xl font-bold text-gray-800">{formatCurrency(totalClientes)}</p>
                 </CardContent>
               </Card>
               <Card className="bg-white border shadow-sm w-64">
                 <CardContent className="p-6 text-center">
                   <p className="text-sm text-gray-500 mb-2">Dívida Total a Fornecedores</p>
-                  <p className="text-3xl font-bold text-gray-800">60.701 €</p>
+                  <p className="text-3xl font-bold text-gray-800">{formatCurrency(totalFornecedores)}</p>
                 </CardContent>
               </Card>
             </div>
@@ -91,7 +69,7 @@ export default function DividasVisaoGeralPage() {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={120}>
-                    <BarChart data={clientesBarData} layout="vertical">
+                    <BarChart data={dividasClientesBarData} layout="vertical">
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={80} />
                       <Tooltip formatter={(value) => formatCurrencyK(Number(value))} />
@@ -107,7 +85,7 @@ export default function DividasVisaoGeralPage() {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={120}>
-                    <BarChart data={fornecedoresBarData} layout="vertical">
+                    <BarChart data={dividasFornecedoresBarData} layout="vertical">
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={80} />
                       <Tooltip formatter={(value) => formatCurrencyK(Number(value))} />
@@ -135,12 +113,12 @@ export default function DividasVisaoGeralPage() {
                     <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#8B1538'}}></span>&gt;360 dias</span>
                   </div>
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={idadeClientesData}>
+                    <BarChart data={dividasIdadeClientesData}>
                       <XAxis dataKey="idade" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={60} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000} K €`} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Bar dataKey="valor">
-                        {idadeClientesData.map((entry, index) => (
+                        {dividasIdadeClientesData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Bar>
@@ -164,12 +142,12 @@ export default function DividasVisaoGeralPage() {
                     <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{backgroundColor: '#8B1538'}}></span>&gt;360 dias</span>
                   </div>
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={idadeFornecedoresData}>
+                    <BarChart data={dividasIdadeFornecedoresData}>
                       <XAxis dataKey="idade" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={60} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000} K €`} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v / 1000}K €`} />
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Bar dataKey="valor">
-                        {idadeFornecedoresData.map((entry, index) => (
+                        {dividasIdadeFornecedoresData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Bar>
