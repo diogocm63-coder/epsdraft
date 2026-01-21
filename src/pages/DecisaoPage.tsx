@@ -372,60 +372,62 @@ const DecisaoPage = () => {
           </div>
         </div>
 
-        {/* Middle Section: Charts + Alerts - reduced height */}
-        <div className="grid grid-cols-[1fr_1fr_220px] gap-2 h-[140px]">
-          {/* Vendas Chart */}
-          <ComparisonChart 
-            data={previsaoVendasData}
-            title="Comparação de Previsões"
-            subtitle="Valores em milhares de € • Período: 2025"
-          />
-          
-          {/* Stock Chart */}
-          <ComparisonChart 
-            data={previsaoStockData}
-            title="Comparação de Previsão de Stock"
-            subtitle="Valores em milhares de unidades • Período: 2025"
-            unit="K"
-          />
+        {/* Middle Section: Charts + Alerts + Simulator - equal height */}
+        <div className="flex-1 grid grid-rows-2 gap-2 min-h-0">
+          {/* Row 1: Charts + Alerts */}
+          <div className="grid grid-cols-[1fr_1fr_220px] gap-2 min-h-0">
+            {/* Vendas Chart */}
+            <ComparisonChart 
+              data={previsaoVendasData}
+              title="Comparação de Previsões"
+              subtitle="Valores em milhares de € • Período: 2025"
+            />
+            
+            {/* Stock Chart */}
+            <ComparisonChart 
+              data={previsaoStockData}
+              title="Comparação de Previsão de Stock"
+              subtitle="Valores em milhares de unidades • Período: 2025"
+              unit="K"
+            />
 
-          {/* Alerts Content */}
-          <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto">
-            <div className="space-y-1.5">
-              {alertasData.map((alerta, idx) => {
-                const IconComponent = alerta.icon;
-                return (
-                  <div 
-                    key={idx}
-                    className={`${alerta.bgColor} ${alerta.borderColor} border-l-3 rounded-r-lg p-1.5 flex items-start gap-1.5`}
-                  >
-                    <IconComponent className={`w-3 h-3 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
-                    <div>
-                      <div className={`text-[10px] font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
-                      <div className="text-[9px] text-gray-600">{alerta.description}</div>
+            {/* Alerts Content */}
+            <div className="bg-white rounded-lg border border-gray-200 p-2 overflow-auto">
+              <div className="space-y-1.5">
+                {alertasData.map((alerta, idx) => {
+                  const IconComponent = alerta.icon;
+                  return (
+                    <div 
+                      key={idx}
+                      className={`${alerta.bgColor} ${alerta.borderColor} border-l-3 rounded-r-lg p-1.5 flex items-start gap-1.5`}
+                    >
+                      <IconComponent className={`w-3 h-3 ${alerta.iconColor} flex-shrink-0 mt-0.5`} />
+                      <div>
+                        <div className={`text-[10px] font-semibold ${alerta.titleColor}`}>{alerta.title}</div>
+                        <div className="text-[9px] text-gray-600">{alerta.description}</div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section: Simulator - expanded layout */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-base font-semibold text-gray-800">Simulador de Impacto</h3>
-              <p className="text-xs text-gray-500">Selecione a fonte e ajuste a variação</p>
-            </div>
-            <div className="flex items-center gap-2 text-eps-primary text-sm font-medium">
-              <LayoutGrid className="w-4 h-4" />
-              <span>What-If Analysis</span>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Source Selection - full width row */}
-          <div className="grid grid-cols-4 gap-4 mb-4">
+          {/* Row 2: Simulator */}
+          <div className="bg-white rounded-lg border border-gray-200 p-3 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800">Simulador de Impacto</h3>
+                <p className="text-[10px] text-gray-500">Selecione a fonte e ajuste a variação</p>
+              </div>
+              <div className="flex items-center gap-2 text-eps-primary text-xs font-medium">
+                <LayoutGrid className="w-3 h-3" />
+                <span>What-If Analysis</span>
+              </div>
+            </div>
+
+            {/* Source Selection - full width row */}
+            <div className="grid grid-cols-4 gap-3 mb-2">
             <SimulatorSourceCard 
               color="#8B1538"
               label="Histórico"
@@ -456,48 +458,49 @@ const DecisaoPage = () => {
             />
           </div>
 
-          {/* Growth Variation Slider - full width */}
-          <div className="bg-gray-50 rounded-lg px-4 py-3 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-700">Variação de Crescimento</span>
-              <span className={`text-xl font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
-                {variationPercent >= 0 ? '+' : ''}{variationPercent}%
-              </span>
-            </div>
-            <Slider
-              value={growthVariation}
-              onValueChange={setGrowthVariation}
-              max={100}
-              min={0}
-              step={1}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>-20%</span>
-              <span>0%</span>
-              <span>+30%</span>
-            </div>
-          </div>
-
-          {/* Results - two columns */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-rose-50 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-1">Previsão Ajustada</div>
-              <div className="text-2xl font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-sm text-green-700 mb-1">
-                <LayoutGrid className="w-4 h-4" />
-                <span>Impacto Cash-Flow</span>
+            {/* Growth Variation Slider - full width */}
+            <div className="bg-gray-50 rounded-lg px-3 py-2 mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-gray-700">Variação de Crescimento</span>
+                <span className={`text-base font-bold ${variationPercent >= 0 ? 'text-eps-primary' : 'text-red-600'}`}>
+                  {variationPercent >= 0 ? '+' : ''}{variationPercent}%
+                </span>
               </div>
-              <div className="text-2xl font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
+              <Slider
+                value={growthVariation}
+                onValueChange={setGrowthVariation}
+                max={100}
+                min={0}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                <span>-20%</span>
+                <span>0%</span>
+                <span>+30%</span>
+              </div>
             </div>
-          </div>
 
-          {/* Confirm Button - at bottom */}
-          <Button className="w-full bg-eps-primary hover:bg-eps-primary/90 text-white py-3 text-base mt-auto">
-            Confirmar Previsão →
-          </Button>
+            {/* Results - two columns */}
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div className="bg-rose-50 rounded-lg p-2">
+                <div className="text-[10px] text-gray-500 mb-0.5">Previsão Ajustada</div>
+                <div className="text-lg font-bold text-gray-900">{selectedSource ? `${previsaoAjustada}K€` : '---'}</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-2">
+                <div className="flex items-center gap-1 text-[10px] text-green-700 mb-0.5">
+                  <LayoutGrid className="w-3 h-3" />
+                  <span>Impacto Cash-Flow</span>
+                </div>
+                <div className="text-lg font-bold text-green-700">{selectedSource ? impactoCashFlow : '---'}</div>
+              </div>
+            </div>
+
+            {/* Confirm Button - at bottom */}
+            <Button className="w-full bg-eps-primary hover:bg-eps-primary/90 text-white py-2 text-sm mt-auto">
+              Confirmar Previsão →
+            </Button>
+          </div>
         </div>
       </div>
     </EPSLayout>
