@@ -1,30 +1,12 @@
 import EPSLayout from "@/components/layout/EPSLayout";
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  Legend,
-} from "recharts";
-
-import {
-  executivoMonthlyData as monthlyData,
-  executivoPerformanceData as performanceData,
-  executivoKpisFinanceiros as kpisFinanceiros,
-  executivoKpisOperacionais as kpisOperacionais,
-  executivoAlertas as alertas,
-} from "@/data/wineData";
-
-const KPICard = ({ kpi }: { kpi: typeof kpisFinanceiros[0] }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4">
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, Legend } from "recharts";
+import { executivoMonthlyData as monthlyData, executivoPerformanceData as performanceData, executivoKpisFinanceiros as kpisFinanceiros, executivoKpisOperacionais as kpisOperacionais, executivoAlertas as alertas } from "@/data/wineData";
+const KPICard = ({
+  kpi
+}: {
+  kpi: typeof kpisFinanceiros[0];
+}) => <div className="bg-white rounded-lg border border-gray-200 p-4">
     <div className="text-xs text-gray-500 font-medium mb-1">{kpi.label}</div>
     <div className="flex items-baseline gap-2 mb-1">
       <span className="text-2xl font-bold text-gray-800">{kpi.value}</span>
@@ -33,37 +15,29 @@ const KPICard = ({ kpi }: { kpi: typeof kpisFinanceiros[0] }) => (
     <div className="text-xs text-gray-400 mb-2">{kpi.orc}</div>
     <div className="flex items-center justify-between">
       <span className="text-xs text-gray-500">{kpi.type}</span>
-      <span className={`text-xs font-medium px-2 py-1 rounded ${
-        kpi.positive 
-          ? "bg-green-100 text-green-700" 
-          : "bg-red-100 text-red-700"
-      }`}>
+      <span className={`text-xs font-medium px-2 py-1 rounded ${kpi.positive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
         {kpi.positive ? "▲" : "▼"}{Math.abs(kpi.change)}%
       </span>
     </div>
-  </div>
-);
-
-const AlertCard = ({ alert }: { alert: typeof alertas[0] }) => {
+  </div>;
+const AlertCard = ({
+  alert
+}: {
+  alert: typeof alertas[0];
+}) => {
   const levelColors = {
     Alto: "bg-red-500",
     Médio: "bg-yellow-500",
-    Baixo: "bg-green-500",
+    Baixo: "bg-green-500"
   };
   const iconColors = {
     high: "text-red-500 bg-red-50",
     medium: "text-yellow-500 bg-yellow-50",
-    low: "text-green-500 bg-green-50",
+    low: "text-green-500 bg-green-50"
   };
-
-  return (
-    <div className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
+  return <div className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColors[alert.type]}`}>
-        {alert.type === "low" ? (
-          <CheckCircle className="w-4 h-4" />
-        ) : (
-          <AlertTriangle className="w-4 h-4" />
-        )}
+        {alert.type === "low" ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
       </div>
       <div className="flex-1">
         <p className="text-xs text-gray-600">{alert.title}</p>
@@ -72,25 +46,18 @@ const AlertCard = ({ alert }: { alert: typeof alertas[0] }) => {
       <span className={`text-xs text-white px-2 py-1 rounded ${levelColors[alert.level as keyof typeof levelColors]}`}>
         {alert.level}
       </span>
-    </div>
-  );
+    </div>;
 };
-
 const ExecutivoPage = () => {
-  return (
-    <EPSLayout title="Dashboard Executivo" icon="E">
+  return <EPSLayout title="Dashboard Executivo" icon="E">
       <div className="grid grid-cols-12 gap-4 h-[calc(100vh-100px)]">
         {/* Left Column - KPIs */}
         <div className="col-span-2 space-y-4 overflow-auto">
           <div className="text-xs font-semibold text-gray-600 mb-2">KPIS FINANCEIROS</div>
-          {kpisFinanceiros.map((kpi, idx) => (
-            <KPICard key={idx} kpi={kpi} />
-          ))}
+          {kpisFinanceiros.map((kpi, idx) => <KPICard key={idx} kpi={kpi} />)}
           
           <div className="text-xs font-semibold text-gray-600 mt-6 mb-2">KPIS OPERACIONAIS</div>
-          {kpisOperacionais.map((kpi, idx) => (
-            <KPICard key={idx} kpi={kpi} />
-          ))}
+          {kpisOperacionais.map((kpi, idx) => <KPICard key={idx} kpi={kpi} />)}
         </div>
 
         {/* Center Column - Charts */}
@@ -99,32 +66,30 @@ const ExecutivoPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4 h-[48%]">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-800">Receita Vendas: Real vs Orçamento vs Preditivo</h3>
-                <p className="text-xs text-gray-500">Comparação financeira com KPI operacional (Produção em mil litros)</p>
+                <h3 className="font-semibold text-gray-800">Real vs Orçamento vs Preditivo</h3>
+                <p className="text-xs text-gray-500">Receita Vendas e Produção</p>
               </div>
               <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#8B1538' }}></span> Real</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#C9A227' }}></span> Orçamento</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: '#5B8C5A' }}></span> Preditivo</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-1 rounded" style={{ backgroundColor: '#2E5A88', height: '3px' }}></span> Produção (kL)</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-primary"></span> Real</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-gold"></span> Orçamento</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-eps-gold opacity-60"></span> Preditivo</span>
               </div>
             </div>
             <ResponsiveContainer width="100%" height="85%">
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v/1000}k€`} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}kL`} domain={[0, 600]} />
-                <Tooltip 
-                  formatter={(value: number, name: string) => {
-                    if (name === 'producao') return [`${value} kL`, 'Produção'];
-                    return [`${(value/1000).toFixed(0)}k€`, name === 'real' ? 'Real' : name === 'orcamento' ? 'Orçamento' : 'Preditivo'];
-                  }}
-                />
-                <Bar yAxisId="left" dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} name="real" />
-                <Bar yAxisId="left" dataKey="orcamento" fill="#C9A227" radius={[2, 2, 0, 0]} name="orcamento" />
-                <Bar yAxisId="left" dataKey="preditivo" fill="#5B8C5A" radius={[2, 2, 0, 0]} name="preditivo" />
-                <Line yAxisId="right" type="monotone" dataKey="producao" stroke="#2E5A88" strokeWidth={3} dot={{ fill: "#2E5A88", r: 4 }} name="producao" />
+                <XAxis dataKey="month" tick={{
+                fontSize: 11
+              }} />
+                <YAxis tick={{
+                fontSize: 11
+              }} tickFormatter={v => `${v / 1000}k€`} />
+                <Tooltip formatter={(value: number) => `${(value / 1000).toFixed(0)}k€`} />
+                <Bar dataKey="real" fill="#8B1538" radius={[2, 2, 0, 0]} />
+                <Line type="monotone" dataKey="preditivo" stroke="#C9A227" strokeWidth={2} dot={{
+                fill: "#C9A227",
+                r: 4
+              }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -145,8 +110,12 @@ const ExecutivoPage = () => {
             <ResponsiveContainer width="100%" height="85%">
               <AreaChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis domain={[70, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
+                <XAxis dataKey="month" tick={{
+                fontSize: 11
+              }} />
+                <YAxis domain={[70, 100]} tick={{
+                fontSize: 11
+              }} tickFormatter={v => `${v}%`} />
                 <Tooltip formatter={(value: number) => `${value}%`} />
                 <Area type="monotone" dataKey="eficiencia" fill="#8B1538" fillOpacity={0.3} stroke="#8B1538" strokeWidth={2} />
                 <Area type="monotone" dataKey="utilizacao" fill="#C9A227" fillOpacity={0.3} stroke="#C9A227" strokeWidth={2} />
@@ -163,14 +132,10 @@ const ExecutivoPage = () => {
             <p className="text-xs text-gray-500">Motor Correlacional - Desvios Críticos</p>
           </div>
           <div className="space-y-1">
-            {alertas.map((alert, idx) => (
-              <AlertCard key={idx} alert={alert} />
-            ))}
+            {alertas.map((alert, idx) => <AlertCard key={idx} alert={alert} />)}
           </div>
         </div>
       </div>
-    </EPSLayout>
-  );
+    </EPSLayout>;
 };
-
 export default ExecutivoPage;
