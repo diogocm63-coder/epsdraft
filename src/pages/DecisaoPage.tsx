@@ -1,4 +1,4 @@
-import EPSLayout from "@/components/layout/EPSLayout";
+import { DecisaoLayout } from "@/components/decisao/DecisaoLayout";
 import { TrendingUp, TrendingDown, AlertTriangle, Info, LayoutGrid } from "lucide-react";
 import {
   LineChart,
@@ -404,7 +404,7 @@ const DecisaoPage = () => {
   }, [previsaoAjustada, selectedBaseValue]);
 
   return (
-    <EPSLayout title="Decisão" icon="D">
+    <DecisaoLayout title="Decisão" icon="D">
       <div className="h-[calc(100vh-80px)] flex flex-col gap-2 overflow-hidden">
         {/* Top Section: KPIs Row */}
         <div className="grid grid-cols-[1fr_1fr_180px] gap-2">
@@ -587,7 +587,7 @@ const DecisaoPage = () => {
           </div>
         </div>
       </div>
-    </EPSLayout>
+    </DecisaoLayout>
   );
 };
 
