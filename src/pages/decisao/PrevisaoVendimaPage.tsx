@@ -4,7 +4,10 @@ import { Grape, Plus, Minus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { wineRegioes, wineTipos } from '@/data/wineData';
+import { wineRegioes } from '@/data/wineData';
+
+// Only Tinto and Branco for harvest (Rosé is made from red grapes)
+const vendimaTipos = ['Tinto', 'Branco'] as const;
 
 // Classification categories (same as Stocks Iniciais)
 const stockCategorias = ['Regional', 'DOC', 'Mesa'] as const;
@@ -25,11 +28,6 @@ const castasPorTipo: Record<string, Record<StockCategoria, string[]>> = {
     'DOC': ['Encruzado', 'Antão Vaz', 'Verdelho'],
     'Mesa': ['Fernão Pires', 'Síria']
   },
-  'Rosé': {
-    'Regional': ['Touriga Nacional', 'Castelão'],
-    'DOC': ['Touriga Nacional'],
-    'Mesa': ['Castelão']
-  }
 };
 
 // Generate harvest data by region, type, category, and casta
@@ -38,7 +36,7 @@ const generateHarvestData = () => {
   
   allRegioes.forEach(regiao => {
     data[regiao] = {};
-    wineTipos.forEach(tipo => {
+    vendimaTipos.forEach(tipo => {
       data[regiao][tipo] = {
         'Regional': [],
         'DOC': [],
@@ -82,7 +80,7 @@ const calculateTotals = () => {
   const columnTotals: Record<string, Record<StockCategoria, number>> = {};
   
   // Initialize column totals
-  wineTipos.forEach(tipo => {
+  vendimaTipos.forEach(tipo => {
     columnTotals[tipo] = {
       'Regional': 0,
       'DOC': 0,
@@ -94,7 +92,7 @@ const calculateTotals = () => {
     totals[regiao] = {};
     rowTotals[regiao] = 0;
     
-    wineTipos.forEach(tipo => {
+    vendimaTipos.forEach(tipo => {
       stockCategorias.forEach(categoria => {
         const castas = harvestData[regiao]?.[tipo]?.[categoria] || [];
         const sum = castas.reduce((acc, c) => acc + c.kg, 0);
@@ -187,15 +185,14 @@ const PrevisaoVendimaPage = () => {
                   <TableHead rowSpan={2} className="text-xs font-bold border-r min-w-[180px]">
                     Casta
                   </TableHead>
-                  {wineTipos.map((tipo, idx) => (
+                  {vendimaTipos.map((tipo, idx) => (
                     <TableHead 
                       key={tipo} 
                       colSpan={3} 
                       className={`text-center text-xs font-bold ${
                         tipo === 'Tinto' ? 'bg-red-100 text-red-800' :
-                        tipo === 'Branco' ? 'bg-yellow-50 text-yellow-800' :
-                        'bg-pink-100 text-pink-800'
-                      } ${idx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                        'bg-yellow-50 text-yellow-800'
+                      } ${idx < vendimaTipos.length - 1 ? 'border-r-2' : ''}`}
                     >
                       {tipo}
                     </TableHead>
@@ -206,14 +203,14 @@ const PrevisaoVendimaPage = () => {
                 </TableRow>
                 {/* Second header row - Categories (Regional, DOC, Mesa) */}
                 <TableRow className="bg-muted/30">
-                  {wineTipos.map((tipo, tipoIdx) => (
+                  {vendimaTipos.map((tipo, tipoIdx) => (
                     stockCategorias.map((categoria, catIdx) => (
                       <TableHead 
                         key={`${tipo}_${categoria}`} 
                         className={`text-center text-[10px] font-medium ${
                           categoria === 'Mesa' ? 'bg-amber-50 text-amber-700' : ''
                         } ${
-                          catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                          catIdx === stockCategorias.length - 1 && tipoIdx < vendimaTipos.length - 1 ? 'border-r-2' : ''
                         }`}
                       >
                         {categoria}
@@ -227,7 +224,7 @@ const PrevisaoVendimaPage = () => {
                   // Get all castas for this region
                   const regionCastas: { tipo: string; categoria: StockCategoria; casta: string; kg: number }[] = [];
                   
-                  wineTipos.forEach(tipo => {
+                  vendimaTipos.forEach(tipo => {
                     stockCategorias.forEach(categoria => {
                       const castas = harvestData[regiao]?.[tipo]?.[categoria] || [];
                       castas.forEach(c => {
@@ -278,14 +275,14 @@ const PrevisaoVendimaPage = () => {
                         <TableCell className="text-xs italic text-gray-500">
                           {isExpanded ? '' : 'Subtotal'}
                         </TableCell>
-                        {wineTipos.map((tipo, tipoIdx) => (
+                        {vendimaTipos.map((tipo, tipoIdx) => (
                           stockCategorias.map((categoria, catIdx) => (
                             <TableCell 
                               key={`${tipo}_${categoria}`} 
                               className={`text-right text-xs font-semibold ${
                                 categoria === 'Mesa' ? 'bg-amber-50/50' : ''
                               } ${
-                                catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                                catIdx === stockCategorias.length - 1 && tipoIdx < vendimaTipos.length - 1 ? 'border-r-2' : ''
                               }`}
                             >
                               {totals[regiao][`${tipo}_${categoria}`] > 0 
@@ -309,7 +306,7 @@ const PrevisaoVendimaPage = () => {
                           <TableCell className={`text-xs border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50/30' : 'bg-white'}`}>
                           </TableCell>
                           <TableCell className="text-xs py-1 pl-4">{item.casta}</TableCell>
-                          {wineTipos.map((tipo, tipoIdx) => (
+                          {vendimaTipos.map((tipo, tipoIdx) => (
                             stockCategorias.map((categoria, catIdx) => {
                               const isMatch = item.tipo === tipo && item.categoria === categoria;
                               const isMesaColumn = categoria === 'Mesa';
@@ -318,7 +315,7 @@ const PrevisaoVendimaPage = () => {
                                 <TableCell 
                                   key={`${tipo}_${categoria}`} 
                                   className={`text-right text-xs py-1 ${
-                                    catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                                    catIdx === stockCategorias.length - 1 && tipoIdx < vendimaTipos.length - 1 ? 'border-r-2' : ''
                                   } ${
                                     isMatch 
                                       ? isMesaColumn 
@@ -349,14 +346,14 @@ const PrevisaoVendimaPage = () => {
                     TOTAL
                   </TableCell>
                   <TableCell className="text-xs"></TableCell>
-                  {wineTipos.map((tipo, tipoIdx) => (
+                  {vendimaTipos.map((tipo, tipoIdx) => (
                     stockCategorias.map((categoria, catIdx) => (
                       <TableCell 
                         key={`${tipo}_${categoria}_total`} 
                         className={`text-right text-xs font-bold ${
                           categoria === 'Mesa' ? 'bg-amber-100/50' : ''
                         } ${
-                          catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                          catIdx === stockCategorias.length - 1 && tipoIdx < vendimaTipos.length - 1 ? 'border-r-2' : ''
                         }`}
                       >
                         {formatNumber(columnTotals[tipo][categoria])}
@@ -373,15 +370,14 @@ const PrevisaoVendimaPage = () => {
                   <TableCell colSpan={2} className="text-xs font-bold border-r-2 sticky left-0 bg-gray-200 z-10">
                     Total por Tipo
                   </TableCell>
-                  {wineTipos.map((tipo, tipoIdx) => (
+                  {vendimaTipos.map((tipo, tipoIdx) => (
                     <TableCell 
                       key={`${tipo}_total`} 
                       colSpan={3}
                       className={`text-center text-xs font-bold ${
                         tipo === 'Tinto' ? 'bg-red-200 text-red-800' :
-                        tipo === 'Branco' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-pink-200 text-pink-800'
-                      } ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                        'bg-yellow-100 text-yellow-800'
+                      } ${tipoIdx < vendimaTipos.length - 1 ? 'border-r-2' : ''}`}
                     >
                       {formatNumber(getTipoTotal(tipo))} Kg
                     </TableCell>
@@ -402,10 +398,6 @@ const PrevisaoVendimaPage = () => {
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-yellow-50 border border-yellow-300"></div>
             <span>Branco</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-pink-100 border border-pink-300"></div>
-            <span>Rosé</span>
           </div>
           <span className="text-gray-400">|</span>
           <span className="text-gray-400">Previsão de Vendima em Kg | Regional = Vinhos do Ano | DOC = Reserva + Premium | Mesa = Portugal</span>
