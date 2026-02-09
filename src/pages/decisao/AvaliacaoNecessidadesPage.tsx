@@ -530,32 +530,35 @@ const AvaliacaoNecessidadesPage = () => {
 
   // ── Calculate all values ──
   const calculated = useMemo(() => {
-    const result: Record<string, Record<string, {
+    type CellData = {
+      engarrafamento: number;
       stock: number;
       vendima: number;
-      necessidades: number;
+      comprasMP: number;
       compraUva: number;
       compraVinho: number;
-    }>> = {};
-    const rowTotals: Record<string, { stock: number; vendima: number; necessidades: number; compraUva: number; compraVinho: number }> = {};
-    const colTotals: Record<string, Record<StockCategoria, { stock: number; vendima: number; necessidades: number; compraUva: number; compraVinho: number }>> = {};
+    };
+    const result: Record<string, Record<string, CellData>> = {};
+    const rowTotals: Record<string, CellData> = {};
+    const colTotals: Record<string, Record<StockCategoria, CellData>> = {};
 
     wineTipos.forEach(tipo => {
       colTotals[tipo] = {} as any;
       stockCategorias.forEach(cat => {
-        colTotals[tipo][cat] = { stock: 0, vendima: 0, necessidades: 0, compraUva: 0, compraVinho: 0 };
+        colTotals[tipo][cat] = { engarrafamento: 0, stock: 0, vendima: 0, comprasMP: 0, compraUva: 0, compraVinho: 0 };
       });
     });
 
     allRegioes.forEach(regiao => {
       result[regiao] = {};
-      rowTotals[regiao] = { stock: 0, vendima: 0, necessidades: 0, compraUva: 0, compraVinho: 0 };
+      rowTotals[regiao] = { engarrafamento: 0, stock: 0, vendima: 0, comprasMP: 0, compraUva: 0, compraVinho: 0 };
 
       wineTipos.forEach(tipo => {
         stockCategorias.forEach(categoria => {
+          const engarrafamento = engarrafamentoData[regiao]?.[tipo]?.[categoria] || 0;
           const stock = stockData[regiao]?.[tipo]?.[categoria] || 0;
           const vendima = vendimaData[regiao]?.[tipo]?.[categoria] || 0;
-          const necessidades = stock + vendima;
+          const comprasMP = Math.max(0, engarrafamento - stock - vendima);
 
           // Average split for products in this cell
           const prods = getProductsForCell(regiao, tipo, categoria);
@@ -563,36 +566,31 @@ const AvaliacaoNecessidadesPage = () => {
             ? prods.reduce((s, p) => s + (splits[p] ?? 80), 0) / prods.length
             : 80;
 
-          const compraUva = Math.round(necessidades * (avgUvaPct / 100));
-          const compraVinho = necessidades - compraUva;
+          const compraUva = Math.round(comprasMP * (avgUvaPct / 100));
+          const compraVinho = comprasMP - compraUva;
 
           const key = `${tipo}_${categoria}`;
-          result[regiao][key] = { stock, vendima, necessidades, compraUva, compraVinho };
+          result[regiao][key] = { engarrafamento, stock, vendima, comprasMP, compraUva, compraVinho };
 
-          rowTotals[regiao].stock += stock;
-          rowTotals[regiao].vendima += vendima;
-          rowTotals[regiao].necessidades += necessidades;
-          rowTotals[regiao].compraUva += compraUva;
-          rowTotals[regiao].compraVinho += compraVinho;
-
-          colTotals[tipo][categoria].stock += stock;
-          colTotals[tipo][categoria].vendima += vendima;
-          colTotals[tipo][categoria].necessidades += necessidades;
-          colTotals[tipo][categoria].compraUva += compraUva;
-          colTotals[tipo][categoria].compraVinho += compraVinho;
+          const keys: (keyof CellData)[] = ['engarrafamento', 'stock', 'vendima', 'comprasMP', 'compraUva', 'compraVinho'];
+          keys.forEach(k => {
+            rowTotals[regiao][k] += result[regiao][key][k];
+            colTotals[tipo][categoria][k] += result[regiao][key][k];
+          });
         });
       });
     });
 
     const grandTotal = Object.values(rowTotals).reduce(
       (acc, v) => ({
+        engarrafamento: acc.engarrafamento + v.engarrafamento,
         stock: acc.stock + v.stock,
         vendima: acc.vendima + v.vendima,
-        necessidades: acc.necessidades + v.necessidades,
+        comprasMP: acc.comprasMP + v.comprasMP,
         compraUva: acc.compraUva + v.compraUva,
         compraVinho: acc.compraVinho + v.compraVinho,
       }),
-      { stock: 0, vendima: 0, necessidades: 0, compraUva: 0, compraVinho: 0 }
+      { engarrafamento: 0, stock: 0, vendima: 0, comprasMP: 0, compraUva: 0, compraVinho: 0 }
     );
 
     return { result, rowTotals, colTotals, grandTotal };
