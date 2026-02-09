@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { DecisaoLayout } from '@/components/decisao/DecisaoLayout';
-import { Grape, Plus, Minus, Settings2, Euro } from 'lucide-react';
+import { Grape, Plus, Minus, Settings2, Euro, Users, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -263,12 +263,231 @@ const RaciosKgEuroDialog = ({
   );
 };
 
+// ─── Fornecedores (Suppliers) Types ───
+interface FornecedorEntry {
+  nome: string;
+  qtdKg: number;
+}
+
+type FornecedoresData = Record<string, Record<string, Record<StockCategoria, FornecedorEntry[]>>>;
+// key: regiao -> tipo -> categoria -> array of suppliers
+
+// ─── Fornecedores Dialog ───
+const FornecedoresDialog = ({
+  fornecedores,
+  onSave,
+}: {
+  fornecedores: FornecedoresData;
+  onSave: (f: FornecedoresData) => void;
+}) => {
+  const [editData, setEditData] = useState<FornecedoresData>(() => JSON.parse(JSON.stringify(fornecedores)));
+  const [selectedRegiao, setSelectedRegiao] = useState<string>(allRegioes[0]);
+  const [selectedTipo, setSelectedTipo] = useState<VendimaTipo>('Tinto');
+
+  const addFornecedor = (regiao: string, tipo: string, categoria: StockCategoria) => {
+    setEditData(prev => {
+      const updated = JSON.parse(JSON.stringify(prev));
+      if (!updated[regiao]) updated[regiao] = {};
+      if (!updated[regiao][tipo]) updated[regiao][tipo] = { 'Regional': [], 'DOC': [], 'Mesa': [] };
+      updated[regiao][tipo][categoria].push({ nome: '', qtdKg: 0 });
+      return updated;
+    });
+  };
+
+  const removeFornecedor = (regiao: string, tipo: string, categoria: StockCategoria, idx: number) => {
+    setEditData(prev => {
+      const updated = JSON.parse(JSON.stringify(prev));
+      updated[regiao][tipo][categoria].splice(idx, 1);
+      return updated;
+    });
+  };
+
+  const updateFornecedor = (regiao: string, tipo: string, categoria: StockCategoria, idx: number, field: 'nome' | 'qtdKg', value: string) => {
+    setEditData(prev => {
+      const updated = JSON.parse(JSON.stringify(prev));
+      if (field === 'nome') {
+        updated[regiao][tipo][categoria][idx].nome = value;
+      } else {
+        updated[regiao][tipo][categoria][idx].qtdKg = Math.max(0, Number(value) || 0);
+      }
+      return updated;
+    });
+  };
+
+  const getEntries = (regiao: string, tipo: string, categoria: StockCategoria): FornecedorEntry[] => {
+    return editData[regiao]?.[tipo]?.[categoria] || [];
+  };
+
+  const totalFornecedores = () => {
+    let count = 0;
+    Object.values(editData).forEach(tipos => {
+      Object.values(tipos).forEach(cats => {
+        Object.values(cats).forEach(entries => {
+          count += (entries as FornecedorEntry[]).filter(e => e.nome.trim() !== '').length;
+        });
+      });
+    });
+    return count;
+  };
+
+  const categorias = selectedRegiao === 'Portugal' ? ['Mesa' as StockCategoria] : ['Regional' as StockCategoria, 'DOC' as StockCategoria];
+
+  return (
+    <DialogContent className="max-w-5xl max-h-[85vh] overflow-auto">
+      <DialogHeader>
+        <DialogTitle className="text-lg font-bold flex items-center gap-2">
+          <Users className="w-5 h-5 text-blue-600" />
+          Fornecedores de Uva
+        </DialogTitle>
+        <p className="text-sm text-gray-500">
+          Identifique os fornecedores e quantidades previstas (Kg) por região, tipo e categoria
+          {totalFornecedores() > 0 && <span className="ml-2 text-blue-600 font-medium">({totalFornecedores()} fornecedores registados)</span>}
+        </p>
+      </DialogHeader>
+
+      {/* Region & Type Selector */}
+      <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-600">Região:</span>
+          <div className="flex flex-wrap gap-1">
+            {allRegioes.map(r => (
+              <Button
+                key={r}
+                variant={selectedRegiao === r ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedRegiao(r)}
+                className={`text-[10px] h-6 px-2 ${selectedRegiao === r ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+              >
+                {r}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <span className="text-gray-300">|</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-600">Tipo:</span>
+          {vendimaTipos.map(t => (
+            <Button
+              key={t}
+              variant={selectedTipo === t ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedTipo(t)}
+              className={`text-[10px] h-6 px-2 ${selectedTipo === t
+                ? t === 'Tinto' ? 'bg-red-600 hover:bg-red-700' : 'bg-yellow-600 hover:bg-yellow-700'
+                : ''}`}
+            >
+              {t}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Supplier Tables by Categoria */}
+      <div className="mt-4 space-y-5">
+        {categorias.map(categoria => {
+          const entries = getEntries(selectedRegiao, selectedTipo, categoria);
+          return (
+            <div key={categoria} className="border rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${
+                    categoria === 'Regional' ? 'bg-blue-500' : categoria === 'DOC' ? 'bg-purple-500' : 'bg-amber-500'
+                  }`}></span>
+                  {selectedRegiao} — {selectedTipo} — {categoria}
+                  <span className="text-[10px] font-normal text-gray-400">({entries.length} fornecedores)</span>
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addFornecedor(selectedRegiao, selectedTipo, categoria)}
+                  className="text-[10px] h-6 px-2 border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Adicionar Fornecedor
+                </Button>
+              </div>
+              {entries.length === 0 ? (
+                <p className="text-xs text-gray-400 italic py-2 text-center">
+                  Nenhum fornecedor registado. Clique em "Adicionar Fornecedor" para começar.
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="text-[10px] font-bold min-w-[200px]">Nome do Fornecedor</TableHead>
+                      <TableHead className="text-[10px] font-bold text-center w-[120px]">Qtd. Prevista (Kg)</TableHead>
+                      <TableHead className="text-[10px] font-bold text-center w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {entries.map((entry, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="p-1">
+                          <Input
+                            type="text"
+                            placeholder="Nome do fornecedor..."
+                            value={entry.nome}
+                            onChange={(e) => updateFornecedor(selectedRegiao, selectedTipo, categoria, idx, 'nome', e.target.value)}
+                            className="h-7 text-xs"
+                          />
+                        </TableCell>
+                        <TableCell className="p-1">
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="0"
+                            value={entry.qtdKg || ''}
+                            onChange={(e) => updateFornecedor(selectedRegiao, selectedTipo, categoria, idx, 'qtdKg', e.target.value)}
+                            className="h-7 text-xs text-center w-24 mx-auto"
+                          />
+                        </TableCell>
+                        <TableCell className="p-1 text-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFornecedor(selectedRegiao, selectedTipo, categoria, idx)}
+                            className="h-6 w-6 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {/* Subtotal */}
+                    <TableRow className="bg-muted/30">
+                      <TableCell className="text-[10px] font-bold text-right pr-4">Subtotal</TableCell>
+                      <TableCell className="text-[10px] font-bold text-center">
+                        {formatNumber(entries.reduce((acc, e) => acc + e.qtdKg, 0))} Kg
+                      </TableCell>
+                      <TableCell />
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex justify-end gap-2 mt-4">
+        <DialogClose asChild><Button variant="outline" size="sm">Cancelar</Button></DialogClose>
+        <DialogClose asChild>
+          <Button size="sm" onClick={() => onSave(editData)} className="bg-blue-600 hover:bg-blue-700">
+            Guardar Fornecedores
+          </Button>
+        </DialogClose>
+      </div>
+    </DialogContent>
+  );
+};
+
 // ─── Main Page Component ───
 const CompraUvaPage = () => {
   const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
   const [medida, setMedida] = useState<Medida>('kg');
   const [raciosKgL, setRaciosKgL] = useState(() => JSON.parse(JSON.stringify(defaultRaciosKgL)));
   const [raciosKgEuro, setRaciosKgEuro] = useState(() => JSON.parse(JSON.stringify(defaultRaciosKgEuro)));
+  const [fornecedores, setFornecedores] = useState<FornecedoresData>({});
 
   const toggleRegion = (regiao: string) => {
     setExpandedRegions(prev => ({ ...prev, [regiao]: !prev[regiao] }));
@@ -380,6 +599,16 @@ const CompraUvaPage = () => {
                   </Button>
                 </DialogTrigger>
                 <RaciosKgEuroDialog racios={raciosKgEuro} onSave={setRaciosKgEuro} />
+              </Dialog>
+              {/* Fornecedores */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs h-7 border-blue-300 text-blue-600 hover:bg-blue-50">
+                    <Users className="w-3 h-3 mr-1" />
+                    Fornecedores
+                  </Button>
+                </DialogTrigger>
+                <FornecedoresDialog fornecedores={fornecedores} onSave={setFornecedores} />
               </Dialog>
               <span className="text-gray-300">|</span>
               <Button variant="outline" size="sm" onClick={expandAll} className="text-xs h-7">
