@@ -850,7 +850,7 @@ const AvaliacaoNecessidadesPage = () => {
                         )
                       )}
                       <TableCell className="text-right text-[10px] font-bold bg-gray-100 border-l-2">
-                        {formatDisplay(convertTotal(calculated.rowTotals[regiao].necessidades))}
+                        {formatDisplay(convertTotal(calculated.rowTotals[regiao].comprasMP))}
                       </TableCell>
                     </TableRow>
                   );
