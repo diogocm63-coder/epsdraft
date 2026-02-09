@@ -906,7 +906,7 @@ const AvaliacaoNecessidadesPage = () => {
             </div>
           ))}
           <span className="text-gray-400">|</span>
-          <span className="text-gray-400 italic">Valores em Litros (L) — Fórmula: Stock Ini. + Prev. Vendima = Necessidades = Compra Uva + Compra Vinho</span>
+          <span className="text-gray-400 italic">Fórmula: Pl. Engarraf. − Stock Ini. − Prev. Vendima = Compras MP = Compra Uva + Compra Vinho</span>
         </div>
       </div>
     </DecisaoLayout>
