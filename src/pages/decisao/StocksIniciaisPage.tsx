@@ -7,35 +7,38 @@ import { wineProducts, wineRegioes, wineTipos } from '@/data/wineData';
 // Classification rules:
 // - Regional (do Ano): categoria 'Regional' in wineProducts
 // - DOC: categoria 'Reserva' or 'Premium' in wineProducts
-// - Mesa: special category, no region (unique products)
+// - Mesa: special category under each wine type
 
-const stockCategorias = ['Regional', 'DOC'] as const;
+const stockCategorias = ['Regional', 'DOC', 'Mesa'] as const;
 type StockCategoria = typeof stockCategorias[number];
 
-// Mesa products (no region, separate line/column)
+// All regions including Portugal for Mesa wines
+const allRegioes = [...wineRegioes, 'Portugal'];
+
+// Mesa products (Portugal region)
 const mesaProducts = [
   { tipo: 'Tinto', produto: 'V&W Mesa Tinto', litros: Math.floor(Math.random() * 80000) + 30000 },
   { tipo: 'Branco', produto: 'V&W Mesa Branco', litros: Math.floor(Math.random() * 80000) + 30000 },
   { tipo: 'Rosé', produto: 'V&W Mesa Rosé', litros: Math.floor(Math.random() * 50000) + 15000 },
 ];
 
-// Generate stock data organized by region > type > category (Regional/DOC)
+// Generate stock data organized by region > type > category (Regional/DOC/Mesa)
 const generateStockData = () => {
   const stockData: Record<string, Record<string, Record<StockCategoria, { produto: string; litros: number }[]>>> = {};
   
-  wineRegioes.forEach(regiao => {
+  allRegioes.forEach(regiao => {
     stockData[regiao] = {};
     wineTipos.forEach(tipo => {
       stockData[regiao][tipo] = {
         'Regional': [],
-        'DOC': []
+        'DOC': [],
+        'Mesa': []
       };
     });
   });
   
   // Map original categories to new classification
   wineProducts.forEach(product => {
-    const isRegional = product.categoria === 'Regional'; // Do Ano
     const isDOC = product.categoria === 'Reserva' || product.categoria === 'Premium';
     
     const baseLitros = product.categoria === 'Premium' 
@@ -53,6 +56,14 @@ const generateStockData = () => {
     }
   });
   
+  // Add Mesa products to Portugal
+  mesaProducts.forEach(product => {
+    stockData['Portugal'][product.tipo]['Mesa'].push({
+      produto: product.produto,
+      litros: product.litros
+    });
+  });
+  
   return stockData;
 };
 
@@ -64,15 +75,16 @@ const calculateTotals = () => {
   const rowTotals: Record<string, number> = {};
   const columnTotals: Record<string, Record<StockCategoria, number>> = {};
   
-  // Initialize column totals for regular wines
+  // Initialize column totals
   wineTipos.forEach(tipo => {
     columnTotals[tipo] = {
       'Regional': 0,
-      'DOC': 0
+      'DOC': 0,
+      'Mesa': 0
     };
   });
   
-  wineRegioes.forEach(regiao => {
+  allRegioes.forEach(regiao => {
     totals[regiao] = {};
     rowTotals[regiao] = 0;
     
@@ -92,24 +104,12 @@ const calculateTotals = () => {
 
 const { totals, rowTotals, columnTotals } = calculateTotals();
 
-// Mesa totals
-const mesaTotals = {
-  byTipo: mesaProducts.reduce((acc, p) => {
-    acc[p.tipo] = p.litros;
-    return acc;
-  }, {} as Record<string, number>),
-  total: mesaProducts.reduce((acc, p) => acc + p.litros, 0)
-};
+// Calculate grand total
+const grandTotal = Object.values(rowTotals).reduce((acc, val) => acc + val, 0);
 
-// Calculate grand total (all regions + mesa)
-const regionsTotal = Object.values(rowTotals).reduce((acc, val) => acc + val, 0);
-const grandTotal = regionsTotal + mesaTotals.total;
-
-// Get column totals per tipo (including mesa)
+// Get column totals per tipo
 const getTipoTotal = (tipo: string) => {
-  const regionTotal = Object.values(columnTotals[tipo] || {}).reduce((acc, val) => acc + val, 0);
-  const mesaTotal = mesaTotals.byTipo[tipo] || 0;
-  return regionTotal + mesaTotal;
+  return Object.values(columnTotals[tipo]).reduce((acc, val) => acc + val, 0);
 };
 
 const formatNumber = (num: number) => {
@@ -155,7 +155,7 @@ const StocksIniciaisPage = () => {
                   {wineTipos.map((tipo, idx) => (
                     <TableHead 
                       key={tipo} 
-                      colSpan={2} 
+                      colSpan={3} 
                       className={`text-center text-xs font-bold ${
                         tipo === 'Tinto' ? 'bg-red-100 text-red-800' :
                         tipo === 'Branco' ? 'bg-yellow-50 text-yellow-800' :
@@ -165,24 +165,19 @@ const StocksIniciaisPage = () => {
                       {tipo}
                     </TableHead>
                   ))}
-                  {/* Mesa column header */}
-                  <TableHead 
-                    rowSpan={2} 
-                    className="text-center text-xs font-bold bg-amber-100 text-amber-800 border-l-2 min-w-[80px]"
-                  >
-                    Mesa
-                  </TableHead>
                   <TableHead rowSpan={2} className="text-center text-xs font-bold bg-gray-200 border-l-2 min-w-[100px]">
                     Total Linha
                   </TableHead>
                 </TableRow>
-                {/* Second header row - Categories (Regional = do Ano, DOC = Reserva/Premium) */}
+                {/* Second header row - Categories (Regional, DOC, Mesa) */}
                 <TableRow className="bg-muted/30">
                   {wineTipos.map((tipo, tipoIdx) => (
                     stockCategorias.map((categoria, catIdx) => (
                       <TableHead 
                         key={`${tipo}_${categoria}`} 
                         className={`text-center text-[10px] font-medium ${
+                          categoria === 'Mesa' ? 'bg-amber-50 text-amber-700' : ''
+                        } ${
                           catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                         }`}
                       >
@@ -193,7 +188,7 @@ const StocksIniciaisPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {wineRegioes.map((regiao) => {
+                {allRegioes.map((regiao) => {
                   // Get all products for this region
                   const regionProducts: { tipo: string; categoria: StockCategoria; produto: string; litros: number }[] = [];
                   
@@ -206,11 +201,13 @@ const StocksIniciaisPage = () => {
                     });
                   });
 
+                  const isPortugal = regiao === 'Portugal';
+
                   // If no products, show summary row only
                   if (regionProducts.length === 0) {
                     return (
-                      <TableRow key={regiao} className="bg-gray-50 font-medium">
-                        <TableCell className="text-xs font-bold border-r-2 sticky left-0 bg-gray-50 z-10">
+                      <TableRow key={regiao} className={`font-medium ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}>
+                        <TableCell className={`text-xs font-bold border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}>
                           {regiao}
                         </TableCell>
                         <TableCell className="text-xs italic text-gray-400">-</TableCell>
@@ -219,6 +216,8 @@ const StocksIniciaisPage = () => {
                             <TableCell 
                               key={`${tipo}_${categoria}`} 
                               className={`text-right text-xs ${
+                                categoria === 'Mesa' ? 'bg-amber-50/50' : ''
+                              } ${
                                 catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                               }`}
                             >
@@ -226,7 +225,6 @@ const StocksIniciaisPage = () => {
                             </TableCell>
                           ))
                         ))}
-                        <TableCell className="text-right text-xs bg-amber-50/50 border-l-2">-</TableCell>
                         <TableCell className="text-right text-xs font-bold bg-gray-100 border-l-2">
                           {formatNumber(rowTotals[regiao])}
                         </TableCell>
@@ -243,53 +241,57 @@ const StocksIniciaisPage = () => {
                       {regionProducts.map((product, productIdx) => (
                         <TableRow 
                           key={`${regiao}_${product.produto}`} 
-                          className={`hover:bg-muted/30 ${productIdx === 0 ? 'border-t' : ''}`}
+                          className={`hover:bg-muted/30 ${productIdx === 0 ? 'border-t' : ''} ${isPortugal ? 'bg-amber-50/30' : ''}`}
                         >
                           {productIdx === 0 && (
                             <TableCell 
                               rowSpan={maxProducts + 1} 
-                              className="text-xs font-bold border-r-2 sticky left-0 bg-white z-10 align-top pt-3"
+                              className={`text-xs font-bold border-r-2 sticky left-0 z-10 align-top pt-3 ${isPortugal ? 'bg-amber-50' : 'bg-white'}`}
                             >
                               {regiao}
                             </TableCell>
                           )}
                           <TableCell className="text-xs py-1">{product.produto.replace('V&W ', '')}</TableCell>
                           {wineTipos.map((tipo, tipoIdx) => (
-                            stockCategorias.map((categoria, catIdx) => (
-                              <TableCell 
-                                key={`${tipo}_${categoria}`} 
-                                className={`text-right text-xs py-1 ${
-                                  catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                                } ${
-                                  product.tipo === tipo && product.categoria === categoria 
-                                    ? tipo === 'Tinto' ? 'bg-red-50 font-medium' :
-                                      tipo === 'Branco' ? 'bg-yellow-50/50 font-medium' :
-                                      'bg-pink-50 font-medium'
-                                    : ''
-                                }`}
-                              >
-                                {product.tipo === tipo && product.categoria === categoria 
-                                  ? formatNumber(product.litros)
-                                  : '-'
-                                }
-                              </TableCell>
-                            ))
+                            stockCategorias.map((categoria, catIdx) => {
+                              const isMatch = product.tipo === tipo && product.categoria === categoria;
+                              const isMesaColumn = categoria === 'Mesa';
+                              
+                              return (
+                                <TableCell 
+                                  key={`${tipo}_${categoria}`} 
+                                  className={`text-right text-xs py-1 ${
+                                    catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                                  } ${
+                                    isMatch 
+                                      ? isMesaColumn 
+                                        ? 'bg-amber-100 font-medium'
+                                        : tipo === 'Tinto' ? 'bg-red-50 font-medium' 
+                                        : tipo === 'Branco' ? 'bg-yellow-50/50 font-medium' 
+                                        : 'bg-pink-50 font-medium'
+                                      : isMesaColumn ? 'bg-amber-50/30' : ''
+                                  }`}
+                                >
+                                  {isMatch ? formatNumber(product.litros) : '-'}
+                                </TableCell>
+                              );
+                            })
                           ))}
-                          {/* Mesa column - empty for region products */}
-                          <TableCell className="text-right text-xs py-1 bg-amber-50/30 border-l-2">-</TableCell>
                           <TableCell className="text-right text-xs py-1 bg-gray-50 border-l-2 font-medium">
                             {formatNumber(product.litros)}
                           </TableCell>
                         </TableRow>
                       ))}
                       {/* Region subtotal row */}
-                      <TableRow className="bg-gray-100 font-medium border-b-2">
+                      <TableRow className={`font-medium border-b-2 ${isPortugal ? 'bg-amber-100' : 'bg-gray-100'}`}>
                         <TableCell className="text-xs font-bold text-right italic">Subtotal</TableCell>
                         {wineTipos.map((tipo, tipoIdx) => (
                           stockCategorias.map((categoria, catIdx) => (
                             <TableCell 
                               key={`${tipo}_${categoria}_subtotal`} 
                               className={`text-right text-xs font-semibold ${
+                                categoria === 'Mesa' ? 'bg-amber-100/50' : ''
+                              } ${
                                 catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                               }`}
                             >
@@ -300,7 +302,6 @@ const StocksIniciaisPage = () => {
                             </TableCell>
                           ))
                         ))}
-                        <TableCell className="text-right text-xs bg-amber-50/50 border-l-2">-</TableCell>
                         <TableCell className="text-right text-xs font-bold bg-gray-200 border-l-2">
                           {formatNumber(rowTotals[regiao])}
                         </TableCell>
@@ -308,63 +309,6 @@ const StocksIniciaisPage = () => {
                     </>
                   );
                 })}
-
-                {/* Portugal row - Mesa wines without specific region */}
-                <TableRow className="bg-amber-50 border-t-4 border-amber-300">
-                  <TableCell className="text-xs font-bold border-r-2 sticky left-0 bg-amber-50 z-10">
-                    Portugal
-                  </TableCell>
-                  <TableCell className="text-xs italic text-amber-700">Vinho de Mesa</TableCell>
-                  {wineTipos.map((tipo, tipoIdx) => (
-                    stockCategorias.map((categoria, catIdx) => (
-                      <TableCell 
-                        key={`mesa_${tipo}_${categoria}`} 
-                        className={`text-right text-xs ${
-                          catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                        }`}
-                      >
-                        -
-                      </TableCell>
-                    ))
-                  ))}
-                  {/* Mesa total - aggregates all mesa wines */}
-                  <TableCell className="text-right text-xs font-bold bg-amber-100 border-l-2 text-amber-800">
-                    {formatNumber(mesaTotals.total)}
-                  </TableCell>
-                  <TableCell className="text-right text-xs font-bold bg-gray-200 border-l-2">
-                    {formatNumber(mesaTotals.total)}
-                  </TableCell>
-                </TableRow>
-
-                {/* Mesa products detail */}
-                {mesaProducts.map((product) => (
-                  <TableRow key={product.produto} className="bg-amber-50/50 hover:bg-amber-100/50">
-                    <TableCell className="text-xs border-r-2 sticky left-0 bg-amber-50/50 z-10"></TableCell>
-                    <TableCell className="text-xs py-1 pl-4">{product.produto.replace('V&W ', '')}</TableCell>
-                    {wineTipos.map((tipo, tipoIdx) => (
-                      stockCategorias.map((categoria, catIdx) => (
-                        <TableCell 
-                          key={`mesa_detail_${tipo}_${categoria}`} 
-                          className={`text-right text-xs py-1 ${
-                            catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                          }`}
-                        >
-                          -
-                        </TableCell>
-                      ))
-                    ))}
-                    <TableCell className={`text-right text-xs py-1 font-medium border-l-2 ${
-                      product.tipo === 'Tinto' ? 'bg-red-50' :
-                      product.tipo === 'Branco' ? 'bg-yellow-50/50' :
-                      'bg-pink-50'
-                    }`}>
-                      {formatNumber(product.litros)}
-                    </TableCell>
-                    <TableCell className="text-right text-xs py-1 bg-gray-50 border-l-2 font-medium">
-                      {formatNumber(product.litros)}
-                    </TableCell>
-                  </TableRow>
-                ))}
 
                 {/* Grand total row */}
                 <TableRow className="bg-eps-primary/10 font-bold border-t-4">
@@ -377,6 +321,8 @@ const StocksIniciaisPage = () => {
                       <TableCell 
                         key={`${tipo}_${categoria}_total`} 
                         className={`text-right text-xs font-bold ${
+                          categoria === 'Mesa' ? 'bg-amber-100/50' : ''
+                        } ${
                           catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                         }`}
                       >
@@ -384,9 +330,6 @@ const StocksIniciaisPage = () => {
                       </TableCell>
                     ))
                   ))}
-                  <TableCell className="text-right text-xs font-bold bg-amber-100 border-l-2 text-amber-800">
-                    {formatNumber(mesaTotals.total)}
-                  </TableCell>
                   <TableCell className="text-right text-xs font-bold bg-eps-primary/20 border-l-2 text-eps-primary">
                     {formatNumber(grandTotal)}
                   </TableCell>
@@ -400,7 +343,7 @@ const StocksIniciaisPage = () => {
                   {wineTipos.map((tipo, tipoIdx) => (
                     <TableCell 
                       key={`${tipo}_total`} 
-                      colSpan={2}
+                      colSpan={3}
                       className={`text-center text-xs font-bold ${
                         tipo === 'Tinto' ? 'bg-red-200 text-red-800' :
                         tipo === 'Branco' ? 'bg-yellow-100 text-yellow-800' :
@@ -410,9 +353,6 @@ const StocksIniciaisPage = () => {
                       {formatNumber(getTipoTotal(tipo))} L
                     </TableCell>
                   ))}
-                  <TableCell className="bg-amber-200 text-amber-800 text-center text-xs font-bold border-l-2">
-                    {formatNumber(mesaTotals.total)} L
-                  </TableCell>
                   <TableCell className="bg-gray-300 border-l-2"></TableCell>
                 </TableRow>
               </TableBody>
@@ -435,12 +375,7 @@ const StocksIniciaisPage = () => {
             <span>Rosé</span>
           </div>
           <span className="text-gray-400">|</span>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-amber-100 border border-amber-300"></div>
-            <span>Mesa (sem região)</span>
-          </div>
-          <span className="ml-4 text-gray-400">|</span>
-          <span className="text-gray-400">Regional = Vinhos do Ano | DOC = Reserva + Premium</span>
+          <span className="text-gray-400">Regional = Vinhos do Ano | DOC = Reserva + Premium | Mesa = Portugal</span>
         </div>
       </div>
     </DecisaoLayout>
