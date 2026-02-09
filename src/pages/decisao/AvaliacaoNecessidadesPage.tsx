@@ -13,7 +13,7 @@ type StockCategoria = typeof stockCategorias[number];
 
 const allRegioes = [...wineRegioes, 'Portugal'];
 
-const formatNumber = (num: number) => num.toLocaleString('pt-PT');
+const formatNumber = (num: number) => num.toLocaleString('pt-PT', { maximumFractionDigits: 0 });
 
 // ── Deterministic seed-based random for stable mock data ──
 const seededRandom = (seed: number) => {
@@ -442,7 +442,18 @@ const VariacaoEngarrafamentoDialog = () => {
 };
 
 
+type MeasureUnit = 'L' | 'Kg' | '€';
+
+// Default conversion ratios
+const defaultKgPerLitro: Record<string, number> = {
+  'Tinto': 1 / 0.74,
+  'Branco': 1 / 0.70,
+  'Rosé': 1 / 0.72,
+};
+const defaultEuroPerLitro = 0.50;
+
 const AvaliacaoNecessidadesPage = () => {
+  const [selectedUnit, setSelectedUnit] = useState<MeasureUnit>('L');
   const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
   const [expandedTipos, setExpandedTipos] = useState<Record<string, boolean>>(() => {
     const t: Record<string, boolean> = {};
@@ -561,6 +572,27 @@ const AvaliacaoNecessidadesPage = () => {
     { key: 'compraVinho', label: 'Compra Vinho', color: 'bg-pink-50' },
   ] as const;
 
+  const unitLabel = selectedUnit === 'L' ? 'L' : selectedUnit === 'Kg' ? 'Kg' : '€';
+
+  // Convert a value from litros to the selected unit
+  const convertValue = (valueLitros: number, tipo: string): number => {
+    if (selectedUnit === 'L') return valueLitros;
+    if (selectedUnit === 'Kg') return Math.round(valueLitros * (defaultKgPerLitro[tipo] || 1.35));
+    return Math.round(valueLitros * defaultEuroPerLitro);
+  };
+
+  // Convert aggregated values (use average ratio for mixed tipos)
+  const convertTotal = (valueLitros: number): number => {
+    if (selectedUnit === 'L') return valueLitros;
+    if (selectedUnit === 'Kg') return Math.round(valueLitros * 1.35);
+    return Math.round(valueLitros * defaultEuroPerLitro);
+  };
+
+  const formatDisplay = (value: number) => {
+    if (selectedUnit === '€') return `${formatNumber(value)} €`;
+    return formatNumber(value);
+  };
+
   return (
     <DecisaoLayout title="Decisão" icon="D">
       <div className="h-full flex flex-col gap-4">
@@ -572,11 +604,28 @@ const AvaliacaoNecessidadesPage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Avaliação de Necessidades</h1>
-              <p className="text-sm text-gray-500">Stock Ini. + Prev. Vendima = Necessidades = Compra Uva + Compra Vinho (L)</p>
+              <p className="text-sm text-gray-500">Stock Ini. + Prev. Vendima = Necessidades = Compra Uva + Compra Vinho ({unitLabel})</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
+              {/* Unit Toggle */}
+              <div className="flex items-center border rounded-md overflow-hidden h-7">
+                {(['L', 'Kg', '€'] as MeasureUnit[]).map(unit => (
+                  <button
+                    key={unit}
+                    onClick={() => setSelectedUnit(unit)}
+                    className={`px-3 text-xs font-medium h-full transition-colors ${
+                      selectedUnit === unit
+                        ? 'bg-eps-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-100'
+                    } ${unit !== '€' ? 'border-r' : ''}`}
+                  >
+                    {unit}
+                  </button>
+                ))}
+              </div>
+              <span className="text-gray-300">|</span>
               {/* Split Dialog */}
               <Dialog>
                 <DialogTrigger asChild>
@@ -629,7 +678,7 @@ const AvaliacaoNecessidadesPage = () => {
             </div>
             <div className="text-right">
               <span className="text-xs text-gray-400">Necessidades Totais</span>
-              <div className="text-lg font-bold text-eps-primary">{formatNumber(calculated.grandTotal.necessidades)} L</div>
+              <div className="text-lg font-bold text-eps-primary">{formatDisplay(convertTotal(calculated.grandTotal.necessidades))}</div>
             </div>
           </div>
         </div>
@@ -749,7 +798,7 @@ const AvaliacaoNecessidadesPage = () => {
                                   fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                                 }`}
                               >
-                                {cellData && cellData[field.key] > 0 ? formatNumber(cellData[field.key]) : '-'}
+                                {cellData && cellData[field.key] > 0 ? formatDisplay(convertValue(cellData[field.key], tipo)) : '-'}
                               </TableCell>
                             ));
                           })
@@ -758,17 +807,17 @@ const AvaliacaoNecessidadesPage = () => {
                             key={`${tipo}_collapsed`}
                             className={`text-right text-[10px] font-semibold ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
                           >
-                            {formatNumber(
+                            {formatDisplay(convertValue(
                               stockCategorias.reduce((sum, cat) => {
                                 const cd = calculated.result[regiao]?.[`${tipo}_${cat}`];
                                 return sum + (cd?.necessidades || 0);
-                              }, 0)
-                            )}
+                              }, 0), tipo
+                            ))}
                           </TableCell>
                         )
                       )}
                       <TableCell className="text-right text-[10px] font-bold bg-gray-100 border-l-2">
-                        {formatNumber(calculated.rowTotals[regiao].necessidades)}
+                        {formatDisplay(convertTotal(calculated.rowTotals[regiao].necessidades))}
                       </TableCell>
                     </TableRow>
                   );
@@ -788,7 +837,7 @@ const AvaliacaoNecessidadesPage = () => {
                               fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                             }`}
                           >
-                            {ct && ct[field.key] > 0 ? formatNumber(ct[field.key]) : '-'}
+                            {ct && ct[field.key] > 0 ? formatDisplay(convertValue(ct[field.key], tipo)) : '-'}
                           </TableCell>
                         ));
                       })
@@ -797,17 +846,17 @@ const AvaliacaoNecessidadesPage = () => {
                         key={`total_${tipo}_collapsed`}
                         className={`text-right text-[10px] font-bold ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
                       >
-                        {formatNumber(
+                        {formatDisplay(convertValue(
                           stockCategorias.reduce((sum, cat) => {
                             const ct = calculated.colTotals[tipo]?.[cat];
                             return sum + (ct?.necessidades || 0);
-                          }, 0)
-                        )}
+                          }, 0), tipo
+                        ))}
                       </TableCell>
                     )
                   )}
                   <TableCell className="text-right text-[10px] font-bold bg-eps-primary/20 border-l-2 text-eps-primary">
-                    {formatNumber(calculated.grandTotal.necessidades)}
+                    {formatDisplay(convertTotal(calculated.grandTotal.necessidades))}
                   </TableCell>
                 </TableRow>
               </TableBody>
