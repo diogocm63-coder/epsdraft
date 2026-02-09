@@ -21,6 +21,7 @@ import CompraVinhoPage from "./pages/decisao/CompraVinhoPage";
 import MudancaColheitaPage from "./pages/decisao/MudancaColheitaPage";
 import PlanoEngarrafamentoPage from "./pages/decisao/PlanoEngarrafamentoPage";
 import AvaliacaoNecessidadesPage from "./pages/decisao/AvaliacaoNecessidadesPage";
+import OrcamentoLoteamentoPage from "./pages/decisao/OrcamentoLoteamentoPage";
 
 // Operações Pages
 import PainelGeralPage from "./pages/operacoes/PainelGeralPage";
