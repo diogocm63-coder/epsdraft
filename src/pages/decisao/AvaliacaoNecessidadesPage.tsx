@@ -637,7 +637,7 @@ const AvaliacaoNecessidadesPage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Avaliação de Necessidades</h1>
-              <p className="text-sm text-gray-500">Stock Ini. + Prev. Vendima = Necessidades = Compra Uva + Compra Vinho ({unitLabel})</p>
+              <p className="text-sm text-gray-500">Pl. Engarraf. − Stock Ini. − Prev. Vendima = Compras MP = Compra Uva + Compra Vinho ({unitLabel})</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
