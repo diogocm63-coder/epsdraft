@@ -882,7 +882,7 @@ const AvaliacaoNecessidadesPage = () => {
                         {formatDisplay(convertValue(
                           stockCategorias.reduce((sum, cat) => {
                             const ct = calculated.colTotals[tipo]?.[cat];
-                            return sum + (ct?.necessidades || 0);
+                            return sum + (ct?.comprasMP || 0);
                           }, 0), tipo
                         ))}
                       </TableCell>
