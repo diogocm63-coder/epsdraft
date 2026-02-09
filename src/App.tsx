@@ -21,6 +21,7 @@ import CompraVinhoPage from "./pages/decisao/CompraVinhoPage";
 import MudancaColheitaPage from "./pages/decisao/MudancaColheitaPage";
 import PlanoEngarrafamentoPage from "./pages/decisao/PlanoEngarrafamentoPage";
 import AvaliacaoNecessidadesPage from "./pages/decisao/AvaliacaoNecessidadesPage";
+import OrcamentoLoteamentoPage from "./pages/decisao/OrcamentoLoteamentoPage";
 
 // Operações Pages
 import PainelGeralPage from "./pages/operacoes/PainelGeralPage";
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/decisao/avaliacao-necessidades" element={<AvaliacaoNecessidadesPage />} />
             <Route path="/decisao/compra-uva" element={<CompraUvaPage />} />
             <Route path="/decisao/compra-vinho" element={<CompraVinhoPage />} />
+            <Route path="/decisao/orcamento-loteamento" element={<OrcamentoLoteamentoPage />} />
             <Route path="/decisao/mudanca-colheita" element={<MudancaColheitaPage />} />
             <Route path="/producao-procura" element={<ProducaoProcuraPage />} />
             <Route path="/flexbudget" element={<FlexbudgetPage />} />
