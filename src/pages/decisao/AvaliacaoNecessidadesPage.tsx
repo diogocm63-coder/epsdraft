@@ -710,8 +710,8 @@ const AvaliacaoNecessidadesPage = () => {
               </Button>
             </div>
             <div className="text-right">
-              <span className="text-xs text-gray-400">Necessidades Totais</span>
-              <div className="text-lg font-bold text-eps-primary">{formatDisplay(convertTotal(calculated.grandTotal.necessidades))}</div>
+              <span className="text-xs text-gray-400">Compras MP Totais</span>
+              <div className="text-lg font-bold text-eps-primary">{formatDisplay(convertTotal(calculated.grandTotal.comprasMP))}</div>
             </div>
           </div>
         </div>
