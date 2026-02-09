@@ -889,7 +889,7 @@ const AvaliacaoNecessidadesPage = () => {
                     )
                   )}
                   <TableCell className="text-right text-[10px] font-bold bg-eps-primary/20 border-l-2 text-eps-primary">
-                    {formatDisplay(convertTotal(calculated.grandTotal.necessidades))}
+                    {formatDisplay(convertTotal(calculated.grandTotal.comprasMP))}
                   </TableCell>
                 </TableRow>
               </TableBody>
