@@ -597,9 +597,10 @@ const AvaliacaoNecessidadesPage = () => {
   }, [splits]);
 
   const fields = [
+    { key: 'engarrafamento', label: 'Pl. Engarraf.', color: 'bg-indigo-50' },
     { key: 'stock', label: 'Stock Ini.', color: 'bg-blue-50' },
     { key: 'vendima', label: 'Prev. Vend.', color: 'bg-green-50' },
-    { key: 'necessidades', label: 'Necessid.', color: 'bg-orange-50 font-semibold' },
+    { key: 'comprasMP', label: 'Compras MP', color: 'bg-orange-50 font-semibold' },
     { key: 'compraUva', label: 'Compra Uva', color: 'bg-purple-50' },
     { key: 'compraVinho', label: 'Compra Vinho', color: 'bg-pink-50' },
   ] as const;
