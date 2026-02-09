@@ -285,6 +285,14 @@ const CastaProductDialog = ({
 // ── Main Page ──
 const AvaliacaoNecessidadesPage = () => {
   const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
+  const [expandedTipos, setExpandedTipos] = useState<Record<string, boolean>>(() => {
+    const t: Record<string, boolean> = {};
+    wineTipos.forEach(tipo => { t[tipo] = true; });
+    return t;
+  });
+  const toggleTipo = (tipo: string) => {
+    setExpandedTipos(prev => ({ ...prev, [tipo]: !prev[tipo] }));
+  };
 
   // Default 80% uva for all products
   const [splits, setSplits] = useState<Record<string, number>>(() => {
@@ -454,59 +462,79 @@ const AvaliacaoNecessidadesPage = () => {
               <TableHeader>
                 {/* Wine type header */}
                 <TableRow className="bg-muted/50 border-b-2">
-                  <TableHead rowSpan={3} className="text-xs font-bold border-r-2 sticky left-0 bg-muted/50 z-10 min-w-[130px]">
+                  <TableHead rowSpan={expandedTipos['Tinto'] || expandedTipos['Branco'] || expandedTipos['Rosé'] ? 3 : 2} className="text-xs font-bold border-r-2 sticky left-0 bg-muted/50 z-10 min-w-[130px]">
                     Região
                   </TableHead>
-                  {wineTipos.map((tipo, idx) => (
-                    <TableHead
-                      key={tipo}
-                      colSpan={3 * fields.length}
-                      className={`text-center text-xs font-bold ${
-                        tipo === 'Tinto' ? 'bg-red-100 text-red-800' :
-                        tipo === 'Branco' ? 'bg-yellow-50 text-yellow-800' :
-                        'bg-pink-100 text-pink-800'
-                      } ${idx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
-                    >
-                      {tipo}
-                    </TableHead>
-                  ))}
-                  <TableHead rowSpan={3} className="text-center text-xs font-bold bg-gray-200 border-l-2 min-w-[80px]">
+                  {wineTipos.map((tipo, idx) => {
+                    const isExp = expandedTipos[tipo];
+                    return (
+                      <TableHead
+                        key={tipo}
+                        colSpan={isExp ? 3 * fields.length : 1}
+                        className={`text-center text-xs font-bold cursor-pointer ${
+                          tipo === 'Tinto' ? 'bg-red-100 text-red-800' :
+                          tipo === 'Branco' ? 'bg-yellow-50 text-yellow-800' :
+                          'bg-pink-100 text-pink-800'
+                        } ${idx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                        onClick={() => toggleTipo(tipo)}
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          {isExp ? <Minus className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                          <span>{tipo}</span>
+                        </div>
+                      </TableHead>
+                    );
+                  })}
+                  <TableHead rowSpan={expandedTipos['Tinto'] || expandedTipos['Branco'] || expandedTipos['Rosé'] ? 3 : 2} className="text-center text-xs font-bold bg-gray-200 border-l-2 min-w-[80px]">
                     Total
                   </TableHead>
                 </TableRow>
                 {/* Categoria header */}
                 <TableRow className="bg-muted/30">
                   {wineTipos.map((tipo, tipoIdx) =>
-                    stockCategorias.map((cat, catIdx) => (
-                      <TableHead
-                        key={`${tipo}_${cat}`}
-                        colSpan={fields.length}
-                        className={`text-center text-[10px] font-medium ${
-                          cat === 'Mesa' ? 'bg-amber-50 text-amber-700' : ''
-                        } ${catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : 'border-r'}`}
-                      >
-                        {cat}
-                      </TableHead>
-                    ))
-                  )}
-                </TableRow>
-                {/* Field sub-headers */}
-                <TableRow className="bg-muted/20">
-                  {wineTipos.map((tipo, tipoIdx) =>
-                    stockCategorias.map((cat, catIdx) =>
-                      fields.map((field, fIdx) => (
+                    expandedTipos[tipo] ? (
+                      stockCategorias.map((cat, catIdx) => (
                         <TableHead
-                          key={`${tipo}_${cat}_${field.key}`}
-                          className={`text-center text-[9px] font-medium min-w-[65px] ${field.color} ${
-                            fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                          }`}
+                          key={`${tipo}_${cat}`}
+                          colSpan={fields.length}
+                          className={`text-center text-[10px] font-medium ${
+                            cat === 'Mesa' ? 'bg-amber-50 text-amber-700' : ''
+                          } ${catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : 'border-r'}`}
                         >
-                          {field.label}
+                          {cat}
                         </TableHead>
                       ))
+                    ) : (
+                      <TableHead
+                        key={`${tipo}_collapsed`}
+                        className={`text-center text-[10px] font-medium ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                      >
+                        Necessid.
+                      </TableHead>
                     )
                   )}
                 </TableRow>
+                {/* Field sub-headers - only for expanded tipos */}
+                {wineTipos.some(t => expandedTipos[t]) && (
+                  <TableRow className="bg-muted/20">
+                    {wineTipos.map((tipo, tipoIdx) =>
+                      expandedTipos[tipo] ? (
+                        stockCategorias.map((cat, catIdx) =>
+                          fields.map((field, fIdx) => (
+                            <TableHead
+                              key={`${tipo}_${cat}_${field.key}`}
+                              className={`text-center text-[9px] font-medium min-w-[65px] ${field.color} ${
+                                fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                              }`}
+                            >
+                              {field.label}
+                            </TableHead>
+                          ))
+                        )
+                      ) : null
+                    )}
+                  </TableRow>
+                )}
               </TableHeader>
               <TableBody>
                 {allRegioes.map((regiao) => {
@@ -532,19 +560,33 @@ const AvaliacaoNecessidadesPage = () => {
                         </div>
                       </TableCell>
                       {wineTipos.map((tipo, tipoIdx) =>
-                        stockCategorias.map((cat, catIdx) => {
-                          const cellData = calculated.result[regiao]?.[`${tipo}_${cat}`];
-                          return fields.map((field, fIdx) => (
-                            <TableCell
-                              key={`${tipo}_${cat}_${field.key}`}
-                              className={`text-right text-[10px] ${field.color} ${
-                                fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                              }`}
-                            >
-                              {cellData && cellData[field.key] > 0 ? formatNumber(cellData[field.key]) : '-'}
-                            </TableCell>
-                          ));
-                        })
+                        expandedTipos[tipo] ? (
+                          stockCategorias.map((cat, catIdx) => {
+                            const cellData = calculated.result[regiao]?.[`${tipo}_${cat}`];
+                            return fields.map((field, fIdx) => (
+                              <TableCell
+                                key={`${tipo}_${cat}_${field.key}`}
+                                className={`text-right text-[10px] ${field.color} ${
+                                  fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                                }`}
+                              >
+                                {cellData && cellData[field.key] > 0 ? formatNumber(cellData[field.key]) : '-'}
+                              </TableCell>
+                            ));
+                          })
+                        ) : (
+                          <TableCell
+                            key={`${tipo}_collapsed`}
+                            className={`text-right text-[10px] font-semibold ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                          >
+                            {formatNumber(
+                              stockCategorias.reduce((sum, cat) => {
+                                const cd = calculated.result[regiao]?.[`${tipo}_${cat}`];
+                                return sum + (cd?.necessidades || 0);
+                              }, 0)
+                            )}
+                          </TableCell>
+                        )
                       )}
                       <TableCell className="text-right text-[10px] font-bold bg-gray-100 border-l-2">
                         {formatNumber(calculated.rowTotals[regiao].necessidades)}
@@ -557,19 +599,33 @@ const AvaliacaoNecessidadesPage = () => {
                 <TableRow className="bg-eps-primary/10 font-bold border-t-4">
                   <TableCell className="text-xs font-bold border-r-2 sticky left-0 bg-eps-primary/10 z-10">TOTAL</TableCell>
                   {wineTipos.map((tipo, tipoIdx) =>
-                    stockCategorias.map((cat, catIdx) => {
-                      const ct = calculated.colTotals[tipo]?.[cat];
-                      return fields.map((field, fIdx) => (
-                        <TableCell
-                          key={`total_${tipo}_${cat}_${field.key}`}
-                          className={`text-right text-[10px] font-bold ${field.color} ${
-                            fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                          }`}
-                        >
-                          {ct && ct[field.key] > 0 ? formatNumber(ct[field.key]) : '-'}
-                        </TableCell>
-                      ));
-                    })
+                    expandedTipos[tipo] ? (
+                      stockCategorias.map((cat, catIdx) => {
+                        const ct = calculated.colTotals[tipo]?.[cat];
+                        return fields.map((field, fIdx) => (
+                          <TableCell
+                            key={`total_${tipo}_${cat}_${field.key}`}
+                            className={`text-right text-[10px] font-bold ${field.color} ${
+                              fIdx === fields.length - 1 && catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                            }`}
+                          >
+                            {ct && ct[field.key] > 0 ? formatNumber(ct[field.key]) : '-'}
+                          </TableCell>
+                        ));
+                      })
+                    ) : (
+                      <TableCell
+                        key={`total_${tipo}_collapsed`}
+                        className={`text-right text-[10px] font-bold ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                      >
+                        {formatNumber(
+                          stockCategorias.reduce((sum, cat) => {
+                            const ct = calculated.colTotals[tipo]?.[cat];
+                            return sum + (ct?.necessidades || 0);
+                          }, 0)
+                        )}
+                      </TableCell>
+                    )
                   )}
                   <TableCell className="text-right text-[10px] font-bold bg-eps-primary/20 border-l-2 text-eps-primary">
                     {formatNumber(calculated.grandTotal.necessidades)}
