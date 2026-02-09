@@ -125,6 +125,7 @@ const generateVendimaData = () => {
 };
 
 const stockData = generateStockData();
+const engarrafamentoData = generateEngarrafamentoData();
 const vendimaData = generateVendimaData();
 
 // ── Get all unique products per region/tipo/categoria ──
