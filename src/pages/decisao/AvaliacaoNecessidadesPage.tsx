@@ -55,6 +55,39 @@ const generateStockData = () => {
   return data;
 };
 
+// ── Generate Plano de Engarrafamento data (litros) ──
+const generateEngarrafamentoData = () => {
+  const data: Record<string, Record<string, Record<StockCategoria, number>>> = {};
+  let seed = 200;
+
+  allRegioes.forEach(regiao => {
+    data[regiao] = {};
+    wineTipos.forEach(tipo => {
+      data[regiao][tipo] = { 'Regional': 0, 'DOC': 0, 'Mesa': 0 };
+    });
+  });
+
+  wineProducts.forEach(product => {
+    const isDOC = product.categoria === 'Reserva' || product.categoria === 'Premium';
+    const targetCategoria: StockCategoria = isDOC ? 'DOC' : 'Regional';
+    const baseLitros = product.categoria === 'Premium'
+      ? Math.floor(seededRandom(seed++) * 30000) + 15000
+      : product.categoria === 'Reserva'
+        ? Math.floor(seededRandom(seed++) * 60000) + 30000
+        : Math.floor(seededRandom(seed++) * 100000) + 50000;
+
+    if (data[product.regiao]?.[product.tipo]) {
+      data[product.regiao][product.tipo][targetCategoria] += baseLitros;
+    }
+  });
+
+  data['Portugal']['Tinto']['Mesa'] = Math.floor(seededRandom(seed++) * 150000) + 80000;
+  data['Portugal']['Branco']['Mesa'] = Math.floor(seededRandom(seed++) * 150000) + 80000;
+  data['Portugal']['Rosé']['Mesa'] = Math.floor(seededRandom(seed++) * 100000) + 40000;
+
+  return data;
+};
+
 // ── Generate Previsão de Vendima data (already in litros, using 0.74/0.70 ratios) ──
 const generateVendimaData = () => {
   const data: Record<string, Record<string, Record<StockCategoria, number>>> = {};
