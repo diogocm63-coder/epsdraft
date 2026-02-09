@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { DecisaoLayout } from '@/components/decisao/DecisaoLayout';
-import { Package } from 'lucide-react';
+import { Package, Plus, Minus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { wineProducts, wineRegioes, wineTipos } from '@/data/wineData';
 
 // Classification rules:
@@ -117,6 +119,26 @@ const formatNumber = (num: number) => {
 };
 
 const StocksIniciaisPage = () => {
+  // State to track which regions are expanded
+  const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
+
+  const toggleRegion = (regiao: string) => {
+    setExpandedRegions(prev => ({
+      ...prev,
+      [regiao]: !prev[regiao]
+    }));
+  };
+
+  const expandAll = () => {
+    const allExpanded: Record<string, boolean> = {};
+    allRegioes.forEach(r => { allExpanded[r] = true; });
+    setExpandedRegions(allExpanded);
+  };
+
+  const collapseAll = () => {
+    setExpandedRegions({});
+  };
+
   return (
     <DecisaoLayout title="Decisão" icon="D">
       <div className="h-full flex flex-col gap-4">
@@ -131,7 +153,17 @@ const StocksIniciaisPage = () => {
               <p className="text-sm text-gray-500">Matriz de stocks por região e tipo de vinho (em Litros)</p>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={expandAll} className="text-xs h-7">
+                <Plus className="w-3 h-3 mr-1" />
+                Expandir Tudo
+              </Button>
+              <Button variant="outline" size="sm" onClick={collapseAll} className="text-xs h-7">
+                <Minus className="w-3 h-3 mr-1" />
+                Colapsar Tudo
+              </Button>
+            </div>
             <div className="text-right">
               <span className="text-xs text-gray-400">Total Geral</span>
               <div className="text-lg font-bold text-eps-primary">{formatNumber(grandTotal)} L</div>
@@ -146,7 +178,7 @@ const StocksIniciaisPage = () => {
               <TableHeader>
                 {/* First header row - Wine Types (Colors) */}
                 <TableRow className="bg-muted/50 border-b-2">
-                  <TableHead rowSpan={2} className="text-xs font-bold border-r-2 sticky left-0 bg-muted/50 z-10 min-w-[120px]">
+                  <TableHead rowSpan={2} className="text-xs font-bold border-r-2 sticky left-0 bg-muted/50 z-10 min-w-[140px]">
                     Região
                   </TableHead>
                   <TableHead rowSpan={2} className="text-xs font-bold border-r min-w-[180px]">
@@ -202,26 +234,61 @@ const StocksIniciaisPage = () => {
                   });
 
                   const isPortugal = regiao === 'Portugal';
+                  const isExpanded = expandedRegions[regiao] || false;
+                  const hasProducts = regionProducts.length > 0;
 
-                  // If no products, show summary row only
-                  if (regionProducts.length === 0) {
-                    return (
-                      <TableRow key={regiao} className={`font-medium ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}>
+                  return (
+                    <>
+                      {/* Region header/summary row */}
+                      <TableRow 
+                        key={regiao} 
+                        className={`font-medium border-t cursor-pointer hover:bg-muted/50 ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}
+                        onClick={() => hasProducts && toggleRegion(regiao)}
+                      >
                         <TableCell className={`text-xs font-bold border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}>
-                          {regiao}
+                          <div className="flex items-center gap-2">
+                            {hasProducts && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-5 w-5 p-0 hover:bg-gray-200"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleRegion(regiao);
+                                }}
+                              >
+                                {isExpanded ? (
+                                  <Minus className="w-3 h-3" />
+                                ) : (
+                                  <Plus className="w-3 h-3" />
+                                )}
+                              </Button>
+                            )}
+                            <span>{regiao}</span>
+                            {hasProducts && (
+                              <span className="text-[10px] text-gray-400 font-normal">
+                                ({regionProducts.length})
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
-                        <TableCell className="text-xs italic text-gray-400">-</TableCell>
+                        <TableCell className="text-xs italic text-gray-500">
+                          {isExpanded ? '' : 'Subtotal'}
+                        </TableCell>
                         {wineTipos.map((tipo, tipoIdx) => (
                           stockCategorias.map((categoria, catIdx) => (
                             <TableCell 
                               key={`${tipo}_${categoria}`} 
-                              className={`text-right text-xs ${
+                              className={`text-right text-xs font-semibold ${
                                 categoria === 'Mesa' ? 'bg-amber-50/50' : ''
                               } ${
                                 catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                               }`}
                             >
-                              -
+                              {totals[regiao][`${tipo}_${categoria}`] > 0 
+                                ? formatNumber(totals[regiao][`${tipo}_${categoria}`])
+                                : '-'
+                              }
                             </TableCell>
                           ))
                         ))}
@@ -229,29 +296,16 @@ const StocksIniciaisPage = () => {
                           {formatNumber(rowTotals[regiao])}
                         </TableCell>
                       </TableRow>
-                    );
-                  }
 
-                  // Get max products count for rowspan
-                  const maxProducts = Math.max(1, regionProducts.length);
-                  
-                  return (
-                    <>
-                      {/* Product detail rows */}
-                      {regionProducts.map((product, productIdx) => (
+                      {/* Product detail rows - only show when expanded */}
+                      {isExpanded && regionProducts.map((product) => (
                         <TableRow 
                           key={`${regiao}_${product.produto}`} 
-                          className={`hover:bg-muted/30 ${productIdx === 0 ? 'border-t' : ''} ${isPortugal ? 'bg-amber-50/30' : ''}`}
+                          className={`hover:bg-muted/30 ${isPortugal ? 'bg-amber-50/30' : ''}`}
                         >
-                          {productIdx === 0 && (
-                            <TableCell 
-                              rowSpan={maxProducts + 1} 
-                              className={`text-xs font-bold border-r-2 sticky left-0 z-10 align-top pt-3 ${isPortugal ? 'bg-amber-50' : 'bg-white'}`}
-                            >
-                              {regiao}
-                            </TableCell>
-                          )}
-                          <TableCell className="text-xs py-1">{product.produto.replace('V&W ', '')}</TableCell>
+                          <TableCell className={`text-xs border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50/30' : 'bg-white'}`}>
+                          </TableCell>
+                          <TableCell className="text-xs py-1 pl-4">{product.produto.replace('V&W ', '')}</TableCell>
                           {wineTipos.map((tipo, tipoIdx) => (
                             stockCategorias.map((categoria, catIdx) => {
                               const isMatch = product.tipo === tipo && product.categoria === categoria;
@@ -282,30 +336,6 @@ const StocksIniciaisPage = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {/* Region subtotal row */}
-                      <TableRow className={`font-medium border-b-2 ${isPortugal ? 'bg-amber-100' : 'bg-gray-100'}`}>
-                        <TableCell className="text-xs font-bold text-right italic">Subtotal</TableCell>
-                        {wineTipos.map((tipo, tipoIdx) => (
-                          stockCategorias.map((categoria, catIdx) => (
-                            <TableCell 
-                              key={`${tipo}_${categoria}_subtotal`} 
-                              className={`text-right text-xs font-semibold ${
-                                categoria === 'Mesa' ? 'bg-amber-100/50' : ''
-                              } ${
-                                catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
-                              }`}
-                            >
-                              {totals[regiao][`${tipo}_${categoria}`] > 0 
-                                ? formatNumber(totals[regiao][`${tipo}_${categoria}`])
-                                : '-'
-                              }
-                            </TableCell>
-                          ))
-                        ))}
-                        <TableCell className="text-right text-xs font-bold bg-gray-200 border-l-2">
-                          {formatNumber(rowTotals[regiao])}
-                        </TableCell>
-                      </TableRow>
                     </>
                   );
                 })}
