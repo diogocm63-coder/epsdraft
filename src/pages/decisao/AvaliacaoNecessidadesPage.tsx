@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { DecisaoLayout } from '@/components/decisao/DecisaoLayout';
-import { ClipboardList, Plus, Minus, Settings2 } from 'lucide-react';
+import { ClipboardList, Plus, Minus, Settings2, TrendingUp, BarChart3 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -282,7 +282,166 @@ const CastaProductDialog = ({
   );
 };
 
-// ── Main Page ──
+// ── Variação Previsão de Vendima Dialog (by product) ──
+const VariacaoVendimaDialog = () => {
+  const [variacoes, setVariacoes] = useState<Record<string, number>>(() => {
+    const v: Record<string, number> = {};
+    allProducts.forEach(p => { v[p.produto] = 0; });
+    return v;
+  });
+
+  return (
+    <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+      <DialogHeader>
+        <DialogTitle className="text-lg font-bold flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-green-600" />
+          Variação das Previsões de Vendima
+        </DialogTitle>
+        <p className="text-sm text-gray-500">Ajuste percentual (%) por produto sobre a previsão de vendima</p>
+      </DialogHeader>
+      <div className="mt-4">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="text-xs font-bold">Produto</TableHead>
+              <TableHead className="text-xs font-bold">Região</TableHead>
+              <TableHead className="text-xs font-bold">Tipo</TableHead>
+              <TableHead className="text-xs font-bold text-center w-[100px]">Variação (%)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {allProducts.map(p => (
+              <TableRow key={p.produto}>
+                <TableCell className="text-xs">{p.produto.replace('V&W ', '')}</TableCell>
+                <TableCell className="text-xs text-gray-500">{p.regiao}</TableCell>
+                <TableCell className="text-xs">
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                    p.tipo === 'Tinto' ? 'bg-red-100 text-red-700' :
+                    p.tipo === 'Branco' ? 'bg-yellow-50 text-yellow-700' :
+                    'bg-pink-100 text-pink-700'
+                  }`}>{p.tipo}</span>
+                </TableCell>
+                <TableCell className="p-1">
+                  <Input
+                    type="number"
+                    value={variacoes[p.produto] ?? 0}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setVariacoes(prev => ({ ...prev, [p.produto]: v }));
+                    }}
+                    className={`h-7 text-xs text-center w-20 mx-auto ${
+                      (variacoes[p.produto] ?? 0) > 0 ? 'border-green-400 bg-green-50' :
+                      (variacoes[p.produto] ?? 0) < 0 ? 'border-red-400 bg-red-50' : ''
+                    }`}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex justify-end gap-2 mt-4">
+        <DialogClose asChild>
+          <Button variant="outline" size="sm">Cancelar</Button>
+        </DialogClose>
+        <DialogClose asChild>
+          <Button size="sm" className="bg-eps-primary hover:bg-eps-primary/90">
+            Aplicar Variações
+          </Button>
+        </DialogClose>
+      </div>
+    </DialogContent>
+  );
+};
+
+// ── Variação Plano de Engarrafamento Dialog (by product, casta x região) ──
+const VariacaoEngarrafamentoDialog = () => {
+  const [variacoes, setVariacoes] = useState<Record<string, number>>(() => {
+    const v: Record<string, number> = {};
+    allProducts.forEach(p => { v[p.produto] = 0; });
+    return v;
+  });
+
+  // Group products by região
+  const produtosPorRegiao: Record<string, typeof allProducts> = {};
+  allProducts.forEach(p => {
+    if (!produtosPorRegiao[p.regiao]) produtosPorRegiao[p.regiao] = [];
+    produtosPorRegiao[p.regiao].push(p);
+  });
+
+  return (
+    <DialogContent className="max-w-4xl max-h-[85vh] overflow-auto">
+      <DialogHeader>
+        <DialogTitle className="text-lg font-bold flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-purple-600" />
+          Variação do Plano de Engarrafamento
+        </DialogTitle>
+        <p className="text-sm text-gray-500">Ajuste percentual (%) por produto, organizado por casta e região</p>
+      </DialogHeader>
+      <div className="mt-4 space-y-6">
+        {Object.entries(produtosPorRegiao).map(([regiao, produtos]) => (
+          <div key={regiao}>
+            <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-eps-primary"></span>
+              {regiao}
+            </h3>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="text-[10px] font-bold min-w-[180px]">Produto</TableHead>
+                  <TableHead className="text-[10px] font-bold">Tipo</TableHead>
+                  <TableHead className="text-[10px] font-bold">Categoria</TableHead>
+                  <TableHead className="text-[10px] font-bold text-center w-[90px]">Variação (%)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {produtos.map(p => (
+                  <TableRow key={p.produto}>
+                    <TableCell className="text-[11px]">{p.produto.replace('V&W ', '')}</TableCell>
+                    <TableCell className="text-[11px]">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                        p.tipo === 'Tinto' ? 'bg-red-100 text-red-700' :
+                        p.tipo === 'Branco' ? 'bg-yellow-50 text-yellow-700' :
+                        'bg-pink-100 text-pink-700'
+                      }`}>{p.tipo}</span>
+                    </TableCell>
+                    <TableCell className="text-[11px] text-gray-500">{p.categoria}</TableCell>
+                    <TableCell className="p-1">
+                      <Input
+                        type="number"
+                        value={variacoes[p.produto] ?? 0}
+                        onChange={(e) => {
+                          const v = Number(e.target.value);
+                          setVariacoes(prev => ({ ...prev, [p.produto]: v }));
+                        }}
+                        className={`h-6 text-[10px] text-center w-16 mx-auto ${
+                          (variacoes[p.produto] ?? 0) > 0 ? 'border-green-400 bg-green-50' :
+                          (variacoes[p.produto] ?? 0) < 0 ? 'border-red-400 bg-red-50' : ''
+                        }`}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-end gap-2 mt-4">
+        <DialogClose asChild>
+          <Button variant="outline" size="sm">Cancelar</Button>
+        </DialogClose>
+        <DialogClose asChild>
+          <Button size="sm" className="bg-eps-primary hover:bg-eps-primary/90">
+            Aplicar Variações
+          </Button>
+        </DialogClose>
+      </div>
+    </DialogContent>
+  );
+};
+
+
 const AvaliacaoNecessidadesPage = () => {
   const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
   const [expandedTipos, setExpandedTipos] = useState<Record<string, boolean>>(() => {
@@ -437,6 +596,26 @@ const AvaliacaoNecessidadesPage = () => {
                   </Button>
                 </DialogTrigger>
                 <CastaProductDialog allocations={castaAllocations} onSave={setCastaAllocations} />
+              </Dialog>
+              {/* Variação Vendima Dialog */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs h-7">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    Var. Vendima
+                  </Button>
+                </DialogTrigger>
+                <VariacaoVendimaDialog />
+              </Dialog>
+              {/* Variação Engarrafamento Dialog */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs h-7">
+                    <BarChart3 className="w-3 h-3 mr-1" />
+                    Var. Engarrafamento
+                  </Button>
+                </DialogTrigger>
+                <VariacaoEngarrafamentoDialog />
               </Dialog>
               <span className="text-gray-300">|</span>
               <Button variant="outline" size="sm" onClick={expandAll} className="text-xs h-7">
