@@ -22,6 +22,7 @@ const menuItems = [
   { title: 'Stocks Iniciais', path: '/decisao/stocks-iniciais', icon: Package },
   { title: 'Previsão de Vendima', path: '/decisao/previsao-vendima', icon: TrendingUp },
   { title: 'Plano de Engarrafamento', path: '/decisao/plano-engarrafamento', icon: Package },
+  { title: 'Avaliação de Necessidades', path: '/decisao/avaliacao-necessidades', icon: LayoutDashboard },
   { title: 'Compra de Uva', path: '/decisao/compra-uva', icon: Grape },
   { title: 'Compra de Vinho', path: '/decisao/compra-vinho', icon: Wine },
   { title: 'Data de Mudança de Colheita', path: '/decisao/mudanca-colheita', icon: Calendar },
