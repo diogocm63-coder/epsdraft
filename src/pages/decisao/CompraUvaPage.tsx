@@ -276,9 +276,11 @@ type FornecedoresData = Record<string, Record<string, Record<StockCategoria, For
 const FornecedoresDialog = ({
   fornecedores,
   onSave,
+  plannedTotals,
 }: {
   fornecedores: FornecedoresData;
   onSave: (f: FornecedoresData) => void;
+  plannedTotals: Record<string, Record<string, Record<StockCategoria, number>>>; // regiao -> tipo -> cat -> kg total
 }) => {
   const [editData, setEditData] = useState<FornecedoresData>(() => JSON.parse(JSON.stringify(fornecedores)));
   const [selectedRegiao, setSelectedRegiao] = useState<string>(allRegioes[0]);
@@ -386,6 +388,10 @@ const FornecedoresDialog = ({
       <div className="mt-4 space-y-5">
         {categorias.map(categoria => {
           const entries = getEntries(selectedRegiao, selectedTipo, categoria);
+          const planned = plannedTotals[selectedRegiao]?.[selectedTipo]?.[categoria] ?? 0;
+          const assigned = entries.reduce((acc, e) => acc + e.qtdKg, 0);
+          const unbudgeted = planned - assigned;
+
           return (
             <div key={categoria} className="border rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
@@ -406,6 +412,36 @@ const FornecedoresDialog = ({
                   Adicionar Fornecedor
                 </Button>
               </div>
+
+              {/* Summary bar: Planned / Assigned / Unbudgeted */}
+              <div className="flex items-center gap-4 mb-3 p-2 rounded bg-muted/40 text-xs">
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-500">Necessidade:</span>
+                  <span className="font-bold">{formatNumber(planned)} Kg</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-500">Orçamentado:</span>
+                  <span className="font-bold text-green-600">{formatNumber(assigned)} Kg</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-500">Não Orçamentado:</span>
+                  <span className={`font-bold ${unbudgeted > 0 ? 'text-red-600' : unbudgeted === 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                    {formatNumber(unbudgeted)} Kg
+                  </span>
+                </div>
+                {planned > 0 && (
+                  <div className="ml-auto flex items-center gap-1">
+                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${assigned >= planned ? 'bg-green-500' : 'bg-orange-400'}`}
+                        style={{ width: `${Math.min(100, planned > 0 ? (assigned / planned) * 100 : 0)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-gray-500">{Math.round(planned > 0 ? (assigned / planned) * 100 : 0)}%</span>
+                  </div>
+                )}
+              </div>
+
               {entries.length === 0 ? (
                 <p className="text-xs text-gray-400 italic py-2 text-center">
                   Nenhum fornecedor registado. Clique em "Adicionar Fornecedor" para começar.
@@ -457,7 +493,7 @@ const FornecedoresDialog = ({
                     <TableRow className="bg-muted/30">
                       <TableCell className="text-[10px] font-bold text-right pr-4">Subtotal</TableCell>
                       <TableCell className="text-[10px] font-bold text-center">
-                        {formatNumber(entries.reduce((acc, e) => acc + e.qtdKg, 0))} Kg
+                        {formatNumber(assigned)} Kg
                       </TableCell>
                       <TableCell />
                     </TableRow>
@@ -500,6 +536,22 @@ const CompraUvaPage = () => {
   };
 
   const collapseAll = () => setExpandedRegions({});
+
+  // Compute planned totals in Kg (base unit) for the Fornecedores dialog
+  const plannedKgTotals = useMemo(() => {
+    const result: Record<string, Record<string, Record<StockCategoria, number>>> = {};
+    allRegioes.forEach(regiao => {
+      result[regiao] = {};
+      vendimaTipos.forEach(tipo => {
+        result[regiao][tipo] = { 'Regional': 0, 'DOC': 0, 'Mesa': 0 };
+        stockCategorias.forEach(categoria => {
+          const castas = purchaseData[regiao]?.[tipo]?.[categoria] || [];
+          result[regiao][tipo][categoria] = castas.reduce((acc, c) => acc + c.kg, 0);
+        });
+      });
+    });
+    return result;
+  }, []);
 
   // Convert kg to the selected measure
   const convertValue = (kg: number, regiao: string, tipo: string, categoria: StockCategoria): number => {
@@ -608,7 +660,7 @@ const CompraUvaPage = () => {
                     Fornecedores
                   </Button>
                 </DialogTrigger>
-                <FornecedoresDialog fornecedores={fornecedores} onSave={setFornecedores} />
+                <FornecedoresDialog fornecedores={fornecedores} onSave={setFornecedores} plannedTotals={plannedKgTotals} />
               </Dialog>
               <span className="text-gray-300">|</span>
               <Button variant="outline" size="sm" onClick={expandAll} className="text-xs h-7">
