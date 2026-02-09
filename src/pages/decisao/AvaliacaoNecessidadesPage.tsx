@@ -843,7 +843,7 @@ const AvaliacaoNecessidadesPage = () => {
                             {formatDisplay(convertValue(
                               stockCategorias.reduce((sum, cat) => {
                                 const cd = calculated.result[regiao]?.[`${tipo}_${cat}`];
-                                return sum + (cd?.necessidades || 0);
+                                return sum + (cd?.comprasMP || 0);
                               }, 0), tipo
                             ))}
                           </TableCell>
