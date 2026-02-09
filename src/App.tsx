@@ -13,6 +13,13 @@ import ExecutivoPage from "./pages/ExecutivoPage";
 import ControloPage from "./pages/ControloPage";
 import DecisaoPage from "./pages/DecisaoPage";
 
+// Decisão Pages
+import StocksIniciaisPage from "./pages/decisao/StocksIniciaisPage";
+import PrevisaoVendimaPage from "./pages/decisao/PrevisaoVendimaPage";
+import CompraUvaPage from "./pages/decisao/CompraUvaPage";
+import CompraVinhoPage from "./pages/decisao/CompraVinhoPage";
+import MudancaColheitaPage from "./pages/decisao/MudancaColheitaPage";
+
 // Operações Pages
 import PainelGeralPage from "./pages/operacoes/PainelGeralPage";
 import ControloProducaoPage from "./pages/operacoes/ControloProducaoPage";
@@ -41,6 +48,7 @@ import DividaClientesPage from "./pages/flexbudget/DividaClientesPage";
 import DividaFornecedoresPage from "./pages/flexbudget/DividaFornecedoresPage";
 import DemonstracaoResultadosPage from "./pages/flexbudget/DemonstracaoResultadosPage";
 import AnaliseContasPage from "./pages/flexbudget/AnaliseContasPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -55,6 +63,11 @@ const App = () => (
             <Route path="/executivo" element={<ExecutivoPage />} />
             <Route path="/controlo" element={<ControloPage />} />
             <Route path="/decisao" element={<DecisaoPage />} />
+            <Route path="/decisao/stocks-iniciais" element={<StocksIniciaisPage />} />
+            <Route path="/decisao/previsao-vendima" element={<PrevisaoVendimaPage />} />
+            <Route path="/decisao/compra-uva" element={<CompraUvaPage />} />
+            <Route path="/decisao/compra-vinho" element={<CompraVinhoPage />} />
+            <Route path="/decisao/mudanca-colheita" element={<MudancaColheitaPage />} />
             <Route path="/producao-procura" element={<ProducaoProcuraPage />} />
             <Route path="/flexbudget" element={<FlexbudgetPage />} />
             
