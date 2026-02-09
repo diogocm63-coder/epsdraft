@@ -55,6 +55,39 @@ const generateStockData = () => {
   return data;
 };
 
+// ── Generate Plano de Engarrafamento data (litros) ──
+const generateEngarrafamentoData = () => {
+  const data: Record<string, Record<string, Record<StockCategoria, number>>> = {};
+  let seed = 200;
+
+  allRegioes.forEach(regiao => {
+    data[regiao] = {};
+    wineTipos.forEach(tipo => {
+      data[regiao][tipo] = { 'Regional': 0, 'DOC': 0, 'Mesa': 0 };
+    });
+  });
+
+  wineProducts.forEach(product => {
+    const isDOC = product.categoria === 'Reserva' || product.categoria === 'Premium';
+    const targetCategoria: StockCategoria = isDOC ? 'DOC' : 'Regional';
+    const baseLitros = product.categoria === 'Premium'
+      ? Math.floor(seededRandom(seed++) * 30000) + 15000
+      : product.categoria === 'Reserva'
+        ? Math.floor(seededRandom(seed++) * 60000) + 30000
+        : Math.floor(seededRandom(seed++) * 100000) + 50000;
+
+    if (data[product.regiao]?.[product.tipo]) {
+      data[product.regiao][product.tipo][targetCategoria] += baseLitros;
+    }
+  });
+
+  data['Portugal']['Tinto']['Mesa'] = Math.floor(seededRandom(seed++) * 150000) + 80000;
+  data['Portugal']['Branco']['Mesa'] = Math.floor(seededRandom(seed++) * 150000) + 80000;
+  data['Portugal']['Rosé']['Mesa'] = Math.floor(seededRandom(seed++) * 100000) + 40000;
+
+  return data;
+};
+
 // ── Generate Previsão de Vendima data (already in litros, using 0.74/0.70 ratios) ──
 const generateVendimaData = () => {
   const data: Record<string, Record<string, Record<StockCategoria, number>>> = {};
@@ -92,6 +125,7 @@ const generateVendimaData = () => {
 };
 
 const stockData = generateStockData();
+const engarrafamentoData = generateEngarrafamentoData();
 const vendimaData = generateVendimaData();
 
 // ── Get all unique products per region/tipo/categoria ──
@@ -496,32 +530,35 @@ const AvaliacaoNecessidadesPage = () => {
 
   // ── Calculate all values ──
   const calculated = useMemo(() => {
-    const result: Record<string, Record<string, {
+    type CellData = {
+      engarrafamento: number;
       stock: number;
       vendima: number;
-      necessidades: number;
+      comprasMP: number;
       compraUva: number;
       compraVinho: number;
-    }>> = {};
-    const rowTotals: Record<string, { stock: number; vendima: number; necessidades: number; compraUva: number; compraVinho: number }> = {};
-    const colTotals: Record<string, Record<StockCategoria, { stock: number; vendima: number; necessidades: number; compraUva: number; compraVinho: number }>> = {};
+    };
+    const result: Record<string, Record<string, CellData>> = {};
+    const rowTotals: Record<string, CellData> = {};
+    const colTotals: Record<string, Record<StockCategoria, CellData>> = {};
 
     wineTipos.forEach(tipo => {
       colTotals[tipo] = {} as any;
       stockCategorias.forEach(cat => {
-        colTotals[tipo][cat] = { stock: 0, vendima: 0, necessidades: 0, compraUva: 0, compraVinho: 0 };
+        colTotals[tipo][cat] = { engarrafamento: 0, stock: 0, vendima: 0, comprasMP: 0, compraUva: 0, compraVinho: 0 };
       });
     });
 
     allRegioes.forEach(regiao => {
       result[regiao] = {};
-      rowTotals[regiao] = { stock: 0, vendima: 0, necessidades: 0, compraUva: 0, compraVinho: 0 };
+      rowTotals[regiao] = { engarrafamento: 0, stock: 0, vendima: 0, comprasMP: 0, compraUva: 0, compraVinho: 0 };
 
       wineTipos.forEach(tipo => {
         stockCategorias.forEach(categoria => {
+          const engarrafamento = engarrafamentoData[regiao]?.[tipo]?.[categoria] || 0;
           const stock = stockData[regiao]?.[tipo]?.[categoria] || 0;
           const vendima = vendimaData[regiao]?.[tipo]?.[categoria] || 0;
-          const necessidades = stock + vendima;
+          const comprasMP = Math.max(0, engarrafamento - stock - vendima);
 
           // Average split for products in this cell
           const prods = getProductsForCell(regiao, tipo, categoria);
@@ -529,45 +566,41 @@ const AvaliacaoNecessidadesPage = () => {
             ? prods.reduce((s, p) => s + (splits[p] ?? 80), 0) / prods.length
             : 80;
 
-          const compraUva = Math.round(necessidades * (avgUvaPct / 100));
-          const compraVinho = necessidades - compraUva;
+          const compraUva = Math.round(comprasMP * (avgUvaPct / 100));
+          const compraVinho = comprasMP - compraUva;
 
           const key = `${tipo}_${categoria}`;
-          result[regiao][key] = { stock, vendima, necessidades, compraUva, compraVinho };
+          result[regiao][key] = { engarrafamento, stock, vendima, comprasMP, compraUva, compraVinho };
 
-          rowTotals[regiao].stock += stock;
-          rowTotals[regiao].vendima += vendima;
-          rowTotals[regiao].necessidades += necessidades;
-          rowTotals[regiao].compraUva += compraUva;
-          rowTotals[regiao].compraVinho += compraVinho;
-
-          colTotals[tipo][categoria].stock += stock;
-          colTotals[tipo][categoria].vendima += vendima;
-          colTotals[tipo][categoria].necessidades += necessidades;
-          colTotals[tipo][categoria].compraUva += compraUva;
-          colTotals[tipo][categoria].compraVinho += compraVinho;
+          const keys: (keyof CellData)[] = ['engarrafamento', 'stock', 'vendima', 'comprasMP', 'compraUva', 'compraVinho'];
+          keys.forEach(k => {
+            rowTotals[regiao][k] += result[regiao][key][k];
+            colTotals[tipo][categoria][k] += result[regiao][key][k];
+          });
         });
       });
     });
 
     const grandTotal = Object.values(rowTotals).reduce(
       (acc, v) => ({
+        engarrafamento: acc.engarrafamento + v.engarrafamento,
         stock: acc.stock + v.stock,
         vendima: acc.vendima + v.vendima,
-        necessidades: acc.necessidades + v.necessidades,
+        comprasMP: acc.comprasMP + v.comprasMP,
         compraUva: acc.compraUva + v.compraUva,
         compraVinho: acc.compraVinho + v.compraVinho,
       }),
-      { stock: 0, vendima: 0, necessidades: 0, compraUva: 0, compraVinho: 0 }
+      { engarrafamento: 0, stock: 0, vendima: 0, comprasMP: 0, compraUva: 0, compraVinho: 0 }
     );
 
     return { result, rowTotals, colTotals, grandTotal };
   }, [splits]);
 
   const fields = [
+    { key: 'engarrafamento', label: 'Pl. Engarraf.', color: 'bg-indigo-50' },
     { key: 'stock', label: 'Stock Ini.', color: 'bg-blue-50' },
     { key: 'vendima', label: 'Prev. Vend.', color: 'bg-green-50' },
-    { key: 'necessidades', label: 'Necessid.', color: 'bg-orange-50 font-semibold' },
+    { key: 'comprasMP', label: 'Compras MP', color: 'bg-orange-50 font-semibold' },
     { key: 'compraUva', label: 'Compra Uva', color: 'bg-purple-50' },
     { key: 'compraVinho', label: 'Compra Vinho', color: 'bg-pink-50' },
   ] as const;
@@ -604,7 +637,7 @@ const AvaliacaoNecessidadesPage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Avaliação de Necessidades</h1>
-              <p className="text-sm text-gray-500">Stock Ini. + Prev. Vendima = Necessidades = Compra Uva + Compra Vinho ({unitLabel})</p>
+              <p className="text-sm text-gray-500">Pl. Engarraf. − Stock Ini. − Prev. Vendima = Compras MP = Compra Uva + Compra Vinho ({unitLabel})</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -677,8 +710,8 @@ const AvaliacaoNecessidadesPage = () => {
               </Button>
             </div>
             <div className="text-right">
-              <span className="text-xs text-gray-400">Necessidades Totais</span>
-              <div className="text-lg font-bold text-eps-primary">{formatDisplay(convertTotal(calculated.grandTotal.necessidades))}</div>
+              <span className="text-xs text-gray-400">Compras MP Totais</span>
+              <div className="text-lg font-bold text-eps-primary">{formatDisplay(convertTotal(calculated.grandTotal.comprasMP))}</div>
             </div>
           </div>
         </div>
@@ -810,14 +843,14 @@ const AvaliacaoNecessidadesPage = () => {
                             {formatDisplay(convertValue(
                               stockCategorias.reduce((sum, cat) => {
                                 const cd = calculated.result[regiao]?.[`${tipo}_${cat}`];
-                                return sum + (cd?.necessidades || 0);
+                                return sum + (cd?.comprasMP || 0);
                               }, 0), tipo
                             ))}
                           </TableCell>
                         )
                       )}
                       <TableCell className="text-right text-[10px] font-bold bg-gray-100 border-l-2">
-                        {formatDisplay(convertTotal(calculated.rowTotals[regiao].necessidades))}
+                        {formatDisplay(convertTotal(calculated.rowTotals[regiao].comprasMP))}
                       </TableCell>
                     </TableRow>
                   );
@@ -849,14 +882,14 @@ const AvaliacaoNecessidadesPage = () => {
                         {formatDisplay(convertValue(
                           stockCategorias.reduce((sum, cat) => {
                             const ct = calculated.colTotals[tipo]?.[cat];
-                            return sum + (ct?.necessidades || 0);
+                            return sum + (ct?.comprasMP || 0);
                           }, 0), tipo
                         ))}
                       </TableCell>
                     )
                   )}
                   <TableCell className="text-right text-[10px] font-bold bg-eps-primary/20 border-l-2 text-eps-primary">
-                    {formatDisplay(convertTotal(calculated.grandTotal.necessidades))}
+                    {formatDisplay(convertTotal(calculated.grandTotal.comprasMP))}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -873,7 +906,7 @@ const AvaliacaoNecessidadesPage = () => {
             </div>
           ))}
           <span className="text-gray-400">|</span>
-          <span className="text-gray-400 italic">Valores em Litros (L) — Fórmula: Stock Ini. + Prev. Vendima = Necessidades = Compra Uva + Compra Vinho</span>
+          <span className="text-gray-400 italic">Fórmula: Pl. Engarraf. − Stock Ini. − Prev. Vendima = Compras MP = Compra Uva + Compra Vinho</span>
         </div>
       </div>
     </DecisaoLayout>
