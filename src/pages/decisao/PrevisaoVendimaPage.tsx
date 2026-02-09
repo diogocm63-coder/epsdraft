@@ -4,70 +4,119 @@ import { Grape, Plus, Minus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { 
-  castasRegioes, 
-  castasTintas, 
-  castasBrancas, 
-  regiaoToCastas,
-  generateHarvestData,
-  type CastaRegiao,
-  type CastaTinta,
-  type CastaBranca
-} from '@/data/castaData';
+import { wineRegioes, wineTipos } from '@/data/wineData';
 
-// Generate harvest data
+// Classification categories (same as Stocks Iniciais)
+const stockCategorias = ['Regional', 'DOC', 'Mesa'] as const;
+type StockCategoria = typeof stockCategorias[number];
+
+// All regions including Portugal for Mesa
+const allRegioes = [...wineRegioes, 'Portugal'];
+
+// Castas data by type
+const castasPorTipo: Record<string, Record<StockCategoria, string[]>> = {
+  'Tinto': {
+    'Regional': ['Touriga Nacional', 'Touriga Franca', 'Tinta Roriz', 'Castelão'],
+    'DOC': ['Touriga Nacional', 'Tinta Barroca', 'Trincadeira'],
+    'Mesa': ['Castelão', 'Trincadeira']
+  },
+  'Branco': {
+    'Regional': ['Arinto', 'Fernão Pires', 'Loureiro', 'Alvarinho'],
+    'DOC': ['Encruzado', 'Antão Vaz', 'Verdelho'],
+    'Mesa': ['Fernão Pires', 'Síria']
+  },
+  'Rosé': {
+    'Regional': ['Touriga Nacional', 'Castelão'],
+    'DOC': ['Touriga Nacional'],
+    'Mesa': ['Castelão']
+  }
+};
+
+// Generate harvest data by region, type, category, and casta
+const generateHarvestData = () => {
+  const data: Record<string, Record<string, Record<StockCategoria, { casta: string; kg: number }[]>>> = {};
+  
+  allRegioes.forEach(regiao => {
+    data[regiao] = {};
+    wineTipos.forEach(tipo => {
+      data[regiao][tipo] = {
+        'Regional': [],
+        'DOC': [],
+        'Mesa': []
+      };
+      
+      // Only Portugal has Mesa wines
+      const categorias = regiao === 'Portugal' ? ['Mesa'] : ['Regional', 'DOC'];
+      
+      categorias.forEach(categoria => {
+        const castas = castasPorTipo[tipo][categoria as StockCategoria] || [];
+        // Select 1-3 random castas for this region/type/category
+        const numCastas = Math.floor(Math.random() * 2) + 1;
+        const selectedCastas = castas.slice(0, numCastas);
+        
+        selectedCastas.forEach(casta => {
+          const baseKg = categoria === 'DOC' 
+            ? Math.floor(Math.random() * 15000) + 5000
+            : categoria === 'Mesa'
+              ? Math.floor(Math.random() * 30000) + 10000
+              : Math.floor(Math.random() * 25000) + 8000;
+          
+          data[regiao][tipo][categoria as StockCategoria].push({
+            casta,
+            kg: baseKg
+          });
+        });
+      });
+    });
+  });
+  
+  return data;
+};
+
 const harvestData = generateHarvestData();
 
 // Calculate totals
 const calculateTotals = () => {
-  const rowTotals: Record<CastaRegiao, { tintas: number; brancas: number; total: number }> = {} as any;
-  const castaTintaTotals: Record<CastaTinta, number> = {} as any;
-  const castaBrancaTotals: Record<CastaBranca, number> = {} as any;
+  const totals: Record<string, Record<string, number>> = {};
+  const rowTotals: Record<string, number> = {};
+  const columnTotals: Record<string, Record<StockCategoria, number>> = {};
   
-  // Initialize casta totals
-  castasTintas.forEach(casta => { castaTintaTotals[casta] = 0; });
-  castasBrancas.forEach(casta => { castaBrancaTotals[casta] = 0; });
-  
-  let grandTotalTintas = 0;
-  let grandTotalBrancas = 0;
-  
-  castasRegioes.forEach(regiao => {
-    let regionTintaTotal = 0;
-    let regionBrancaTotal = 0;
-    
-    // Sum tintas for region
-    Object.entries(harvestData[regiao].tintas).forEach(([casta, kg]) => {
-      regionTintaTotal += kg;
-      castaTintaTotals[casta as CastaTinta] += kg;
-    });
-    
-    // Sum brancas for region
-    Object.entries(harvestData[regiao].brancas).forEach(([casta, kg]) => {
-      regionBrancaTotal += kg;
-      castaBrancaTotals[casta as CastaBranca] += kg;
-    });
-    
-    rowTotals[regiao] = {
-      tintas: regionTintaTotal,
-      brancas: regionBrancaTotal,
-      total: regionTintaTotal + regionBrancaTotal
+  // Initialize column totals
+  wineTipos.forEach(tipo => {
+    columnTotals[tipo] = {
+      'Regional': 0,
+      'DOC': 0,
+      'Mesa': 0
     };
-    
-    grandTotalTintas += regionTintaTotal;
-    grandTotalBrancas += regionBrancaTotal;
   });
   
-  return { 
-    rowTotals, 
-    castaTintaTotals, 
-    castaBrancaTotals,
-    grandTotalTintas,
-    grandTotalBrancas,
-    grandTotal: grandTotalTintas + grandTotalBrancas
-  };
+  allRegioes.forEach(regiao => {
+    totals[regiao] = {};
+    rowTotals[regiao] = 0;
+    
+    wineTipos.forEach(tipo => {
+      stockCategorias.forEach(categoria => {
+        const castas = harvestData[regiao]?.[tipo]?.[categoria] || [];
+        const sum = castas.reduce((acc, c) => acc + c.kg, 0);
+        totals[regiao][`${tipo}_${categoria}`] = sum;
+        rowTotals[regiao] += sum;
+        columnTotals[tipo][categoria] += sum;
+      });
+    });
+  });
+  
+  return { totals, rowTotals, columnTotals };
 };
 
-const { rowTotals, castaTintaTotals, castaBrancaTotals, grandTotalTintas, grandTotalBrancas, grandTotal } = calculateTotals();
+const { totals, rowTotals, columnTotals } = calculateTotals();
+
+// Calculate grand total
+const grandTotal = Object.values(rowTotals).reduce((acc, val) => acc + val, 0);
+
+// Get column totals per tipo
+const getTipoTotal = (tipo: string) => {
+  return Object.values(columnTotals[tipo]).reduce((acc, val) => acc + val, 0);
+};
 
 const formatNumber = (num: number) => {
   return num.toLocaleString('pt-PT');
@@ -85,27 +134,12 @@ const PrevisaoVendimaPage = () => {
 
   const expandAll = () => {
     const allExpanded: Record<string, boolean> = {};
-    castasRegioes.forEach(r => { allExpanded[r] = true; });
+    allRegioes.forEach(r => { allExpanded[r] = true; });
     setExpandedRegions(allExpanded);
   };
 
   const collapseAll = () => {
     setExpandedRegions({});
-  };
-
-  // Get all castas for a region with their values
-  const getRegionCastas = (regiao: CastaRegiao) => {
-    const castas: { casta: string; tipo: 'tinta' | 'branca'; kg: number }[] = [];
-    
-    Object.entries(harvestData[regiao].tintas).forEach(([casta, kg]) => {
-      castas.push({ casta, tipo: 'tinta', kg });
-    });
-    
-    Object.entries(harvestData[regiao].brancas).forEach(([casta, kg]) => {
-      castas.push({ casta, tipo: 'branca', kg });
-    });
-    
-    return castas;
   };
 
   return (
@@ -119,7 +153,7 @@ const PrevisaoVendimaPage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Previsão de Vendima</h1>
-              <p className="text-sm text-gray-500">Matriz de previsão por região e casta (em Kg)</p>
+              <p className="text-sm text-gray-500">Matriz de previsão por região, tipo e casta (em Kg)</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -145,61 +179,64 @@ const PrevisaoVendimaPage = () => {
           <ScrollArea className="h-full">
             <Table>
               <TableHeader>
-                {/* First header row - Grape Types */}
+                {/* First header row - Wine Types (Colors) */}
                 <TableRow className="bg-muted/50 border-b-2">
                   <TableHead rowSpan={2} className="text-xs font-bold border-r-2 sticky left-0 bg-muted/50 z-10 min-w-[140px]">
                     Região
                   </TableHead>
-                  <TableHead rowSpan={2} className="text-xs font-bold border-r min-w-[160px]">
+                  <TableHead rowSpan={2} className="text-xs font-bold border-r min-w-[180px]">
                     Casta
                   </TableHead>
-                  <TableHead 
-                    colSpan={castasTintas.length} 
-                    className="text-center text-xs font-bold bg-red-100 text-red-800 border-r-2"
-                  >
-                    Castas Tintas
-                  </TableHead>
-                  <TableHead 
-                    colSpan={castasBrancas.length} 
-                    className="text-center text-xs font-bold bg-amber-50 text-amber-800 border-r-2"
-                  >
-                    Castas Brancas
-                  </TableHead>
-                  <TableHead rowSpan={2} className="text-center text-xs font-bold bg-gray-200 min-w-[100px]">
+                  {wineTipos.map((tipo, idx) => (
+                    <TableHead 
+                      key={tipo} 
+                      colSpan={3} 
+                      className={`text-center text-xs font-bold ${
+                        tipo === 'Tinto' ? 'bg-red-100 text-red-800' :
+                        tipo === 'Branco' ? 'bg-yellow-50 text-yellow-800' :
+                        'bg-pink-100 text-pink-800'
+                      } ${idx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                    >
+                      {tipo}
+                    </TableHead>
+                  ))}
+                  <TableHead rowSpan={2} className="text-center text-xs font-bold bg-gray-200 border-l-2 min-w-[100px]">
                     Total Linha
                   </TableHead>
                 </TableRow>
-                {/* Second header row - Individual Castas */}
+                {/* Second header row - Categories (Regional, DOC, Mesa) */}
                 <TableRow className="bg-muted/30">
-                  {castasTintas.map((casta, idx) => (
-                    <TableHead 
-                      key={casta} 
-                      className={`text-center text-[9px] font-medium min-w-[70px] bg-red-50/50 ${
-                        idx === castasTintas.length - 1 ? 'border-r-2' : ''
-                      }`}
-                    >
-                      <div className="truncate" title={casta}>
-                        {casta.split(' ').map(w => w.substring(0, 4)).join(' ')}
-                      </div>
-                    </TableHead>
-                  ))}
-                  {castasBrancas.map((casta, idx) => (
-                    <TableHead 
-                      key={casta} 
-                      className={`text-center text-[9px] font-medium min-w-[70px] bg-amber-50/30 ${
-                        idx === castasBrancas.length - 1 ? 'border-r-2' : ''
-                      }`}
-                    >
-                      <div className="truncate" title={casta}>
-                        {casta.split(' ').map(w => w.substring(0, 4)).join(' ')}
-                      </div>
-                    </TableHead>
+                  {wineTipos.map((tipo, tipoIdx) => (
+                    stockCategorias.map((categoria, catIdx) => (
+                      <TableHead 
+                        key={`${tipo}_${categoria}`} 
+                        className={`text-center text-[10px] font-medium ${
+                          categoria === 'Mesa' ? 'bg-amber-50 text-amber-700' : ''
+                        } ${
+                          catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                        }`}
+                      >
+                        {categoria}
+                      </TableHead>
+                    ))
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {castasRegioes.map((regiao) => {
-                  const regionCastas = getRegionCastas(regiao);
+                {allRegioes.map((regiao) => {
+                  // Get all castas for this region
+                  const regionCastas: { tipo: string; categoria: StockCategoria; casta: string; kg: number }[] = [];
+                  
+                  wineTipos.forEach(tipo => {
+                    stockCategorias.forEach(categoria => {
+                      const castas = harvestData[regiao]?.[tipo]?.[categoria] || [];
+                      castas.forEach(c => {
+                        regionCastas.push({ tipo, categoria, casta: c.casta, kg: c.kg });
+                      });
+                    });
+                  });
+
+                  const isPortugal = regiao === 'Portugal';
                   const isExpanded = expandedRegions[regiao] || false;
                   const hasProducts = regionCastas.length > 0;
 
@@ -208,10 +245,10 @@ const PrevisaoVendimaPage = () => {
                       {/* Region header/summary row */}
                       <TableRow 
                         key={regiao} 
-                        className="font-medium border-t cursor-pointer hover:bg-muted/50 bg-gray-50"
+                        className={`font-medium border-t cursor-pointer hover:bg-muted/50 ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}
                         onClick={() => hasProducts && toggleRegion(regiao)}
                       >
-                        <TableCell className="text-xs font-bold border-r-2 sticky left-0 z-10 bg-gray-50">
+                        <TableCell className={`text-xs font-bold border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50' : 'bg-gray-50'}`}>
                           <div className="flex items-center gap-2">
                             {hasProducts && (
                               <Button 
@@ -233,7 +270,7 @@ const PrevisaoVendimaPage = () => {
                             <span>{regiao}</span>
                             {hasProducts && (
                               <span className="text-[10px] text-gray-400 font-normal">
-                                ({regionCastas.length})
+                                ({regionCastas.length} castas)
                               </span>
                             )}
                           </div>
@@ -241,77 +278,63 @@ const PrevisaoVendimaPage = () => {
                         <TableCell className="text-xs italic text-gray-500">
                           {isExpanded ? '' : 'Subtotal'}
                         </TableCell>
-                        {/* Tinta columns - subtotals */}
-                        {castasTintas.map((casta, idx) => {
-                          const value = harvestData[regiao].tintas[casta] || 0;
-                          return (
+                        {wineTipos.map((tipo, tipoIdx) => (
+                          stockCategorias.map((categoria, catIdx) => (
                             <TableCell 
-                              key={casta} 
-                              className={`text-right text-xs font-semibold bg-red-50/30 ${
-                                idx === castasTintas.length - 1 ? 'border-r-2' : ''
+                              key={`${tipo}_${categoria}`} 
+                              className={`text-right text-xs font-semibold ${
+                                categoria === 'Mesa' ? 'bg-amber-50/50' : ''
+                              } ${
+                                catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
                               }`}
                             >
-                              {value > 0 ? formatNumber(value) : '-'}
+                              {totals[regiao][`${tipo}_${categoria}`] > 0 
+                                ? formatNumber(totals[regiao][`${tipo}_${categoria}`])
+                                : '-'
+                              }
                             </TableCell>
-                          );
-                        })}
-                        {/* Branca columns - subtotals */}
-                        {castasBrancas.map((casta, idx) => {
-                          const value = harvestData[regiao].brancas[casta] || 0;
-                          return (
-                            <TableCell 
-                              key={casta} 
-                              className={`text-right text-xs font-semibold bg-amber-50/30 ${
-                                idx === castasBrancas.length - 1 ? 'border-r-2' : ''
-                              }`}
-                            >
-                              {value > 0 ? formatNumber(value) : '-'}
-                            </TableCell>
-                          );
-                        })}
-                        <TableCell className="text-right text-xs font-bold bg-gray-100">
-                          {formatNumber(rowTotals[regiao].total)}
+                          ))
+                        ))}
+                        <TableCell className="text-right text-xs font-bold bg-gray-100 border-l-2">
+                          {formatNumber(rowTotals[regiao])}
                         </TableCell>
                       </TableRow>
 
                       {/* Casta detail rows - only show when expanded */}
-                      {isExpanded && regionCastas.map((item) => (
+                      {isExpanded && regionCastas.map((item, idx) => (
                         <TableRow 
-                          key={`${regiao}_${item.casta}`} 
-                          className="hover:bg-muted/30"
+                          key={`${regiao}_${item.casta}_${idx}`} 
+                          className={`hover:bg-muted/30 ${isPortugal ? 'bg-amber-50/30' : ''}`}
                         >
-                          <TableCell className="text-xs border-r-2 sticky left-0 z-10 bg-white">
+                          <TableCell className={`text-xs border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50/30' : 'bg-white'}`}>
                           </TableCell>
                           <TableCell className="text-xs py-1 pl-4">{item.casta}</TableCell>
-                          {/* Tinta columns */}
-                          {castasTintas.map((casta, idx) => {
-                            const isMatch = item.tipo === 'tinta' && item.casta === casta;
-                            return (
-                              <TableCell 
-                                key={casta} 
-                                className={`text-right text-xs py-1 ${
-                                  idx === castasTintas.length - 1 ? 'border-r-2' : ''
-                                } ${isMatch ? 'bg-red-100 font-medium' : ''}`}
-                              >
-                                {isMatch ? formatNumber(item.kg) : '-'}
-                              </TableCell>
-                            );
-                          })}
-                          {/* Branca columns */}
-                          {castasBrancas.map((casta, idx) => {
-                            const isMatch = item.tipo === 'branca' && item.casta === casta;
-                            return (
-                              <TableCell 
-                                key={casta} 
-                                className={`text-right text-xs py-1 ${
-                                  idx === castasBrancas.length - 1 ? 'border-r-2' : ''
-                                } ${isMatch ? 'bg-amber-100 font-medium' : ''}`}
-                              >
-                                {isMatch ? formatNumber(item.kg) : '-'}
-                              </TableCell>
-                            );
-                          })}
-                          <TableCell className="text-right text-xs py-1 bg-gray-50 font-medium">
+                          {wineTipos.map((tipo, tipoIdx) => (
+                            stockCategorias.map((categoria, catIdx) => {
+                              const isMatch = item.tipo === tipo && item.categoria === categoria;
+                              const isMesaColumn = categoria === 'Mesa';
+                              
+                              return (
+                                <TableCell 
+                                  key={`${tipo}_${categoria}`} 
+                                  className={`text-right text-xs py-1 ${
+                                    catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                                  } ${
+                                    isMatch 
+                                      ? isMesaColumn 
+                                        ? 'bg-amber-100 font-medium'
+                                        : tipo === 'Tinto' ? 'bg-red-50 font-medium' 
+                                        : tipo === 'Branco' ? 'bg-yellow-50/50 font-medium' 
+                                        : 'bg-pink-50 font-medium'
+                                      : isMesaColumn ? 'bg-amber-50/30' : ''
+                                  }`}
+                                >
+                                  {isMatch ? formatNumber(item.kg) : '-'}
+                                </TableCell>
+                              );
+                            })
+                          ))}
+                          <TableCell className="text-right text-xs py-1 bg-gray-50 border-l-2 font-medium">
                             {formatNumber(item.kg)}
                           </TableCell>
                         </TableRow>
@@ -326,27 +349,21 @@ const PrevisaoVendimaPage = () => {
                     TOTAL
                   </TableCell>
                   <TableCell className="text-xs"></TableCell>
-                  {castasTintas.map((casta, idx) => (
-                    <TableCell 
-                      key={casta} 
-                      className={`text-right text-xs font-bold bg-red-100/50 ${
-                        idx === castasTintas.length - 1 ? 'border-r-2' : ''
-                      }`}
-                    >
-                      {castaTintaTotals[casta] > 0 ? formatNumber(castaTintaTotals[casta]) : '-'}
-                    </TableCell>
+                  {wineTipos.map((tipo, tipoIdx) => (
+                    stockCategorias.map((categoria, catIdx) => (
+                      <TableCell 
+                        key={`${tipo}_${categoria}_total`} 
+                        className={`text-right text-xs font-bold ${
+                          categoria === 'Mesa' ? 'bg-amber-100/50' : ''
+                        } ${
+                          catIdx === stockCategorias.length - 1 && tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''
+                        }`}
+                      >
+                        {formatNumber(columnTotals[tipo][categoria])}
+                      </TableCell>
+                    ))
                   ))}
-                  {castasBrancas.map((casta, idx) => (
-                    <TableCell 
-                      key={casta} 
-                      className={`text-right text-xs font-bold bg-amber-100/50 ${
-                        idx === castasBrancas.length - 1 ? 'border-r-2' : ''
-                      }`}
-                    >
-                      {castaBrancaTotals[casta] > 0 ? formatNumber(castaBrancaTotals[casta]) : '-'}
-                    </TableCell>
-                  ))}
-                  <TableCell className="text-right text-xs font-bold bg-purple-200/50 text-purple-700">
+                  <TableCell className="text-right text-xs font-bold bg-purple-200/50 border-l-2 text-purple-700">
                     {formatNumber(grandTotal)}
                   </TableCell>
                 </TableRow>
@@ -356,19 +373,20 @@ const PrevisaoVendimaPage = () => {
                   <TableCell colSpan={2} className="text-xs font-bold border-r-2 sticky left-0 bg-gray-200 z-10">
                     Total por Tipo
                   </TableCell>
-                  <TableCell 
-                    colSpan={castasTintas.length}
-                    className="text-center text-xs font-bold bg-red-200 text-red-800 border-r-2"
-                  >
-                    {formatNumber(grandTotalTintas)} Kg
-                  </TableCell>
-                  <TableCell 
-                    colSpan={castasBrancas.length}
-                    className="text-center text-xs font-bold bg-amber-100 text-amber-800 border-r-2"
-                  >
-                    {formatNumber(grandTotalBrancas)} Kg
-                  </TableCell>
-                  <TableCell className="bg-gray-300"></TableCell>
+                  {wineTipos.map((tipo, tipoIdx) => (
+                    <TableCell 
+                      key={`${tipo}_total`} 
+                      colSpan={3}
+                      className={`text-center text-xs font-bold ${
+                        tipo === 'Tinto' ? 'bg-red-200 text-red-800' :
+                        tipo === 'Branco' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-pink-200 text-pink-800'
+                      } ${tipoIdx < wineTipos.length - 1 ? 'border-r-2' : ''}`}
+                    >
+                      {formatNumber(getTipoTotal(tipo))} Kg
+                    </TableCell>
+                  ))}
+                  <TableCell className="bg-gray-300 border-l-2"></TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -379,14 +397,18 @@ const PrevisaoVendimaPage = () => {
         <div className="flex flex-wrap items-center gap-6 text-xs text-gray-500">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-red-100 border border-red-300"></div>
-            <span>Castas Tintas</span>
+            <span>Tinto</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-amber-50 border border-amber-300"></div>
-            <span>Castas Brancas</span>
+            <div className="w-3 h-3 rounded bg-yellow-50 border border-yellow-300"></div>
+            <span>Branco</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-pink-100 border border-pink-300"></div>
+            <span>Rosé</span>
           </div>
           <span className="text-gray-400">|</span>
-          <span className="text-gray-400">Valores em Kg previstos para a vindima</span>
+          <span className="text-gray-400">Previsão de Vendima em Kg | Regional = Vinhos do Ano | DOC = Reserva + Premium | Mesa = Portugal</span>
         </div>
       </div>
     </DecisaoLayout>
