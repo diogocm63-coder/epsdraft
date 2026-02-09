@@ -14,7 +14,8 @@ import {
   TrendingUp, 
   Grape, 
   Wine, 
-  Calendar 
+  Calendar,
+  Layers
 } from 'lucide-react';
 
 const menuItems = [
@@ -25,6 +26,7 @@ const menuItems = [
   { title: 'Avaliação de Necessidades', path: '/decisao/avaliacao-necessidades', icon: LayoutDashboard },
   { title: 'Compra de Uva', path: '/decisao/compra-uva', icon: Grape },
   { title: 'Compra de Vinho', path: '/decisao/compra-vinho', icon: Wine },
+  { title: 'Orçamento de Loteamento', path: '/decisao/orcamento-loteamento', icon: Layers },
   { title: 'Data de Mudança de Colheita', path: '/decisao/mudanca-colheita', icon: Calendar },
 ];
 
