@@ -309,12 +309,12 @@ const StocksIniciaisPage = () => {
                   );
                 })}
 
-                {/* MESA row - special line with no region */}
+                {/* Portugal row - Mesa wines without specific region */}
                 <TableRow className="bg-amber-50 border-t-4 border-amber-300">
                   <TableCell className="text-xs font-bold border-r-2 sticky left-0 bg-amber-50 z-10">
-                    MESA
+                    Portugal
                   </TableCell>
-                  <TableCell className="text-xs italic text-amber-700">Sem Região</TableCell>
+                  <TableCell className="text-xs italic text-amber-700">Vinho de Mesa</TableCell>
                   {wineTipos.map((tipo, tipoIdx) => (
                     stockCategorias.map((categoria, catIdx) => (
                       <TableCell 
