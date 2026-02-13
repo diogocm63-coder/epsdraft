@@ -25,17 +25,17 @@ const medidaLabels: Record<Medida, string> = {
   euros: '€ (Preço)',
 };
 
-// Castas data (same as PrevisaoVendima)
-const castasPorTipo: Record<string, Record<StockCategoria, string[]>> = {
+// Fornecedores (suppliers) mock names per type/category
+const fornecedoresPorTipo: Record<string, Record<StockCategoria, string[]>> = {
   'Tinto': {
-    'Regional': ['Touriga Nacional', 'Touriga Franca', 'Tinta Roriz', 'Castelão'],
-    'DOC': ['Touriga Nacional', 'Tinta Barroca', 'Trincadeira'],
-    'Mesa': ['Castelão', 'Trincadeira']
+    'Regional': ['Quinta do Vale', 'Herdade da Serra', 'Casa Agrícola Beira', 'Adega do Monte'],
+    'DOC': ['Quinta da Ribeira', 'Solar dos Vinhos', 'Caves do Douro'],
+    'Mesa': ['Cooperativa do Sul', 'Adega Regional']
   },
   'Branco': {
-    'Regional': ['Arinto', 'Fernão Pires', 'Loureiro', 'Alvarinho'],
-    'DOC': ['Encruzado', 'Antão Vaz', 'Verdelho'],
-    'Mesa': ['Fernão Pires', 'Síria']
+    'Regional': ['Quinta das Flores', 'Herdade do Alentejo', 'Casa do Minho', 'Adega do Litoral'],
+    'DOC': ['Quinta do Paço', 'Solar do Dão', 'Caves da Bairrada'],
+    'Mesa': ['Cooperativa Central', 'Adega do Ribatejo']
   },
 };
 
@@ -63,9 +63,9 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
-// Generate purchase data (Kg) per region/type/category/casta
+// Generate purchase data (Kg) per region/type/category/fornecedor
 const generatePurchaseData = () => {
-  const data: Record<string, Record<string, Record<StockCategoria, { casta: string; kg: number }[]>>> = {};
+  const data: Record<string, Record<string, Record<StockCategoria, { fornecedor: string; kg: number }[]>>> = {};
   let seed = 500;
 
   allRegioes.forEach(regiao => {
@@ -75,18 +75,18 @@ const generatePurchaseData = () => {
 
       const categorias = regiao === 'Portugal' ? ['Mesa'] : ['Regional', 'DOC'];
       categorias.forEach(categoria => {
-        const castas = castasPorTipo[tipo][categoria as StockCategoria] || [];
-        const numCastas = Math.floor(seededRandom(seed++) * 2) + 1;
-        const selectedCastas = castas.slice(0, numCastas);
+        const fornecedores = fornecedoresPorTipo[tipo][categoria as StockCategoria] || [];
+        const numFornecedores = Math.floor(seededRandom(seed++) * 2) + 1;
+        const selectedFornecedores = fornecedores.slice(0, numFornecedores);
 
-        selectedCastas.forEach(casta => {
+        selectedFornecedores.forEach(fornecedor => {
           const baseKg = categoria === 'DOC'
             ? Math.floor(seededRandom(seed++) * 12000) + 3000
             : categoria === 'Mesa'
               ? Math.floor(seededRandom(seed++) * 25000) + 8000
               : Math.floor(seededRandom(seed++) * 20000) + 5000;
 
-          data[regiao][tipo][categoria as StockCategoria].push({ casta, kg: baseKg });
+          data[regiao][tipo][categoria as StockCategoria].push({ fornecedor, kg: baseKg });
         });
       });
     });
@@ -687,7 +687,7 @@ const CompraUvaPage = () => {
                     Região
                   </TableHead>
                   <TableHead rowSpan={2} className="text-xs font-bold border-r min-w-[180px]">
-                    Casta
+                    Fornecedor
                   </TableHead>
                   {vendimaTipos.map((tipo, idx) => (
                     <TableHead
@@ -721,19 +721,19 @@ const CompraUvaPage = () => {
               </TableHeader>
               <TableBody>
                 {allRegioes.map((regiao) => {
-                  const regionCastas: { tipo: string; categoria: StockCategoria; casta: string; kg: number }[] = [];
+                  const regionItems: { tipo: string; categoria: StockCategoria; fornecedor: string; kg: number }[] = [];
                   vendimaTipos.forEach(tipo => {
                     stockCategorias.forEach(categoria => {
-                      const castas = purchaseData[regiao]?.[tipo]?.[categoria] || [];
-                      castas.forEach(c => {
-                        regionCastas.push({ tipo, categoria, casta: c.casta, kg: c.kg });
+                      const items = purchaseData[regiao]?.[tipo]?.[categoria] || [];
+                      items.forEach(c => {
+                        regionItems.push({ tipo, categoria, fornecedor: c.fornecedor, kg: c.kg });
                       });
                     });
                   });
 
                   const isPortugal = regiao === 'Portugal';
                   const isExpanded = expandedRegions[regiao] || false;
-                  const hasProducts = regionCastas.length > 0;
+                  const hasProducts = regionItems.length > 0;
 
                   return (
                     <>
@@ -753,7 +753,7 @@ const CompraUvaPage = () => {
                             )}
                             <span>{regiao}</span>
                             {hasProducts && (
-                              <span className="text-[10px] text-gray-400 font-normal">({regionCastas.length} castas)</span>
+                              <span className="text-[10px] text-gray-400 font-normal">({regionItems.length} fornecedores)</span>
                             )}
                           </div>
                         </TableCell>
@@ -778,14 +778,14 @@ const CompraUvaPage = () => {
                         </TableCell>
                       </TableRow>
 
-                      {/* Casta detail rows */}
-                      {isExpanded && regionCastas.map((item, idx) => (
+                      {/* Fornecedor detail rows */}
+                      {isExpanded && regionItems.map((item, idx) => (
                         <TableRow
-                          key={`${regiao}_${item.casta}_${idx}`}
+                          key={`${regiao}_${item.fornecedor}_${idx}`}
                           className={`hover:bg-muted/30 ${isPortugal ? 'bg-amber-50/30' : ''}`}
                         >
                           <TableCell className={`text-xs border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50/30' : 'bg-white'}`} />
-                          <TableCell className="text-xs py-1 pl-4">{item.casta}</TableCell>
+                          <TableCell className="text-xs py-1 pl-4">{item.fornecedor}</TableCell>
                           {vendimaTipos.map((tipo, tipoIdx) =>
                             stockCategorias.map((categoria, catIdx) => {
                               const isMatch = item.tipo === tipo && item.categoria === categoria;
