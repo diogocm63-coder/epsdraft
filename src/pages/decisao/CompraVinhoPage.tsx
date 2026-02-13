@@ -36,26 +36,26 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
-const vinhoDetalhesPorTipo: Record<string, Record<StockCategoria, string[]>> = {
+const fornecedoresPorTipo: Record<string, Record<StockCategoria, string[]>> = {
   'Tinto': {
-    'Regional': ['Blend Regional', 'Monovarietal Tinto'],
-    'DOC': ['Reserva Tinto', 'Grande Reserva'],
-    'Mesa': ['Mesa Tinto Corrente']
+    'Regional': ['Adega Cooperativa do Dão', 'Caves do Monte'],
+    'DOC': ['Quinta do Noval', 'Caves da Raposeira'],
+    'Mesa': ['Vinícola do Sul']
   },
   'Branco': {
-    'Regional': ['Blend Branco', 'Monovarietal Branco'],
-    'DOC': ['Reserva Branco', 'Encruzado DOC'],
-    'Mesa': ['Mesa Branco Corrente']
+    'Regional': ['Quinta da Aveleda', 'Adega de Monção'],
+    'DOC': ['Casa de Saima', 'Quinta dos Roques'],
+    'Mesa': ['Cooperativa do Ribatejo']
   },
   'Rosé': {
-    'Regional': ['Rosé Regional'],
-    'DOC': ['Rosé Selection'],
-    'Mesa': ['Mesa Rosé Corrente']
+    'Regional': ['Herdade do Esporão'],
+    'DOC': ['Quinta do Ameal'],
+    'Mesa': ['Adega de Palmela']
   },
 };
 
 const generatePurchaseData = () => {
-  const data: Record<string, Record<string, Record<StockCategoria, { detalhe: string; litros: number }[]>>> = {};
+  const data: Record<string, Record<string, Record<StockCategoria, { fornecedor: string; litros: number }[]>>> = {};
   let seed = 700;
 
   allRegioes.forEach(regiao => {
@@ -64,16 +64,16 @@ const generatePurchaseData = () => {
       data[regiao][tipo] = { 'Regional': [], 'DOC': [], 'Mesa': [] };
       const categorias = regiao === 'Portugal' ? ['Mesa'] : ['Regional', 'DOC'];
       categorias.forEach(categoria => {
-        const detalhes = vinhoDetalhesPorTipo[tipo]?.[categoria as StockCategoria] || [];
-        const numItems = Math.min(detalhes.length, Math.floor(seededRandom(seed++) * 2) + 1);
-        const selected = detalhes.slice(0, numItems);
-        selected.forEach(detalhe => {
+        const fornecedores = fornecedoresPorTipo[tipo]?.[categoria as StockCategoria] || [];
+        const numItems = Math.min(fornecedores.length, Math.floor(seededRandom(seed++) * 2) + 1);
+        const selected = fornecedores.slice(0, numItems);
+        selected.forEach(fornecedor => {
           const baseLitros = categoria === 'DOC'
             ? Math.floor(seededRandom(seed++) * 10000) + 2000
             : categoria === 'Mesa'
               ? Math.floor(seededRandom(seed++) * 20000) + 5000
               : Math.floor(seededRandom(seed++) * 15000) + 3000;
-          data[regiao][tipo][categoria as StockCategoria].push({ detalhe, litros: baseLitros });
+          data[regiao][tipo][categoria as StockCategoria].push({ fornecedor, litros: baseLitros });
         });
       });
     });
@@ -810,7 +810,7 @@ const CompraVinhoPage = () => {
                     Região
                   </TableHead>
                   <TableHead rowSpan={2} className="text-xs font-bold border-r min-w-[180px]">
-                    Detalhe
+                    Fornecedor
                   </TableHead>
                   {vinhoTipos.map((tipo, idx) => (
                     <TableHead
@@ -844,12 +844,12 @@ const CompraVinhoPage = () => {
               </TableHeader>
               <TableBody>
                 {allRegioes.map((regiao) => {
-                  const regionItems: { tipo: string; categoria: StockCategoria; detalhe: string; litros: number }[] = [];
+                  const regionItems: { tipo: string; categoria: StockCategoria; fornecedor: string; litros: number }[] = [];
                   vinhoTipos.forEach(tipo => {
                     stockCategorias.forEach(categoria => {
                       const items = purchaseData[regiao]?.[tipo]?.[categoria] || [];
                       items.forEach(c => {
-                        regionItems.push({ tipo, categoria, detalhe: c.detalhe, litros: c.litros });
+                        regionItems.push({ tipo, categoria, fornecedor: c.fornecedor, litros: c.litros });
                       });
                     });
                   });
@@ -875,7 +875,7 @@ const CompraVinhoPage = () => {
                             )}
                             <span>{regiao}</span>
                             {hasProducts && (
-                              <span className="text-[10px] text-gray-400 font-normal">({regionItems.length} itens)</span>
+                              <span className="text-[10px] text-gray-400 font-normal">({regionItems.length} fornecedores)</span>
                             )}
                           </div>
                         </TableCell>
@@ -902,11 +902,11 @@ const CompraVinhoPage = () => {
 
                       {isExpanded && regionItems.map((item, idx) => (
                         <TableRow
-                          key={`${regiao}_${item.detalhe}_${idx}`}
+                          key={`${regiao}_${item.fornecedor}_${idx}`}
                           className={`hover:bg-muted/30 ${isPortugal ? 'bg-amber-50/30' : ''}`}
                         >
                           <TableCell className={`text-xs border-r-2 sticky left-0 z-10 ${isPortugal ? 'bg-amber-50/30' : 'bg-white'}`} />
-                          <TableCell className="text-xs py-1 pl-4">{item.detalhe}</TableCell>
+                          <TableCell className="text-xs py-1 pl-4">{item.fornecedor}</TableCell>
                           {vinhoTipos.map((tipo, tipoIdx) =>
                             stockCategorias.map((categoria, catIdx) => {
                               const isMatch = item.tipo === tipo && item.categoria === categoria;
