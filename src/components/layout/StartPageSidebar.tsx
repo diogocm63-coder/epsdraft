@@ -100,7 +100,7 @@ export const StartPageSidebar = ({
         <button
           onClick={() => {
             onTabChange("configuracao");
-            navigate("/configuracao/planeamento-portfolio");
+            navigate("/configuracao");
           }}
           className={cn(
             "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
