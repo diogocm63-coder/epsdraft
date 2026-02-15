@@ -2,21 +2,46 @@ import { wineProducts, wineCategorias } from './wineData';
 
 export interface PortfolioMercado {
   mercado: string;
-  regiao: string; // e.g. Europa, América, África
+  regiao: string;
   certificacoes: string[];
   regrasEspecificas: string[];
-  tempoTransporte: string; // e.g. "3-5 dias", "15-20 dias"
+  tempoTransporte: string;
   tipoConsumidores: string[];
   mixMarcas: PortfolioMarcaMix[];
   marcasEspecificas: string[];
   canais: string[];
-  volumeAnual: string; // e.g. "485.000 €"
+  volumeAnual: string;
 }
 
 export interface PortfolioMarcaMix {
-  categoria: string; // Regional, Reserva, Premium
+  categoria: string;
   percentagem: number;
 }
+
+// Master lists for selection popups
+export const masterCertificacoes = [
+  'IVV', 'HACCP', 'IFS Food', 'BRC', 'ISO 22000', 'EU Organic',
+  'ANVISA', 'MAPA Import License', 'IANORQ', 'TTB/COLA', 'FDA',
+  'State Permits', 'HMRC Approval', 'WOWGR', 'AWRS', 'OFAG',
+  'Swiss Customs', 'CIQ', 'CFDA', 'AQSIQ', 'SAQ (Canadá)',
+  'LCBO', 'JAS (Japão)', 'KFDA (Coreia)',
+];
+
+export const masterRegras = [
+  'Rotulagem PT obrigatória', 'Selo IVV', 'Rotulagem DE/EN',
+  'Pfand (depósito)', 'Alérgenos obrigatórios', 'Limite SO₂',
+  'Registo ANVISA', 'Etiqueta em Português-BR', 'Teor alcoólico visível',
+  'Licença de importação', 'Rotulagem em Português',
+  'Government Warning obrigatório', 'Sulfite Declaration', '3-Tier System',
+  'Label approval TTB', 'Duty Stamps', 'Rotulagem EN',
+  'Post-Brexit customs', 'Allergen labelling',
+  'Rotulagem multilíngue (DE/FR/IT)', 'Certificado de origem',
+  'Limites pesticidas CH', 'Etiqueta chinesa obrigatória',
+  'Registo sanitário', 'Back label em Mandarim', 'Anti-dumping compliance',
+  'Contra-rótulo obrigatório', 'Declaração de importador',
+];
+
+export const masterMarcas = wineProducts.map(p => p.produto);
 
 export const portfolioMercados: PortfolioMercado[] = [
   {
@@ -70,7 +95,7 @@ export const portfolioMercados: PortfolioMercado[] = [
   {
     mercado: 'Alemanha',
     regiao: 'Europa',
-    certificacoes: ['EU Organic (opcional)', 'HACCP', 'IFS Food'],
+    certificacoes: ['EU Organic', 'HACCP', 'IFS Food'],
     regrasEspecificas: ['Rotulagem DE/EN', 'Pfand (depósito)', 'Alérgenos obrigatórios', 'Limite SO₂'],
     tempoTransporte: '3-5 dias',
     tipoConsumidores: ['Fachhandel', 'Horeca', 'Online Retail'],

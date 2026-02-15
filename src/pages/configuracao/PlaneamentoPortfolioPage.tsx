@@ -8,6 +8,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { portfolioMercados, type PortfolioMercado } from "@/data/portfolioData";
+import { AssociationButtons } from "@/components/portfolio/AssociationDialogs";
 
 const regiaoColor: Record<string, string> = {
   Europa: "bg-blue-50 text-blue-800",
@@ -26,6 +27,7 @@ const PlaneamentoPortfolioPage = () => {
   const navigate = useNavigate();
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [filterRegiao, setFilterRegiao] = useState("all");
+  const [mercadosState, setMercadosState] = useState<PortfolioMercado[]>(portfolioMercados);
 
   const toggle = (id: string) => {
     setExpandedRows(prev => {
@@ -35,8 +37,12 @@ const PlaneamentoPortfolioPage = () => {
     });
   };
 
-  const regioes = [...new Set(portfolioMercados.map(m => m.regiao))].sort();
-  const filtered = portfolioMercados.filter(m => filterRegiao === "all" || m.regiao === filterRegiao);
+  const updateMercado = (mercado: string, patch: Partial<PortfolioMercado>) => {
+    setMercadosState(prev => prev.map(m => m.mercado === mercado ? { ...m, ...patch } : m));
+  };
+
+  const regioes = [...new Set(mercadosState.map(m => m.regiao))].sort();
+  const filtered = mercadosState.filter(m => filterRegiao === "all" || m.regiao === filterRegiao);
 
   const byRegiao = filtered.reduce<Record<string, PortfolioMercado[]>>((acc, m) => {
     (acc[m.regiao] ||= []).push(m);
@@ -104,7 +110,7 @@ const PlaneamentoPortfolioPage = () => {
                 <TableBody>
                   {Object.keys(byRegiao).sort().map(regiao => (
                     <RegiaoGroup key={regiao} regiao={regiao} mercados={byRegiao[regiao]}
-                      expandedRows={expandedRows} onToggle={toggle} />
+                      expandedRows={expandedRows} onToggle={toggle} onUpdateMercado={updateMercado} />
                   ))}
                 </TableBody>
               </Table>
@@ -116,7 +122,7 @@ const PlaneamentoPortfolioPage = () => {
             <span className="flex items-center gap-1"><span className={`px-1.5 py-0.5 rounded ${categoriaBadge.Regional}`}>Regional</span></span>
             <span className="flex items-center gap-1"><span className={`px-1.5 py-0.5 rounded ${categoriaBadge.Reserva}`}>Reserva</span></span>
             <span className="flex items-center gap-1"><span className={`px-1.5 py-0.5 rounded ${categoriaBadge.Premium}`}>Premium</span></span>
-            <span className="ml-4">Expandir mercado para ver canais de distribuição e detalhes</span>
+            <span className="ml-4">Expandir mercado para ver canais, detalhes e botões de associação</span>
           </div>
         </main>
       </div>
@@ -124,8 +130,9 @@ const PlaneamentoPortfolioPage = () => {
   );
 };
 
-const RegiaoGroup = ({ regiao, mercados, expandedRows, onToggle }: {
+const RegiaoGroup = ({ regiao, mercados, expandedRows, onToggle, onUpdateMercado }: {
   regiao: string; mercados: PortfolioMercado[]; expandedRows: Set<string>; onToggle: (id: string) => void;
+  onUpdateMercado: (mercado: string, patch: Partial<PortfolioMercado>) => void;
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   return (
@@ -140,14 +147,15 @@ const RegiaoGroup = ({ regiao, mercados, expandedRows, onToggle }: {
         </TableCell>
       </TableRow>
       {!collapsed && mercados.map(m => (
-        <MercadoRow key={m.mercado} mercado={m} isExpanded={expandedRows.has(m.mercado)} onToggle={onToggle} />
+        <MercadoRow key={m.mercado} mercado={m} isExpanded={expandedRows.has(m.mercado)} onToggle={onToggle} onUpdateMercado={onUpdateMercado} />
       ))}
     </>
   );
 };
 
-const MercadoRow = ({ mercado: m, isExpanded, onToggle }: {
+const MercadoRow = ({ mercado: m, isExpanded, onToggle, onUpdateMercado }: {
   mercado: PortfolioMercado; isExpanded: boolean; onToggle: (id: string) => void;
+  onUpdateMercado: (mercado: string, patch: Partial<PortfolioMercado>) => void;
 }) => (
   <>
     <TableRow className="text-xs border-b border-border/50">
@@ -220,12 +228,25 @@ const MercadoRow = ({ mercado: m, isExpanded, onToggle }: {
       <TableCell className="text-center py-1.5 font-mono font-semibold text-[11px]">{m.volumeAnual}</TableCell>
     </TableRow>
 
-    {/* Expanded detail */}
+    {/* Expanded detail with association buttons */}
     {isExpanded && (
       <TableRow className="bg-muted/20">
         <TableCell colSpan={9} className="py-3 px-6">
+          {/* Association buttons */}
+          <div className="mb-4 pb-3 border-b border-border/50">
+            <AssociationButtons
+              mercado={m.mercado}
+              certificacoes={m.certificacoes}
+              regras={m.regrasEspecificas}
+              marcas={m.marcasEspecificas}
+              onUpdateCertificacoes={items => onUpdateMercado(m.mercado, { certificacoes: items })}
+              onUpdateRegras={items => onUpdateMercado(m.mercado, { regrasEspecificas: items })}
+              onUpdateMarcas={items => onUpdateMercado(m.mercado, { marcasEspecificas: items })}
+              onUpdateProdutos={items => onUpdateMercado(m.mercado, { marcasEspecificas: items })}
+            />
+          </div>
+
           <div className="grid grid-cols-3 gap-6 text-[11px]">
-            {/* All rules */}
             <div>
               <h4 className="font-semibold text-foreground mb-1.5 flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Regras & Certificações</h4>
               <div className="space-y-1">
@@ -237,8 +258,6 @@ const MercadoRow = ({ mercado: m, isExpanded, onToggle }: {
                 ))}
               </div>
             </div>
-
-            {/* All consumers & channels */}
             <div>
               <h4 className="font-semibold text-foreground mb-1.5 flex items-center gap-1"><Users className="w-3 h-3" /> Consumidores & Canais</h4>
               <div className="space-y-1 mb-2">
@@ -255,8 +274,6 @@ const MercadoRow = ({ mercado: m, isExpanded, onToggle }: {
                 ))}
               </div>
             </div>
-
-            {/* All brands */}
             <div>
               <h4 className="font-semibold text-foreground mb-1.5 flex items-center gap-1"><Tag className="w-3 h-3" /> Marcas Específicas</h4>
               <div className="space-y-1">
