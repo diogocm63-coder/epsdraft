@@ -1,5 +1,7 @@
 import { useState } from "react";
-import EPSLayout from "@/components/layout/EPSLayout";
+import { useNavigate } from "react-router-dom";
+import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
+import { EPSHeader } from "@/components/layout/EPSHeader";
 import { adegasData, Adega } from "@/data/adegasData";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, Factory, Filter } from "lucide-react";
@@ -20,6 +22,7 @@ const formatLitros = (val: number) => {
 const regioes = ["Todas", ...Array.from(new Set(adegasData.map((a) => a.regiao)))];
 
 const TransformacaoAdegasPage = () => {
+  const navigate = useNavigate();
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [regiaoFilter, setRegiaoFilter] = useState("Todas");
 
@@ -34,9 +37,16 @@ const TransformacaoAdegasPage = () => {
       : adegasData.filter((a) => a.regiao === regiaoFilter);
 
   return (
-    <EPSLayout title="Transformação — Adegas" icon={<Factory className="w-5 h-5" />}>
-      <div className="p-6 space-y-4">
-        {/* Header */}
+    <div className="min-h-screen flex w-full bg-eps-background">
+      <StartPageSidebar
+        activeTab="configuracao"
+        onTabChange={() => navigate("/")}
+        activeConfigItem="transformacao"
+        onConfigItemChange={() => {}}
+      />
+      <div className="flex-1 flex flex-col min-h-screen">
+        <EPSHeader title="Transformação — Adegas" icon={<Factory className="w-4 h-4" />} />
+        <main className="flex-1 p-4 overflow-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-eps-primary/10 flex items-center justify-center">
@@ -235,8 +245,9 @@ const TransformacaoAdegasPage = () => {
             </tbody>
           </table>
         </div>
+      </main>
       </div>
-    </EPSLayout>
+    </div>
   );
 };
 
