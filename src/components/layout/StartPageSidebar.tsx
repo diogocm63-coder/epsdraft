@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Package,
@@ -8,6 +9,7 @@ import {
   ChevronRight,
   LayoutGrid,
   Settings,
+  Link,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,12 @@ const configSubItems = [
   },
 ];
 
+const relationLinks = [
+  { id: "planeamento-portfolio", label: "Planeamento de Portfólio", path: "/configuracao/planeamento-portfolio" },
+  { id: "planeamento-enologico", label: "Planeamento Enológico", path: "/configuracao/planeamento-enologico" },
+  { id: "sourcing-materia-prima", label: "Sourcing de Matéria-Prima", path: "/configuracao/sourcing-materia-prima" },
+];
+
 interface StartPageSidebarProps {
   activeTab: "gestao" | "configuracao";
   onTabChange: (tab: "gestao" | "configuracao") => void;
@@ -51,6 +59,7 @@ export const StartPageSidebar = ({
   activeConfigItem,
   onConfigItemChange,
 }: StartPageSidebarProps) => {
+  const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const toggleExpand = (id: string) => {
@@ -147,6 +156,21 @@ export const StartPageSidebar = ({
                 </div>
               );
             })}
+
+            {/* Relation links */}
+            <div className="mt-2 border-t border-eps-border/30 pt-2">
+              <span className="pl-8 text-[10px] text-white/30 uppercase tracking-wider">Relações</span>
+              {relationLinks.map((rel) => (
+                <button
+                  key={rel.id}
+                  onClick={() => navigate(rel.path)}
+                  className="w-full flex items-center gap-3 pl-8 pr-4 py-2 text-xs text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+                >
+                  <Link className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="flex-1 text-left">{rel.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </nav>

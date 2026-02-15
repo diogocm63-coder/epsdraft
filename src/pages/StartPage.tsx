@@ -11,6 +11,7 @@ import {
   Package,
   RefreshCw,
   Sprout,
+  Link,
 } from "lucide-react";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
 
@@ -62,6 +63,12 @@ const configItems = [
   { id: "produtizacao", label: "Produtização", icon: Package },
   { id: "transformacao", label: "Transformação", icon: RefreshCw },
   { id: "agricultura", label: "Agricultura", icon: Sprout },
+];
+
+const relationItems = [
+  { id: "planeamento-portfolio", label: "Planeamento de Portfólio", path: "/configuracao/planeamento-portfolio" },
+  { id: "planeamento-enologico", label: "Planeamento Enológico", path: "/configuracao/planeamento-enologico" },
+  { id: "sourcing-materia-prima", label: "Sourcing de Matéria-Prima", path: "/configuracao/sourcing-materia-prima" },
 ];
 
 const StartPage = () => {
@@ -154,36 +161,50 @@ const StartPage = () => {
               </p>
             </div>
 
-            {/* Config items in a row */}
-            <div className="flex items-stretch justify-center gap-6">
-              {configItems.map((item) => {
+            {/* Config items in a row with relation buttons */}
+            <div className="flex items-center justify-center gap-3">
+              {configItems.map((item, index) => {
                 const Icon = item.icon;
                 const isActive = activeConfigItem === item.id;
+                const relation = index < relationItems.length ? relationItems[index] : null;
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveConfigItem(item.id)}
-                    className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border transition-all duration-300 w-48 ${
-                      isActive
-                        ? "bg-eps-primary text-white border-eps-primary shadow-lg"
-                        : "bg-white text-foreground border-border hover:border-eps-primary/30 hover:shadow-md hover:-translate-y-1"
-                    }`}
-                  >
-                    <div
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                  <div key={item.id} className="flex items-center gap-3">
+                    <button
+                      onClick={() => setActiveConfigItem(item.id)}
+                      className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border transition-all duration-300 w-48 ${
                         isActive
-                          ? "bg-white/20"
-                          : "bg-eps-background group-hover:bg-eps-light"
+                          ? "bg-eps-primary text-white border-eps-primary shadow-lg"
+                          : "bg-white text-foreground border-border hover:border-eps-primary/30 hover:shadow-md hover:-translate-y-1"
                       }`}
                     >
-                      <Icon
-                        className={`w-7 h-7 ${
-                          isActive ? "text-white" : "text-eps-primary"
+                      <div
+                        className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                          isActive
+                            ? "bg-white/20"
+                            : "bg-eps-background group-hover:bg-eps-light"
                         }`}
-                      />
-                    </div>
-                    <span className="font-semibold text-lg">{item.label}</span>
-                  </button>
+                      >
+                        <Icon
+                          className={`w-7 h-7 ${
+                            isActive ? "text-white" : "text-eps-primary"
+                          }`}
+                        />
+                      </div>
+                      <span className="font-semibold text-lg">{item.label}</span>
+                    </button>
+                    {relation && (
+                      <button
+                        onClick={() => navigate(relation.path)}
+                        title={relation.label}
+                        className="group flex flex-col items-center gap-1.5 p-2 rounded-xl border border-eps-primary/20 bg-white hover:bg-eps-primary hover:border-eps-primary transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                      >
+                        <Link className="w-5 h-5 text-eps-primary group-hover:text-white transition-colors" />
+                        <span className="text-[9px] text-eps-primary group-hover:text-white font-medium leading-tight text-center max-w-[60px]">
+                          {relation.label}
+                        </span>
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>

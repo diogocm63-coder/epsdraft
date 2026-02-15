@@ -52,6 +52,11 @@ import DividaFornecedoresPage from "./pages/flexbudget/DividaFornecedoresPage";
 import DemonstracaoResultadosPage from "./pages/flexbudget/DemonstracaoResultadosPage";
 import AnaliseContasPage from "./pages/flexbudget/AnaliseContasPage";
 
+// Configuração Pages
+import PlaneamentoPortfolioPage from "./pages/configuracao/PlaneamentoPortfolioPage";
+import PlaneamentoEnologicoPage from "./pages/configuracao/PlaneamentoEnologicoPage";
+import SourcingMateriaPrimaPage from "./pages/configuracao/SourcingMateriaPrimaPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -111,6 +116,11 @@ const App = () => (
             <Route path="/operacoes/controlo-orcamental" element={<ControloOrcamentalPage />} />
             <Route path="/operacoes/orcamentacao-horas" element={<OrcamentacaoHorasPage />} />
             <Route path="/operacoes/orcamentacao-produtos" element={<OrcamentacaoProdutosPage />} />
+            
+            {/* Configuração */}
+            <Route path="/configuracao/planeamento-portfolio" element={<PlaneamentoPortfolioPage />} />
+            <Route path="/configuracao/planeamento-enologico" element={<PlaneamentoEnologicoPage />} />
+            <Route path="/configuracao/sourcing-materia-prima" element={<SourcingMateriaPrimaPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
