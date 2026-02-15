@@ -124,11 +124,15 @@ export const StartPageSidebar = ({
               return (
                 <div key={item.id}>
                   <button
-                    onClick={() => {
-                      onConfigItemChange?.(item.id);
-                      toggleExpand(item.id);
-                      navigate("/configuracao/planeamento-portfolio");
-                    }}
+    onClick={() => {
+                       onConfigItemChange?.(item.id);
+                       toggleExpand(item.id);
+                       if (item.id === "transformacao") {
+                         navigate("/configuracao/transformacao-adegas");
+                       } else {
+                         navigate("/configuracao/planeamento-portfolio");
+                       }
+                     }}
                     className={cn(
                       "w-full flex items-center gap-3 pl-8 pr-4 py-2 text-xs transition-colors",
                       isActive
