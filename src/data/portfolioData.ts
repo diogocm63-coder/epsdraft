@@ -5,8 +5,9 @@ export interface PortfolioMercado {
   regiao: string;
   certificacoes: string[];
   regrasEspecificas: string[];
-  tempoTransporte: string;
+  tempoTransporte: string[];
   tipoConsumidores: string[];
+  tipoDistribuicao: string[];
   mixMarcas: PortfolioMarcaMix[];
   marcasEspecificas: string[];
   canais: string[];
@@ -56,6 +57,28 @@ export const masterCanais = [
   'Fine Dining', 'Supermarkets', 'Wine Merchants', 'On-Trade',
   'Fachhandel', 'Online', 'Distribuição', 'Gastronomie', 'Detailhandel',
   'Horeca Premium', 'Wine Clubs', 'Retalho Moderno', 'Banqueting',
+];
+
+export const masterConsumidores = [
+  'Consumidor Final', 'Horeca', 'Retalho', 'Importadores',
+  'Horeca Premium', 'Wine Clubs', 'Online Retail', 'Fachhandel',
+  'Wine Shops', 'Fine Dining', 'Supermarkets', 'Wine Merchants',
+  'On-Trade', 'Gastronomie', 'Detailhandel', 'Private Clients',
+  'E-commerce (Tmall/JD)', 'Banqueting', 'Retalho Moderno',
+];
+
+export const masterTipoDistribuicao = [
+  'Distribuição Directa', 'Importador Exclusivo', 'Multi-Importador',
+  'Agente Local', 'Joint Venture', 'Filial Própria', 'Marketplace',
+  'Distribuidor Regional', 'Grossista', 'Cash & Carry',
+];
+
+export const masterTransporte = [
+  '1-3 dias', '3-4 dias', '3-5 dias', '4-6 dias', '12-15 dias',
+  '18-22 dias', '20-25 dias', '30-35 dias',
+  'Via marítima', 'Via terrestre', 'Via aérea',
+  'Contentor 20ft', 'Contentor 40ft', 'Groupage', 'FCL', 'LCL',
+  'Temperatura controlada', 'Seguro obrigatório',
 ];
 
 export const masterMercados = [
@@ -115,8 +138,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'Europa',
     certificacoes: ['IVV', 'HACCP'],
     regrasEspecificas: ['Rotulagem PT obrigatória', 'Selo IVV'],
-    tempoTransporte: '1-3 dias',
+    tempoTransporte: ['1-3 dias', 'Via terrestre'],
     tipoConsumidores: ['Horeca', 'Retalho', 'Consumidor Final'],
+    tipoDistribuicao: ['Distribuição Directa', 'Grossista'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 45 },
       { categoria: 'Reserva', percentagem: 35 },
@@ -131,8 +155,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'América',
     certificacoes: ['ANVISA', 'MAPA Import License'],
     regrasEspecificas: ['Registo ANVISA', 'Etiqueta em Português-BR', 'Teor alcoólico visível'],
-    tempoTransporte: '18-22 dias',
+    tempoTransporte: ['18-22 dias', 'Via marítima', 'Contentor 40ft'],
     tipoConsumidores: ['Importadores', 'Horeca Premium', 'Wine Clubs'],
+    tipoDistribuicao: ['Importador Exclusivo', 'Agente Local'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 30 },
       { categoria: 'Reserva', percentagem: 45 },
@@ -147,8 +172,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'África',
     certificacoes: ['IANORQ'],
     regrasEspecificas: ['Licença de importação', 'Rotulagem em Português'],
-    tempoTransporte: '12-15 dias',
+    tempoTransporte: ['12-15 dias', 'Via marítima'],
     tipoConsumidores: ['Distribuição', 'Horeca', 'Retalho Moderno'],
+    tipoDistribuicao: ['Importador Exclusivo', 'Distribuidor Regional'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 60 },
       { categoria: 'Reserva', percentagem: 30 },
@@ -163,8 +189,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'Europa',
     certificacoes: ['EU Organic', 'HACCP', 'IFS Food'],
     regrasEspecificas: ['Rotulagem DE/EN', 'Pfand (depósito)', 'Alérgenos obrigatórios', 'Limite SO₂'],
-    tempoTransporte: '3-5 dias',
+    tempoTransporte: ['3-5 dias', 'Via terrestre'],
     tipoConsumidores: ['Fachhandel', 'Horeca', 'Online Retail'],
+    tipoDistribuicao: ['Multi-Importador', 'Distribuidor Regional'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 25 },
       { categoria: 'Reserva', percentagem: 40 },
@@ -179,8 +206,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'América',
     certificacoes: ['TTB/COLA', 'FDA', 'State Permits'],
     regrasEspecificas: ['Government Warning obrigatório', 'Sulfite Declaration', '3-Tier System', 'Label approval TTB'],
-    tempoTransporte: '20-25 dias',
+    tempoTransporte: ['20-25 dias', 'Via marítima', 'Contentor 40ft'],
     tipoConsumidores: ['Importadores', 'Wine Shops', 'Fine Dining'],
+    tipoDistribuicao: ['Importador Exclusivo', 'Agente Local'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 15 },
       { categoria: 'Reserva', percentagem: 40 },
@@ -195,8 +223,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'Europa',
     certificacoes: ['HMRC Approval', 'WOWGR', 'AWRS'],
     regrasEspecificas: ['Duty Stamps', 'Rotulagem EN', 'Post-Brexit customs', 'Allergen labelling'],
-    tempoTransporte: '4-6 dias',
+    tempoTransporte: ['4-6 dias', 'Via terrestre', 'Via marítima'],
     tipoConsumidores: ['Supermarkets', 'Wine Merchants', 'On-Trade'],
+    tipoDistribuicao: ['Multi-Importador', 'Grossista'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 35 },
       { categoria: 'Reserva', percentagem: 40 },
@@ -211,8 +240,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'Europa',
     certificacoes: ['OFAG', 'Swiss Customs'],
     regrasEspecificas: ['Rotulagem multilíngue (DE/FR/IT)', 'Certificado de origem', 'Limites pesticidas CH'],
-    tempoTransporte: '3-4 dias',
+    tempoTransporte: ['3-4 dias', 'Via terrestre'],
     tipoConsumidores: ['Gastronomie', 'Detailhandel', 'Private Clients'],
+    tipoDistribuicao: ['Importador Exclusivo', 'Distribuição Directa'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 20 },
       { categoria: 'Reserva', percentagem: 35 },
@@ -227,8 +257,9 @@ export const portfolioMercados: PortfolioMercado[] = [
     regiao: 'Ásia',
     certificacoes: ['CIQ', 'CFDA', 'AQSIQ'],
     regrasEspecificas: ['Etiqueta chinesa obrigatória', 'Registo sanitário', 'Back label em Mandarim', 'Anti-dumping compliance'],
-    tempoTransporte: '30-35 dias',
+    tempoTransporte: ['30-35 dias', 'Via marítima', 'Temperatura controlada'],
     tipoConsumidores: ['Importadores', 'E-commerce (Tmall/JD)', 'Banqueting'],
+    tipoDistribuicao: ['Joint Venture', 'Marketplace', 'Importador Exclusivo'],
     mixMarcas: [
       { categoria: 'Regional', percentagem: 10 },
       { categoria: 'Reserva', percentagem: 35 },
