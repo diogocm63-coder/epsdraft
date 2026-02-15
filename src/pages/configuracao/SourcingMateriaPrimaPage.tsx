@@ -11,22 +11,29 @@ import {
 import {
   sourcingDOCProducts, sourcingRegionalProducts, sourcingMesaProducts,
   type SourcingDOCProduct, type SourcingRegionalProduct, type SourcingMesaProduct,
-  type SourcingCastaDetalhe,
+  type SourcingCastaRacio,
 } from "@/data/sourcingData";
-
-const fmt = (n: number) => n.toLocaleString("pt-PT");
 
 const tipoBgColor: Record<string, string> = {
   Tinto: "bg-red-900/10 text-red-800",
   Branco: "bg-amber-100/50 text-amber-800",
   Rosé: "bg-pink-100/50 text-pink-700",
 };
-
 const categoriaBadge: Record<string, string> = {
-  Regional: "bg-muted text-muted-foreground",
   Reserva: "bg-eps-primary/10 text-eps-primary",
   Premium: "bg-eps-gold/20 text-amber-800",
 };
+
+// Stacked bar for 3-part ratio
+const RacioBar = ({ uva, comprada, vinho }: { uva: number; comprada: number; vinho: number }) => (
+  <div className="flex items-center gap-1.5">
+    <div className="flex w-20 h-2 rounded-full overflow-hidden bg-muted">
+      <div className="h-full bg-green-500" style={{ width: `${uva}%` }} />
+      <div className="h-full bg-amber-400" style={{ width: `${comprada}%` }} />
+      <div className="h-full bg-blue-500" style={{ width: `${vinho}%` }} />
+    </div>
+  </div>
+);
 
 const SourcingMateriaPrimaPage = () => {
   const navigate = useNavigate();
@@ -48,15 +55,16 @@ const SourcingMateriaPrimaPage = () => {
               <TabsTrigger value="regional" className="text-xs">Regional</TabsTrigger>
               <TabsTrigger value="mesa" className="text-xs">Mesa</TabsTrigger>
             </TabsList>
-
             <TabsContent value="doc"><DOCTab /></TabsContent>
             <TabsContent value="regional"><RegionalTab /></TabsContent>
             <TabsContent value="mesa"><MesaTab /></TabsContent>
           </Tabs>
 
+          {/* Legend */}
           <div className="mt-3 flex items-center gap-6 text-[10px] text-muted-foreground flex-wrap">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 border" /> Prod. Própria</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-100 border" /> Compra Vinho</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-500" /> % Uva Própria</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-400" /> % Uva Comprada</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-500" /> % Vinho</span>
             <span className="ml-4">DOC: Quinta→Parcela→Talhão→Casta | Regional: Região+Castas | Mesa: Castas</span>
           </div>
         </main>
@@ -65,15 +73,13 @@ const SourcingMateriaPrimaPage = () => {
   );
 };
 
-// ============================================================
-// DOC TAB — Full detail: Quinta → Parcela → Talhão → Casta
-// ============================================================
+// ============ DOC TAB ============
 
 const DOCTab = () => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [filterTipo, setFilterTipo] = useState("all");
 
-  const toggleRow = (id: string) => {
+  const toggle = (id: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -107,9 +113,7 @@ const DOCTab = () => {
           <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)}
             className="text-xs border rounded-md px-2 py-1.5 bg-white">
             <option value="all">Todos</option>
-            <option value="Tinto">Tinto</option>
-            <option value="Branco">Branco</option>
-            <option value="Rosé">Rosé</option>
+            <option value="Tinto">Tinto</option><option value="Branco">Branco</option><option value="Rosé">Rosé</option>
           </select>
         </div>
         <div className="flex gap-2 ml-auto">
@@ -124,20 +128,20 @@ const DOCTab = () => {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="text-xs font-semibold w-8" />
-                <TableHead className="text-xs font-semibold min-w-[220px]">Produto</TableHead>
+                <TableHead className="text-xs font-semibold min-w-[200px]">Produto</TableHead>
                 <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
                 <TableHead className="text-xs font-semibold text-center">Categoria</TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Necessidade</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Prod. Própria</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Compra Vinho</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Rácio</span><span className="text-[10px] text-muted-foreground font-normal">(Própria %)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Conversão</span><span className="text-[10px] text-muted-foreground font-normal">(L/Kg)</span></div></TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Uva Própria</TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Uva Comprada</TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Vinho</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Rácio Kg/L</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Composição</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {Object.keys(byRegion).sort().map(regiao => (
                 <DOCRegionGroup key={regiao} regiao={regiao} products={byRegion[regiao]}
-                  expandedRows={expandedRows} onToggle={toggleRow} />
+                  expandedRows={expandedRows} onToggle={toggle} />
               ))}
             </TableBody>
           </Table>
@@ -157,122 +161,104 @@ const DOCRegionGroup = ({ regiao, products, expandedRows, onToggle }: {
         <TableCell colSpan={9} className="py-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-eps-primary">
             {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {regiao}
-            <span className="text-[10px] font-normal text-muted-foreground">({products.length} produtos)</span>
+            {regiao} <span className="text-[10px] font-normal text-muted-foreground">({products.length})</span>
           </div>
         </TableCell>
       </TableRow>
-      {!collapsed && products.map(p => {
-        const isExpanded = expandedRows.has(p.produto);
-        const avgRatio = p.tipo === 'Tinto' ? 0.74 : p.tipo === 'Rosé' ? 0.72 : 0.70;
+      {!collapsed && products.map(p => (
+        <DOCProductRows key={p.produto} p={p} expandedRows={expandedRows} onToggle={onToggle} />
+      ))}
+    </>
+  );
+};
+
+const DOCProductRows = ({ p, expandedRows, onToggle }: {
+  p: SourcingDOCProduct; expandedRows: Set<string>; onToggle: (id: string) => void;
+}) => {
+  const isExpanded = expandedRows.has(p.produto);
+  return (
+    <>
+      <TableRow className="text-xs border-b border-border/50">
+        <TableCell className="py-1.5 px-2">
+          <button onClick={() => onToggle(p.produto)} className="text-muted-foreground hover:text-eps-primary">
+            {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          </button>
+        </TableCell>
+        <TableCell className="py-1.5 font-medium">{p.produto}</TableCell>
+        <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${tipoBgColor[p.tipo]}`}>{p.tipo}</span></TableCell>
+        <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${categoriaBadge[p.categoria]}`}>{p.categoria}</span></TableCell>
+        <TableCell className="text-center py-1.5 font-mono text-green-700 font-semibold">{p.pctUvaPropria}%</TableCell>
+        <TableCell className="text-center py-1.5 font-mono text-amber-700 font-semibold">{p.pctUvaComprada}%</TableCell>
+        <TableCell className="text-center py-1.5 font-mono text-blue-700 font-semibold">{p.pctVinho}%</TableCell>
+        <TableCell className="text-center py-1.5 font-mono text-[11px]">{p.ratioConversao}</TableCell>
+        <TableCell className="text-center py-1.5"><RacioBar uva={p.pctUvaPropria} comprada={p.pctUvaComprada} vinho={p.pctVinho} /></TableCell>
+      </TableRow>
+
+      {isExpanded && p.quintas.map(q => {
+        const qk = `${p.produto}::${q.quinta}`;
+        const qExp = expandedRows.has(qk);
         return (
-          <DOCProductRows key={p.produto} p={p} isExpanded={isExpanded} avgRatio={avgRatio}
-            expandedRows={expandedRows} onToggle={onToggle} />
+          <TableRow key={qk} className="bg-muted/20">
+            <TableCell colSpan={9} className="py-0 px-0">
+              <div className="ml-8">
+                <button onClick={() => onToggle(qk)}
+                  className="flex items-center gap-2 py-1.5 px-2 text-[11px] font-medium hover:text-eps-primary w-full text-left">
+                  {qExp ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  <span className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded text-[10px]">Quinta</span>
+                  {q.quinta}
+                </button>
+                {qExp && q.parcelas.map(par => {
+                  const pk = `${p.produto}::${q.quinta}::${par.parcela}`;
+                  const pExp = expandedRows.has(pk);
+                  return (
+                    <div key={pk} className="ml-6">
+                      <button onClick={() => onToggle(pk)}
+                        className="flex items-center gap-2 py-1 px-2 text-[11px] hover:text-eps-primary w-full text-left">
+                        {pExp ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
+                        <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-[10px]">Parcela</span>
+                        {par.parcela}
+                      </button>
+                      {pExp && (
+                        <div className="ml-6 mb-2">
+                          <table className="w-full text-[10px]">
+                            <thead>
+                              <tr className="text-muted-foreground border-b border-border/30">
+                                <th className="text-left py-1 px-2 font-medium">Talhão</th>
+                                <th className="text-left py-1 px-2 font-medium">Casta</th>
+                                <th className="text-center py-1 px-2 font-medium">Rácio Kg/L</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {par.talhoes.map(t => (
+                                <tr key={t.talhao} className="border-b border-border/20 hover:bg-muted/30">
+                                  <td className="py-1 px-2"><span className="bg-violet-50 text-violet-700 px-1 py-0.5 rounded">{t.talhao}</span></td>
+                                  <td className="py-1 px-2 font-medium">{t.casta}</td>
+                                  <td className="py-1 px-2 text-center font-mono">{t.ratioConversao}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </TableCell>
+          </TableRow>
         );
       })}
     </>
   );
 };
 
-const DOCProductRows = ({ p, isExpanded, avgRatio, expandedRows, onToggle }: {
-  p: SourcingDOCProduct; isExpanded: boolean; avgRatio: number; expandedRows: Set<string>; onToggle: (id: string) => void;
-}) => (
-  <>
-    <TableRow className="text-xs border-b border-border/50">
-      <TableCell className="py-1.5 px-2">
-        <button onClick={() => onToggle(p.produto)} className="text-muted-foreground hover:text-eps-primary">
-          {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        </button>
-      </TableCell>
-      <TableCell className="py-1.5 font-medium">{p.produto}</TableCell>
-      <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${tipoBgColor[p.tipo]}`}>{p.tipo}</span></TableCell>
-      <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${categoriaBadge[p.categoria]}`}>{p.categoria}</span></TableCell>
-      <TableCell className="text-center py-1.5 font-mono font-semibold">{fmt(p.necessidadeLitros)}</TableCell>
-      <TableCell className="text-center py-1.5 font-mono"><span className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-[10px]">{fmt(p.producaoPropria)}</span></TableCell>
-      <TableCell className="text-center py-1.5 font-mono"><span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">{fmt(p.compraVinho)}</span></TableCell>
-      <TableCell className="text-center py-1.5">
-        <div className="flex items-center justify-center gap-1">
-          <div className="w-12 bg-muted rounded-full h-1.5"><div className="h-1.5 rounded-full bg-green-500" style={{ width: `${p.ratioProducaoPropria}%` }} /></div>
-          <span className="text-[10px] font-medium text-green-700">{p.ratioProducaoPropria}%</span>
-        </div>
-      </TableCell>
-      <TableCell className="text-center py-1.5 font-mono text-[10px]">{avgRatio}</TableCell>
-    </TableRow>
-
-    {isExpanded && p.quintas.map(q => {
-      const quintaKey = `${p.produto}::${q.quinta}`;
-      const quintaExpanded = expandedRows.has(quintaKey);
-      return (
-        <TableRow key={quintaKey} className="bg-muted/20">
-          <TableCell colSpan={9} className="py-0 px-0">
-            <div className="ml-8">
-              <button onClick={() => onToggle(quintaKey)}
-                className="flex items-center gap-2 py-1.5 px-2 text-[11px] font-medium text-foreground hover:text-eps-primary w-full text-left">
-                {quintaExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                <span className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded text-[10px]">Quinta</span>
-                {q.quinta}
-              </button>
-              {quintaExpanded && q.parcelas.map(par => {
-                const parKey = `${p.produto}::${q.quinta}::${par.parcela}`;
-                const parExpanded = expandedRows.has(parKey);
-                return (
-                  <div key={parKey} className="ml-6">
-                    <button onClick={() => onToggle(parKey)}
-                      className="flex items-center gap-2 py-1 px-2 text-[11px] text-foreground hover:text-eps-primary w-full text-left">
-                      {parExpanded ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
-                      <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-[10px]">Parcela</span>
-                      {par.parcela}
-                    </button>
-                    {parExpanded && (
-                      <div className="ml-6 mb-2">
-                        <table className="w-full text-[10px]">
-                          <thead>
-                            <tr className="text-muted-foreground border-b border-border/30">
-                              <th className="text-left py-1 px-2 font-medium">Talhão</th>
-                              <th className="text-left py-1 px-2 font-medium">Casta</th>
-                              <th className="text-right py-1 px-2 font-medium">Área (ha)</th>
-                              <th className="text-right py-1 px-2 font-medium">Rend. (Kg/ha)</th>
-                              <th className="text-right py-1 px-2 font-medium">Produção (Kg)</th>
-                              <th className="text-center py-1 px-2 font-medium">Rácio (L/Kg)</th>
-                              <th className="text-right py-1 px-2 font-medium">Litros Est.</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {par.talhoes.map(t => (
-                              <tr key={t.talhao} className="border-b border-border/20 hover:bg-muted/30">
-                                <td className="py-1 px-2"><span className="bg-violet-50 text-violet-700 px-1 py-0.5 rounded">{t.talhao}</span></td>
-                                <td className="py-1 px-2 font-medium">{t.casta}</td>
-                                <td className="py-1 px-2 text-right font-mono">{t.area}</td>
-                                <td className="py-1 px-2 text-right font-mono">{fmt(t.rendimento)}</td>
-                                <td className="py-1 px-2 text-right font-mono">{fmt(t.producaoEstimada)}</td>
-                                <td className="py-1 px-2 text-center font-mono">{t.ratioConversao}</td>
-                                <td className="py-1 px-2 text-right font-mono font-medium text-eps-primary">{fmt(t.litrosEstimados)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </TableCell>
-        </TableRow>
-      );
-    })}
-  </>
-);
-
-// ============================================================
-// REGIONAL TAB — Região + Castas
-// ============================================================
+// ============ REGIONAL TAB ============
 
 const RegionalTab = () => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [filterTipo, setFilterTipo] = useState("all");
 
-  const toggleRow = (id: string) => {
+  const toggle = (id: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -294,9 +280,7 @@ const RegionalTab = () => {
           <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)}
             className="text-xs border rounded-md px-2 py-1.5 bg-white">
             <option value="all">Todos</option>
-            <option value="Tinto">Tinto</option>
-            <option value="Branco">Branco</option>
-            <option value="Rosé">Rosé</option>
+            <option value="Tinto">Tinto</option><option value="Branco">Branco</option><option value="Rosé">Rosé</option>
           </select>
         </div>
         <div className="flex gap-2 ml-auto">
@@ -315,21 +299,22 @@ const RegionalTab = () => {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="text-xs font-semibold w-8" />
-                <TableHead className="text-xs font-semibold min-w-[220px]">Produto</TableHead>
+                <TableHead className="text-xs font-semibold min-w-[200px]">Produto</TableHead>
                 <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
                 <TableHead className="text-xs font-semibold text-center">Região</TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Necessidade</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Prod. Própria</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Compra Vinho</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Rácio</span><span className="text-[10px] text-muted-foreground font-normal">(Própria %)</span></div></TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Uva Própria</TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Uva Comprada</TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Vinho</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Rácio Kg/L</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Composição</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {Object.keys(byRegion).sort().map(regiao => {
-                const products = byRegion[regiao];
+                const prods = byRegion[regiao];
                 return (
-                  <RegionalRegionGroup key={regiao} regiao={regiao} products={products}
-                    expandedRows={expandedRows} onToggle={toggleRow} />
+                  <RegionalRegionGroup key={regiao} regiao={regiao} products={prods}
+                    expandedRows={expandedRows} onToggle={toggle} />
                 );
               })}
             </TableBody>
@@ -347,68 +332,54 @@ const RegionalRegionGroup = ({ regiao, products, expandedRows, onToggle }: {
   return (
     <>
       <TableRow className="bg-eps-primary/5 cursor-pointer hover:bg-eps-primary/10" onClick={() => setCollapsed(!collapsed)}>
-        <TableCell colSpan={8} className="py-2">
+        <TableCell colSpan={9} className="py-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-eps-primary">
             {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {regiao}
-            <span className="text-[10px] font-normal text-muted-foreground">({products.length} produtos)</span>
+            {regiao} <span className="text-[10px] font-normal text-muted-foreground">({products.length})</span>
           </div>
         </TableCell>
       </TableRow>
       {!collapsed && products.map(p => {
-        const isExpanded = expandedRows.has(p.produto);
+        const isExp = expandedRows.has(p.produto);
         return (
-          <RegionalProductRows key={p.produto} p={p} isExpanded={isExpanded} onToggle={onToggle} />
+          <>
+            <TableRow key={p.produto} className="text-xs border-b border-border/50">
+              <TableCell className="py-1.5 px-2">
+                <button onClick={() => onToggle(p.produto)} className="text-muted-foreground hover:text-eps-primary">
+                  {isExp ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                </button>
+              </TableCell>
+              <TableCell className="py-1.5 font-medium">{p.produto}</TableCell>
+              <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${tipoBgColor[p.tipo]}`}>{p.tipo}</span></TableCell>
+              <TableCell className="text-center py-1.5 text-[10px] font-medium">{p.regiao}</TableCell>
+              <TableCell className="text-center py-1.5 font-mono text-green-700 font-semibold">{p.pctUvaPropria}%</TableCell>
+              <TableCell className="text-center py-1.5 font-mono text-amber-700 font-semibold">{p.pctUvaComprada}%</TableCell>
+              <TableCell className="text-center py-1.5 font-mono text-blue-700 font-semibold">{p.pctVinho}%</TableCell>
+              <TableCell className="text-center py-1.5 font-mono text-[11px]">{p.ratioConversao}</TableCell>
+              <TableCell className="text-center py-1.5"><RacioBar uva={p.pctUvaPropria} comprada={p.pctUvaComprada} vinho={p.pctVinho} /></TableCell>
+            </TableRow>
+            {isExp && (
+              <TableRow className="bg-muted/20">
+                <TableCell colSpan={9} className="py-0 px-0">
+                  <div className="ml-10 mb-2">
+                    <CastaTable castas={p.castas} />
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </>
         );
       })}
     </>
   );
 };
 
-const RegionalProductRows = ({ p, isExpanded, onToggle }: {
-  p: SourcingRegionalProduct; isExpanded: boolean; onToggle: (id: string) => void;
-}) => (
-  <>
-    <TableRow className="text-xs border-b border-border/50">
-      <TableCell className="py-1.5 px-2">
-        <button onClick={() => onToggle(p.produto)} className="text-muted-foreground hover:text-eps-primary">
-          {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        </button>
-      </TableCell>
-      <TableCell className="py-1.5 font-medium">{p.produto}</TableCell>
-      <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${tipoBgColor[p.tipo]}`}>{p.tipo}</span></TableCell>
-      <TableCell className="text-center py-1.5 text-[10px] font-medium">{p.regiao}</TableCell>
-      <TableCell className="text-center py-1.5 font-mono font-semibold">{fmt(p.necessidadeLitros)}</TableCell>
-      <TableCell className="text-center py-1.5 font-mono"><span className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-[10px]">{fmt(p.producaoPropria)}</span></TableCell>
-      <TableCell className="text-center py-1.5 font-mono"><span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">{fmt(p.compraVinho)}</span></TableCell>
-      <TableCell className="text-center py-1.5">
-        <div className="flex items-center justify-center gap-1">
-          <div className="w-12 bg-muted rounded-full h-1.5"><div className="h-1.5 rounded-full bg-green-500" style={{ width: `${p.ratioProducaoPropria}%` }} /></div>
-          <span className="text-[10px] font-medium text-green-700">{p.ratioProducaoPropria}%</span>
-        </div>
-      </TableCell>
-    </TableRow>
-
-    {isExpanded && (
-      <TableRow className="bg-muted/20">
-        <TableCell colSpan={8} className="py-0 px-0">
-          <div className="ml-10 mb-2">
-            <CastaTable castas={p.castas} />
-          </div>
-        </TableCell>
-      </TableRow>
-    )}
-  </>
-);
-
-// ============================================================
-// MESA TAB — Only Castas
-// ============================================================
+// ============ MESA TAB ============
 
 const MesaTab = () => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const toggleRow = (id: string) => {
+  const toggle = (id: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -419,7 +390,7 @@ const MesaTab = () => {
   return (
     <>
       <div className="flex items-center gap-4 mb-3">
-        <p className="text-xs text-muted-foreground">Vinhos de mesa — composição por castas sem identificação de origem geográfica</p>
+        <p className="text-xs text-muted-foreground">Vinhos de mesa — composição por castas, sem identificação de origem</p>
         <div className="flex gap-2 ml-auto">
           <button onClick={() => {
             const ids = new Set<string>();
@@ -436,17 +407,44 @@ const MesaTab = () => {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="text-xs font-semibold w-8" />
-                <TableHead className="text-xs font-semibold min-w-[220px]">Produto</TableHead>
+                <TableHead className="text-xs font-semibold min-w-[200px]">Produto</TableHead>
                 <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>Necessidade</span><span className="text-[10px] text-muted-foreground font-normal">(L)</span></div></TableHead>
-                <TableHead className="text-xs font-semibold text-center"><div className="flex flex-col items-center"><span>N.º Castas</span></div></TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Uva Própria</TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Uva Comprada</TableHead>
+                <TableHead className="text-xs font-semibold text-center">% Vinho</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Rácio Kg/L</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Composição</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sourcingMesaProducts.map(p => {
-                const isExpanded = expandedRows.has(p.produto);
+                const isExp = expandedRows.has(p.produto);
                 return (
-                  <MesaProductRows key={p.produto} p={p} isExpanded={isExpanded} onToggle={toggleRow} />
+                  <>
+                    <TableRow key={p.produto} className="text-xs border-b border-border/50">
+                      <TableCell className="py-1.5 px-2">
+                        <button onClick={() => toggle(p.produto)} className="text-muted-foreground hover:text-eps-primary">
+                          {isExp ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                        </button>
+                      </TableCell>
+                      <TableCell className="py-1.5 font-medium">{p.produto}</TableCell>
+                      <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${tipoBgColor[p.tipo]}`}>{p.tipo}</span></TableCell>
+                      <TableCell className="text-center py-1.5 font-mono text-green-700 font-semibold">{p.pctUvaPropria}%</TableCell>
+                      <TableCell className="text-center py-1.5 font-mono text-amber-700 font-semibold">{p.pctUvaComprada}%</TableCell>
+                      <TableCell className="text-center py-1.5 font-mono text-blue-700 font-semibold">{p.pctVinho}%</TableCell>
+                      <TableCell className="text-center py-1.5 font-mono text-[11px]">{p.ratioConversao}</TableCell>
+                      <TableCell className="text-center py-1.5"><RacioBar uva={p.pctUvaPropria} comprada={p.pctUvaComprada} vinho={p.pctVinho} /></TableCell>
+                    </TableRow>
+                    {isExp && (
+                      <TableRow className="bg-muted/20">
+                        <TableCell colSpan={8} className="py-0 px-0">
+                          <div className="ml-10 mb-2">
+                            <CastaTable castas={p.castas} />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 );
               })}
             </TableBody>
@@ -457,46 +455,15 @@ const MesaTab = () => {
   );
 };
 
-const MesaProductRows = ({ p, isExpanded, onToggle }: {
-  p: SourcingMesaProduct; isExpanded: boolean; onToggle: (id: string) => void;
-}) => (
-  <>
-    <TableRow className="text-xs border-b border-border/50">
-      <TableCell className="py-1.5 px-2">
-        <button onClick={() => onToggle(p.produto)} className="text-muted-foreground hover:text-eps-primary">
-          {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        </button>
-      </TableCell>
-      <TableCell className="py-1.5 font-medium">{p.produto}</TableCell>
-      <TableCell className="text-center py-1.5"><span className={`px-2 py-0.5 rounded text-[10px] font-medium ${tipoBgColor[p.tipo]}`}>{p.tipo}</span></TableCell>
-      <TableCell className="text-center py-1.5 font-mono font-semibold">{fmt(p.necessidadeLitros)}</TableCell>
-      <TableCell className="text-center py-1.5 text-[10px]">{p.castas.length} castas</TableCell>
-    </TableRow>
-    {isExpanded && (
-      <TableRow className="bg-muted/20">
-        <TableCell colSpan={5} className="py-0 px-0">
-          <div className="ml-10 mb-2">
-            <CastaTable castas={p.castas} />
-          </div>
-        </TableCell>
-      </TableRow>
-    )}
-  </>
-);
+// ============ Shared Casta Table ============
 
-// ============================================================
-// Shared Casta Table
-// ============================================================
-
-const CastaTable = ({ castas }: { castas: SourcingCastaDetalhe[] }) => (
+const CastaTable = ({ castas }: { castas: SourcingCastaRacio[] }) => (
   <table className="w-full text-[10px] mt-1">
     <thead>
       <tr className="text-muted-foreground border-b border-border/30">
         <th className="text-left py-1 px-2 font-medium">Casta</th>
-        <th className="text-center py-1 px-2 font-medium">%</th>
-        <th className="text-right py-1 px-2 font-medium">Litros</th>
-        <th className="text-right py-1 px-2 font-medium">Kg</th>
-        <th className="text-center py-1 px-2 font-medium">Rácio (L/Kg)</th>
+        <th className="text-center py-1 px-2 font-medium">% Blend</th>
+        <th className="text-center py-1 px-2 font-medium">Rácio Kg/L</th>
       </tr>
     </thead>
     <tbody>
@@ -511,8 +478,6 @@ const CastaTable = ({ castas }: { castas: SourcingCastaDetalhe[] }) => (
               <span>{c.percentagem}%</span>
             </div>
           </td>
-          <td className="py-1 px-2 text-right font-mono">{fmt(c.litros)}</td>
-          <td className="py-1 px-2 text-right font-mono">{fmt(c.kg)}</td>
           <td className="py-1 px-2 text-center font-mono">{c.ratioConversao}</td>
         </tr>
       ))}
