@@ -12,14 +12,14 @@ import { EPSHeader } from "@/components/layout/EPSHeader";
 import { Settings } from "lucide-react";
 
 const configItems = [
-  { id: "procura", label: "Procura", icon: Search, path: "/configuracao/planeamento-portfolio" },
-  { id: "produtizacao", label: "Produtização", icon: Package, path: "/configuracao/planeamento-portfolio" },
+  { id: "procura", label: "Procura", icon: Search, path: "/configuracao/planeamento-portfolio?tab=procura" },
+  { id: "produtizacao", label: "Produtização", icon: Package, path: "/configuracao/planeamento-portfolio?tab=produtizacao" },
   { id: "transformacao", label: "Transformação", icon: RefreshCw, path: "/configuracao/transformacao-adegas" },
   { id: "agricultura", label: "Agricultura", icon: Sprout, path: "/configuracao/planeamento-portfolio" },
 ];
 
 const relationItems = [
-  { id: "planeamento-portfolio", label: "Planeamento de Portfólio", path: "/configuracao/planeamento-portfolio" },
+  { id: "planeamento-portfolio", label: "Planeamento de Portfólio", path: "/configuracao/planeamento-portfolio?tab=portfolio" },
   { id: "planeamento-enologico", label: "Planeamento Enológico", path: "/configuracao/planeamento-enologico" },
   { id: "sourcing-materia-prima", label: "Sourcing de Matéria-Prima", path: "/configuracao/sourcing-materia-prima" },
 ];
