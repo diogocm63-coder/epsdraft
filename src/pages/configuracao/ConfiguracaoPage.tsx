@@ -15,7 +15,7 @@ const configItems = [
   { id: "procura", label: "Procura", icon: Search, path: "/configuracao/planeamento-portfolio?tab=procura" },
   { id: "produtizacao", label: "Produtização", icon: Package, path: "/configuracao/planeamento-portfolio?tab=produtizacao" },
   { id: "transformacao", label: "Transformação", icon: RefreshCw, path: "/configuracao/transformacao-adegas" },
-  { id: "agricultura", label: "Agricultura", icon: Sprout, path: "/configuracao/planeamento-portfolio" },
+  { id: "agricultura", label: "Agricultura", icon: Sprout, path: "/configuracao/agricultura" },
 ];
 
 const relationItems = [
