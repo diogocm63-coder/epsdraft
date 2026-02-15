@@ -98,7 +98,10 @@ export const StartPageSidebar = ({
 
         {/* Configuração */}
         <button
-          onClick={() => onTabChange("configuracao")}
+          onClick={() => {
+            onTabChange("configuracao");
+            navigate("/configuracao/planeamento-portfolio");
+          }}
           className={cn(
             "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
             activeTab === "configuracao"
@@ -124,9 +127,7 @@ export const StartPageSidebar = ({
                     onClick={() => {
                       onConfigItemChange?.(item.id);
                       toggleExpand(item.id);
-                      if (item.id === "procura") {
-                        navigate("/configuracao/planeamento-portfolio?tab=procura");
-                      }
+                      navigate("/configuracao/planeamento-portfolio");
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 pl-8 pr-4 py-2 text-xs transition-colors",
