@@ -124,6 +124,9 @@ export const StartPageSidebar = ({
                     onClick={() => {
                       onConfigItemChange?.(item.id);
                       toggleExpand(item.id);
+                      if (item.id === "procura") {
+                        navigate("/configuracao/planeamento-portfolio?tab=procura");
+                      }
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 pl-8 pr-4 py-2 text-xs transition-colors",

@@ -170,7 +170,12 @@ const StartPage = () => {
                 return (
                   <div key={item.id} className="flex items-center gap-3">
                     <button
-                      onClick={() => setActiveConfigItem(item.id)}
+                      onClick={() => {
+                        setActiveConfigItem(item.id);
+                        if (item.id === "procura") {
+                          navigate("/configuracao/planeamento-portfolio?tab=procura");
+                        }
+                      }}
                       className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border transition-all duration-300 w-48 ${
                         isActive
                           ? "bg-eps-primary text-white border-eps-primary shadow-lg"
