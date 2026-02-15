@@ -172,9 +172,7 @@ const StartPage = () => {
                     <button
                       onClick={() => {
                         setActiveConfigItem(item.id);
-                        if (item.id === "procura") {
-                          navigate("/configuracao/planeamento-portfolio?tab=procura");
-                        }
+                        navigate("/configuracao/planeamento-portfolio");
                       }}
                       className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border transition-all duration-300 w-48 ${
                         isActive
