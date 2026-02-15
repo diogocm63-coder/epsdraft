@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, ShieldCheck, Ship, Users, Tag } from "lucide-react";
+import { ChevronDown, ChevronRight, ShieldCheck, Ship, Users, Tag, Store, Truck, Plus, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { type PortfolioMercado } from "@/data/portfolioData";
-import { AssociationButtons } from "@/components/portfolio/AssociationDialogs";
+import {
+  masterCertificacoes, masterRegras, masterCanais,
+  masterConsumidores, masterTipoDistribuicao, masterTransporte,
+} from "@/data/portfolioData";
 
 const regiaoColor: Record<string, string> = {
   Europa: "bg-blue-50 text-blue-800",
@@ -14,16 +19,89 @@ const regiaoColor: Record<string, string> = {
   Ásia: "bg-rose-50 text-rose-800",
 };
 
-const categoriaBadge: Record<string, string> = {
-  Regional: "bg-muted text-muted-foreground",
-  Reserva: "bg-eps-primary/10 text-eps-primary",
-  Premium: "bg-eps-gold/20 text-amber-800",
-};
-
 interface ProcuraViewProps {
   mercadosState: PortfolioMercado[];
   onUpdateMercado: (mercado: string, patch: Partial<PortfolioMercado>) => void;
 }
+
+/* ── Editable list component ── */
+const EditableList = ({ title, icon, items, color, masterList, onUpdate }: {
+  title: string;
+  icon: React.ReactNode;
+  items: string[];
+  color: string;
+  masterList: string[];
+  onUpdate: (items: string[]) => void;
+}) => {
+  const [newVal, setNewVal] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const suggestions = masterList.filter(
+    s => !items.includes(s) && s.toLowerCase().includes(newVal.toLowerCase())
+  ).slice(0, 5);
+
+  const addItem = (item: string) => {
+    const trimmed = item.trim();
+    if (trimmed && !items.includes(trimmed)) {
+      onUpdate([...items, trimmed]);
+    }
+    setNewVal("");
+    setShowSuggestions(false);
+  };
+
+  const removeItem = (item: string) => {
+    onUpdate(items.filter(i => i !== item));
+  };
+
+  return (
+    <div className="space-y-2">
+      <h4 className="font-semibold text-foreground text-[11px] flex items-center gap-1.5">
+        {icon} {title}
+      </h4>
+      <div className="flex flex-wrap gap-1">
+        {items.map(item => (
+          <Badge key={item} variant="secondary" className={`text-[9px] gap-1 pr-1 ${color}`}>
+            {item}
+            <button onClick={() => removeItem(item)} className="hover:text-destructive ml-0.5">
+              <X className="w-2.5 h-2.5" />
+            </button>
+          </Badge>
+        ))}
+        {items.length === 0 && (
+          <span className="text-[9px] text-muted-foreground italic">Sem itens</span>
+        )}
+      </div>
+      <div className="relative">
+        <div className="flex gap-1">
+          <Input
+            placeholder="Adicionar..."
+            value={newVal}
+            onChange={e => { setNewVal(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={e => { if (e.key === "Enter" && newVal.trim()) addItem(newVal); }}
+            className="text-[10px] h-6 flex-1"
+          />
+          <button
+            onClick={() => newVal.trim() && addItem(newVal)}
+            className="text-[10px] text-eps-primary hover:text-eps-primary/80 px-1"
+          >
+            <Plus className="w-3 h-3" />
+          </button>
+        </div>
+        {showSuggestions && newVal && suggestions.length > 0 && (
+          <div className="absolute z-20 top-7 left-0 right-0 bg-white border rounded-md shadow-md max-h-32 overflow-auto">
+            {suggestions.map(s => (
+              <button key={s} onClick={() => addItem(s)}
+                className="w-full text-left text-[10px] px-2 py-1.5 hover:bg-muted/50 truncate">
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const ProcuraView = ({ mercadosState, onUpdateMercado }: ProcuraViewProps) => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -46,9 +124,7 @@ export const ProcuraView = ({ mercadosState, onUpdateMercado }: ProcuraViewProps
   }, {});
 
   const expandAll = () => {
-    const ids = new Set<string>();
-    filtered.forEach(m => ids.add(m.mercado));
-    setExpandedRows(ids);
+    setExpandedRows(new Set(filtered.map(m => m.mercado)));
   };
 
   return (
@@ -75,20 +151,11 @@ export const ProcuraView = ({ mercadosState, onUpdateMercado }: ProcuraViewProps
               <TableRow className="bg-muted/50">
                 <TableHead className="text-xs font-semibold w-8" />
                 <TableHead className="text-xs font-semibold min-w-[120px]">Mercado</TableHead>
-                <TableHead className="text-xs font-semibold text-center min-w-[120px]">
-                  <div className="flex items-center justify-center gap-1"><ShieldCheck className="w-3 h-3" /> Certificações</div>
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-center min-w-[140px]">Regras Específicas</TableHead>
-                <TableHead className="text-xs font-semibold text-center">
-                  <div className="flex items-center justify-center gap-1"><Ship className="w-3 h-3" /> Transporte</div>
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-center min-w-[120px]">
-                  <div className="flex items-center justify-center gap-1"><Users className="w-3 h-3" /> Consumidores</div>
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-center min-w-[160px]">Mix Marcas (%)</TableHead>
-                <TableHead className="text-xs font-semibold text-center min-w-[140px]">
-                  <div className="flex items-center justify-center gap-1"><Tag className="w-3 h-3" /> Marcas Específicas</div>
-                </TableHead>
+                <TableHead className="text-xs font-semibold text-center">Certificações</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Regras</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Transporte</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Canais</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Consumidores</TableHead>
                 <TableHead className="text-xs font-semibold text-center">Volume</TableHead>
               </TableRow>
             </TableHeader>
@@ -100,13 +167,6 @@ export const ProcuraView = ({ mercadosState, onUpdateMercado }: ProcuraViewProps
             </TableBody>
           </Table>
         </ScrollArea>
-      </div>
-
-      <div className="mt-3 flex items-center gap-6 text-[10px] text-muted-foreground flex-wrap">
-        <span className="flex items-center gap-1"><span className={`px-1.5 py-0.5 rounded ${categoriaBadge.Regional}`}>Regional</span></span>
-        <span className="flex items-center gap-1"><span className={`px-1.5 py-0.5 rounded ${categoriaBadge.Reserva}`}>Reserva</span></span>
-        <span className="flex items-center gap-1"><span className={`px-1.5 py-0.5 rounded ${categoriaBadge.Premium}`}>Premium</span></span>
-        <span className="ml-4">Expandir mercado para ver canais, detalhes e botões de associação</span>
       </div>
     </>
   );
@@ -121,7 +181,7 @@ const RegiaoGroup = ({ regiao, mercados, expandedRows, onToggle, onUpdateMercado
   return (
     <>
       <TableRow className="bg-eps-primary/5 cursor-pointer hover:bg-eps-primary/10" onClick={() => setCollapsed(!collapsed)}>
-        <TableCell colSpan={9} className="py-2">
+        <TableCell colSpan={8} className="py-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-eps-primary">
             {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             {regiao}
@@ -142,11 +202,11 @@ const MercadoRow = ({ mercado: m, isExpanded, onToggle, onUpdateMercado }: {
   onUpdateMercado: (mercado: string, patch: Partial<PortfolioMercado>) => void;
 }) => (
   <>
-    <TableRow className="text-xs border-b border-border/50">
+    <TableRow className="text-xs border-b border-border/50 cursor-pointer hover:bg-muted/30" onClick={() => onToggle(m.mercado)}>
       <TableCell className="py-1.5 px-2">
-        <button onClick={() => onToggle(m.mercado)} className="text-muted-foreground hover:text-eps-primary">
+        <span className="text-muted-foreground">
           {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        </button>
+        </span>
       </TableCell>
       <TableCell className="py-1.5">
         <div className="flex items-center gap-2">
@@ -155,135 +215,75 @@ const MercadoRow = ({ mercado: m, isExpanded, onToggle, onUpdateMercado }: {
         </div>
       </TableCell>
       <TableCell className="text-center py-1.5">
-        <div className="flex flex-wrap gap-1 justify-center">
-          {m.certificacoes.map(c => (
-            <span key={c} className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-[9px]">{c}</span>
-          ))}
-        </div>
+        <span className="text-[10px] font-mono text-muted-foreground">{m.certificacoes.length}</span>
       </TableCell>
       <TableCell className="text-center py-1.5">
-        <div className="flex flex-wrap gap-1 justify-center">
-          {m.regrasEspecificas.slice(0, 2).map(r => (
-            <span key={r} className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-[9px]">{r}</span>
-          ))}
-          {m.regrasEspecificas.length > 2 && (
-            <span className="text-[9px] text-muted-foreground">+{m.regrasEspecificas.length - 2}</span>
-          )}
-        </div>
+        <span className="text-[10px] font-mono text-muted-foreground">{m.regrasEspecificas.length}</span>
       </TableCell>
       <TableCell className="text-center py-1.5">
-        <span className="font-mono text-[11px] font-medium">{m.tempoTransporte}</span>
+        <span className="text-[10px] font-mono">{m.tempoTransporte[0] || '—'}</span>
       </TableCell>
       <TableCell className="text-center py-1.5">
-        <div className="flex flex-wrap gap-1 justify-center">
-          {m.tipoConsumidores.slice(0, 2).map(t => (
-            <span key={t} className="bg-violet-50 text-violet-700 px-1.5 py-0.5 rounded text-[9px]">{t}</span>
-          ))}
-          {m.tipoConsumidores.length > 2 && (
-            <span className="text-[9px] text-muted-foreground">+{m.tipoConsumidores.length - 2}</span>
-          )}
-        </div>
+        <span className="text-[10px] font-mono text-muted-foreground">{m.canais.length}</span>
       </TableCell>
       <TableCell className="text-center py-1.5">
-        <div className="flex items-center justify-center gap-1">
-          <div className="flex w-20 h-2 rounded-full overflow-hidden bg-muted">
-            {m.mixMarcas.map(mix => {
-              const color = mix.categoria === 'Premium' ? 'bg-amber-500' : mix.categoria === 'Reserva' ? 'bg-eps-primary' : 'bg-gray-400';
-              return <div key={mix.categoria} className={`h-full ${color}`} style={{ width: `${mix.percentagem}%` }} />;
-            })}
-          </div>
-          <div className="flex gap-1 text-[9px]">
-            {m.mixMarcas.map(mix => (
-              <span key={mix.categoria} className="font-mono">{mix.percentagem}%</span>
-            ))}
-          </div>
-        </div>
-      </TableCell>
-      <TableCell className="text-center py-1.5">
-        <div className="flex flex-wrap gap-1 justify-center">
-          {m.marcasEspecificas.slice(0, 2).map(b => (
-            <span key={b} className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px]">{b}</span>
-          ))}
-          {m.marcasEspecificas.length > 2 && (
-            <span className="text-[9px] text-muted-foreground">+{m.marcasEspecificas.length - 2}</span>
-          )}
-        </div>
+        <span className="text-[10px] font-mono text-muted-foreground">{m.tipoConsumidores.length}</span>
       </TableCell>
       <TableCell className="text-center py-1.5 font-mono font-semibold text-[11px]">{m.volumeAnual}</TableCell>
     </TableRow>
 
     {isExpanded && (
       <TableRow className="bg-muted/20">
-        <TableCell colSpan={9} className="py-3 px-6">
-          <div className="mb-4 pb-3 border-b border-border/50">
-            <AssociationButtons
-              mercado={m.mercado}
-              certificacoes={m.certificacoes}
-              regras={m.regrasEspecificas}
-              marcas={m.marcasEspecificas}
-              onUpdateCertificacoes={items => onUpdateMercado(m.mercado, { certificacoes: items })}
-              onUpdateRegras={items => onUpdateMercado(m.mercado, { regrasEspecificas: items })}
-              onUpdateMarcas={items => onUpdateMercado(m.mercado, { marcasEspecificas: items })}
-              onUpdateProdutos={items => onUpdateMercado(m.mercado, { marcasEspecificas: items })}
+        <TableCell colSpan={8} className="py-4 px-6">
+          <div className="grid grid-cols-3 gap-6">
+            <EditableList
+              title="Certificações"
+              icon={<ShieldCheck className="w-3.5 h-3.5" />}
+              items={m.certificacoes}
+              color="bg-orange-50 text-orange-700"
+              masterList={masterCertificacoes}
+              onUpdate={items => onUpdateMercado(m.mercado, { certificacoes: items })}
             />
-          </div>
-
-          <div className="grid grid-cols-3 gap-6 text-[11px]">
-            <div>
-              <h4 className="font-semibold text-foreground mb-1.5 flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Regras & Certificações</h4>
-              <div className="space-y-1">
-                {m.regrasEspecificas.map(r => (
-                  <div key={r} className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-red-400" />
-                    <span>{r}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-1.5 flex items-center gap-1"><Users className="w-3 h-3" /> Consumidores & Canais</h4>
-              <div className="space-y-1 mb-2">
-                {m.tipoConsumidores.map(t => (
-                  <div key={t} className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-violet-400" />
-                    <span>{t}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {m.canais.map(c => (
-                  <span key={c} className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[9px]">{c}</span>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-1.5 flex items-center gap-1"><Tag className="w-3 h-3" /> Marcas Específicas</h4>
-              <div className="space-y-1">
-                {m.marcasEspecificas.map(b => (
-                  <div key={b} className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-emerald-400" />
-                    <span>{b}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2">
-                <h5 className="font-medium text-muted-foreground mb-1">Mix por Categoria</h5>
-                {m.mixMarcas.map(mix => (
-                  <div key={mix.categoria} className="flex items-center gap-2 mb-0.5">
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${
-                      mix.categoria === 'Regional' ? 'bg-muted text-muted-foreground' :
-                      mix.categoria === 'Reserva' ? 'bg-eps-primary/10 text-eps-primary' :
-                      'bg-eps-gold/20 text-amber-800'
-                    }`}>{mix.categoria}</span>
-                    <div className="flex-1 bg-muted rounded-full h-1.5">
-                      <div className={`h-1.5 rounded-full ${mix.categoria === 'Premium' ? 'bg-amber-500' : mix.categoria === 'Reserva' ? 'bg-eps-primary' : 'bg-gray-400'}`}
-                        style={{ width: `${mix.percentagem}%` }} />
-                    </div>
-                    <span className="font-mono text-[10px] w-8 text-right">{mix.percentagem}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <EditableList
+              title="Regras Específicas"
+              icon={<ShieldCheck className="w-3.5 h-3.5" />}
+              items={m.regrasEspecificas}
+              color="bg-red-50 text-red-700"
+              masterList={masterRegras}
+              onUpdate={items => onUpdateMercado(m.mercado, { regrasEspecificas: items })}
+            />
+            <EditableList
+              title="Transporte"
+              icon={<Truck className="w-3.5 h-3.5" />}
+              items={m.tempoTransporte}
+              color="bg-sky-50 text-sky-700"
+              masterList={masterTransporte}
+              onUpdate={items => onUpdateMercado(m.mercado, { tempoTransporte: items })}
+            />
+            <EditableList
+              title="Canais de Distribuição"
+              icon={<Store className="w-3.5 h-3.5" />}
+              items={m.canais}
+              color="bg-blue-50 text-blue-700"
+              masterList={masterCanais}
+              onUpdate={items => onUpdateMercado(m.mercado, { canais: items })}
+            />
+            <EditableList
+              title="Tipo de Distribuição"
+              icon={<Ship className="w-3.5 h-3.5" />}
+              items={m.tipoDistribuicao}
+              color="bg-indigo-50 text-indigo-700"
+              masterList={masterTipoDistribuicao}
+              onUpdate={items => onUpdateMercado(m.mercado, { tipoDistribuicao: items })}
+            />
+            <EditableList
+              title="Perfil de Consumidores"
+              icon={<Users className="w-3.5 h-3.5" />}
+              items={m.tipoConsumidores}
+              color="bg-violet-50 text-violet-700"
+              masterList={masterConsumidores}
+              onUpdate={items => onUpdateMercado(m.mercado, { tipoConsumidores: items })}
+            />
           </div>
         </TableCell>
       </TableRow>
