@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Briefcase, Search, Package } from "lucide-react";
+import { Briefcase, Search, Package, ArrowRightLeft } from "lucide-react";
 import { EPSHeader } from "@/components/layout/EPSHeader";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { portfolioMercados, produtoMercadoAssociations, type PortfolioMercado, type ProdutoMercadoAssoc } from "@/data/portfolioData";
 import { ProcuraView } from "@/components/portfolio/ProcuraView";
 import { ProdutizacaoView } from "@/components/portfolio/ProdutizacaoView";
+import { PortfolioView } from "@/components/portfolio/PortfolioView";
 
 const PlaneamentoPortfolioPage = () => {
   const navigate = useNavigate();
@@ -38,6 +39,9 @@ const PlaneamentoPortfolioPage = () => {
               <TabsTrigger value="procura" className="gap-1.5 text-xs">
                 <Search className="w-3.5 h-3.5" /> Procura
               </TabsTrigger>
+              <TabsTrigger value="portfolio" className="gap-1.5 text-xs">
+                <ArrowRightLeft className="w-3.5 h-3.5" /> Portfólio
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="produtizacao">
@@ -46,6 +50,10 @@ const PlaneamentoPortfolioPage = () => {
 
             <TabsContent value="procura">
               <ProcuraView mercadosState={mercadosState} onUpdateMercado={updateMercado} />
+            </TabsContent>
+
+            <TabsContent value="portfolio">
+              <PortfolioView />
             </TabsContent>
           </Tabs>
         </main>
