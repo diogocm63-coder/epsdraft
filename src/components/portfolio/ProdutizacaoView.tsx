@@ -20,6 +20,7 @@ export interface ProdutizacaoItem {
   capacidade: string;
   marca: string;
   rotuloEspecifico: string;
+  embalagensCaixa: number;
   // Enológico fields
   regiao: string;
   tipo: string;
@@ -38,6 +39,7 @@ const buildInitialItems = (): ProdutizacaoItem[] =>
     capacidade: "750ml",
     marca: "V&W",
     rotuloEspecifico: "",
+    embalagensCaixa: 6,
     regiao: p.regiao,
     tipo: p.tipo,
     categoria: p.categoria,
@@ -72,6 +74,9 @@ export const ProdutizacaoView = (_props: ProdutizacaoViewProps) => {
   const [editItem, setEditItem] = useState<ProdutizacaoItem | null>(null);
   const [search, setSearch] = useState("");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [filterRegiao, setFilterRegiao] = useState("all");
+  const [filterCategoria, setFilterCategoria] = useState("all");
+  const [filterTipo, setFilterTipo] = useState("all");
 
   const toggle = (id: string) => {
     setExpandedRows(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -80,6 +85,7 @@ export const ProdutizacaoView = (_props: ProdutizacaoViewProps) => {
   const openNew = () => {
     setEditItem({
       id: `prod-${Date.now()}`, produto: "", capacidade: "750ml", marca: "V&W", rotuloEspecifico: "",
+      embalagensCaixa: 6,
       regiao: "Douro", tipo: "Tinto", categoria: "Regional",
       estagioBarrica: 0, estagioCuba: 4, estagioGarrafa: 2,
       castas: [], castasPercentagem: [],
@@ -105,17 +111,44 @@ export const ProdutizacaoView = (_props: ProdutizacaoViewProps) => {
 
   const remove = (id: string) => setItems(prev => prev.filter(p => p.id !== id));
 
-  const filtered = items.filter(p =>
-    p.produto.toLowerCase().includes(search.toLowerCase()) ||
-    p.tipo.toLowerCase().includes(search.toLowerCase()) ||
-    p.marca.toLowerCase().includes(search.toLowerCase()) ||
-    p.regiao.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter(p => {
+    if (filterRegiao !== "all" && p.regiao !== filterRegiao) return false;
+    if (filterCategoria !== "all" && p.categoria !== filterCategoria) return false;
+    if (filterTipo !== "all" && p.tipo !== filterTipo) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      return p.produto.toLowerCase().includes(s) || p.marca.toLowerCase().includes(s);
+    }
+    return true;
+  });
+
+  const regioes = [...new Set(items.map(p => p.regiao))].sort();
 
   return (
     <>
-      <div className="flex items-center gap-3 mb-4">
-        <Input placeholder="Pesquisar produto, região, tipo..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-xs text-xs h-8" />
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <Input placeholder="Pesquisar produto, marca..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-[200px] text-xs h-8" />
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground">Região:</label>
+          <select value={filterRegiao} onChange={e => setFilterRegiao(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 bg-white h-8">
+            <option value="all">Todas</option>
+            {regioes.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground">Categoria:</label>
+          <select value={filterCategoria} onChange={e => setFilterCategoria(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 bg-white h-8">
+            <option value="all">Todas</option>
+            {wineCategorias.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground">Cor:</label>
+          <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 bg-white h-8">
+            <option value="all">Todas</option>
+            {wineTipos.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
         <Button size="sm" className="h-8 text-xs gap-1.5 ml-auto" onClick={openNew}>
           <Plus className="w-3.5 h-3.5" /> Novo Produto
         </Button>
@@ -143,13 +176,16 @@ export const ProdutizacaoView = (_props: ProdutizacaoViewProps) => {
                   <div className="flex flex-col items-center"><span>Garrafa</span><span className="text-[9px] text-muted-foreground font-normal">(meses)</span></div>
                 </TableHead>
                 <TableHead className="text-xs font-semibold min-w-[140px]">Castas</TableHead>
+                <TableHead className="text-xs font-semibold text-center w-[60px]">
+                  <div className="flex flex-col items-center"><span>Emb.</span><span className="text-[9px] text-muted-foreground font-normal">/Cx</span></div>
+                </TableHead>
                 <TableHead className="text-xs font-semibold min-w-[130px]">Rótulo Específico</TableHead>
                 <TableHead className="text-xs font-semibold text-center w-[60px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={13} className="text-center text-xs text-muted-foreground py-8">Nenhum produto encontrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={14} className="text-center text-xs text-muted-foreground py-8">Nenhum produto encontrado.</TableCell></TableRow>
               )}
               {filtered.map(item => {
                 const isExpanded = expandedRows.has(item.id);
@@ -209,6 +245,9 @@ export const ProdutizacaoView = (_props: ProdutizacaoViewProps) => {
                         ))}
                         {item.castas.length > 3 && <span className="text-[9px] text-muted-foreground">+{item.castas.length - 3}</span>}
                       </div>
+                    </TableCell>
+                    <TableCell className="py-1.5 text-center">
+                      <span className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono">{item.embalagensCaixa}</span>
                     </TableCell>
                     <TableCell className="py-1.5 text-[11px] text-muted-foreground italic">{item.rotuloEspecifico || "—"}</TableCell>
                     <TableCell className="py-1.5 text-center">
@@ -345,7 +384,7 @@ const ProductDialog = ({ open, onOpenChange, item, isNew, onChange, onSave }: {
         {/* Product-specific fields */}
         <div className="border-t pt-3 mt-2 space-y-3">
           <div className="text-xs font-semibold text-muted-foreground mb-1">Dados do Produto</div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Produto *</label>
               <Input value={item.produto} onChange={e => onChange({ ...item, produto: e.target.value })} className="text-xs h-8" />
@@ -359,6 +398,10 @@ const ProductDialog = ({ open, onOpenChange, item, isNew, onChange, onSave }: {
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Marca</label>
               <Input value={item.marca} onChange={e => onChange({ ...item, marca: e.target.value })} className="text-xs h-8" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Emb./Caixa</label>
+              <Input type="number" min={1} value={item.embalagensCaixa} onChange={e => onChange({ ...item, embalagensCaixa: Number(e.target.value) })} className="text-xs h-8" />
             </div>
           </div>
           <div>
