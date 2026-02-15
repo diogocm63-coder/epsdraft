@@ -18,6 +18,14 @@ export interface PortfolioMarcaMix {
   percentagem: number;
 }
 
+// Product-Market association for Produtização view
+export interface ProdutoMercadoAssoc {
+  produto: string;
+  categoria: string;
+  regiao: string;
+  mercados: { mercado: string; canais: string[]; tempoTransporte: string }[];
+}
+
 // Master lists for selection popups
 export const masterCertificacoes = [
   'IVV', 'HACCP', 'IFS Food', 'BRC', 'ISO 22000', 'EU Organic',
@@ -42,6 +50,64 @@ export const masterRegras = [
 ];
 
 export const masterMarcas = wineProducts.map(p => p.produto);
+
+export const masterCanais = [
+  'Horeca', 'Retalho', 'E-commerce', 'Importadores', 'Wine Shops',
+  'Fine Dining', 'Supermarkets', 'Wine Merchants', 'On-Trade',
+  'Fachhandel', 'Online', 'Distribuição', 'Gastronomie', 'Detailhandel',
+  'Horeca Premium', 'Wine Clubs', 'Retalho Moderno', 'Banqueting',
+];
+
+export const masterMercados = [
+  'Portugal', 'Brasil', 'Angola', 'Alemanha', 'EUA', 'Reino Unido', 'Suíça', 'China',
+];
+
+// Generate product-market associations from existing data
+const mercadoTransporte: Record<string, string> = {
+  Portugal: '1-3 dias', Brasil: '18-22 dias', Angola: '12-15 dias',
+  Alemanha: '3-5 dias', EUA: '20-25 dias', 'Reino Unido': '4-6 dias',
+  Suíça: '3-4 dias', China: '30-35 dias',
+};
+
+const mercadoCanais: Record<string, string[]> = {
+  Portugal: ['Horeca', 'Retalho', 'E-commerce'],
+  Brasil: ['Importadores', 'Horeca'],
+  Angola: ['Distribuição', 'Horeca'],
+  Alemanha: ['Fachhandel', 'Online', 'Horeca'],
+  EUA: ['Importadores', 'Wine Shops', 'Fine Dining'],
+  'Reino Unido': ['Supermarkets', 'Wine Merchants', 'On-Trade'],
+  Suíça: ['Gastronomie', 'Detailhandel'],
+  China: ['Importadores', 'E-commerce', 'Banqueting'],
+};
+
+// Map products to markets based on marcasEspecificas in portfolioMercados (defined below)
+const productToMarketsMap: Record<string, string[]> = {
+  'V&W Douro Tinto': ['Portugal', 'Angola'],
+  'V&W Alentejo Tinto': ['Angola'],
+  'V&W Alentejo Reserva Tinto': ['Portugal', 'Reino Unido'],
+  'V&W Heritage (Grande Reserva)': ['Portugal', 'Alemanha', 'Suíça', 'China'],
+  'V&W Douro Reserva Tinto': ['Brasil', 'Angola', 'Alemanha', 'Reino Unido'],
+  'V&W Signature Edition': ['Brasil', 'EUA', 'China'],
+  'V&W Alvarinho Reserva': ['Brasil', 'Reino Unido'],
+  'V&W Encruzado Premium': ['Alemanha', 'Suíça'],
+  'V&W Terroir Branco Premium': ['EUA'],
+  'V&W Nobre Tinto': ['Suíça'],
+  'V&W Rosé Millésime': ['China'],
+};
+
+export const produtoMercadoAssociations: ProdutoMercadoAssoc[] = wineProducts.map(p => {
+  const markets = productToMarketsMap[p.produto] || [];
+  return {
+    produto: p.produto,
+    categoria: p.categoria,
+    regiao: p.regiao,
+    mercados: markets.map(m => ({
+      mercado: m,
+      canais: mercadoCanais[m] || [],
+      tempoTransporte: mercadoTransporte[m] || '—',
+    })),
+  };
+});
 
 export const portfolioMercados: PortfolioMercado[] = [
   {
