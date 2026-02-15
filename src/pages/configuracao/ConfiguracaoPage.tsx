@@ -99,6 +99,17 @@ const ConfiguracaoPage = () => {
                 );
               })}
             </div>
+
+            {/* Placeholder content area */}
+            <div className="mt-10 bg-white rounded-2xl border border-border p-8 min-h-[300px] flex items-center justify-center">
+              <p className="text-muted-foreground text-sm">
+                Configuração de{" "}
+                <span className="font-semibold text-eps-primary">
+                  {configItems.find((i) => i.id === activeConfigItem)?.label}
+                </span>{" "}
+                — conteúdo em desenvolvimento
+              </p>
+            </div>
           </div>
         </main>
       </div>
