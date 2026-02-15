@@ -35,22 +35,23 @@ const EditableList = ({ title, icon, items, color, masterList, onUpdate }: {
 }) => {
   const [newVal, setNewVal] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const safeItems = Array.isArray(items) ? items : [];
 
   const suggestions = masterList.filter(
-    s => !items.includes(s) && s.toLowerCase().includes(newVal.toLowerCase())
+    s => !safeItems.includes(s) && s.toLowerCase().includes(newVal.toLowerCase())
   ).slice(0, 5);
 
   const addItem = (item: string) => {
     const trimmed = item.trim();
-    if (trimmed && !items.includes(trimmed)) {
-      onUpdate([...items, trimmed]);
+    if (trimmed && !safeItems.includes(trimmed)) {
+      onUpdate([...safeItems, trimmed]);
     }
     setNewVal("");
     setShowSuggestions(false);
   };
 
   const removeItem = (item: string) => {
-    onUpdate(items.filter(i => i !== item));
+    onUpdate(safeItems.filter(i => i !== item));
   };
 
   return (
@@ -59,7 +60,7 @@ const EditableList = ({ title, icon, items, color, masterList, onUpdate }: {
         {icon} {title}
       </h4>
       <div className="flex flex-wrap gap-1">
-        {items.map(item => (
+        {safeItems.map(item => (
           <Badge key={item} variant="secondary" className={`text-[9px] gap-1 pr-1 ${color}`}>
             {item}
             <button onClick={() => removeItem(item)} className="hover:text-destructive ml-0.5">
@@ -67,7 +68,7 @@ const EditableList = ({ title, icon, items, color, masterList, onUpdate }: {
             </button>
           </Badge>
         ))}
-        {items.length === 0 && (
+        {safeItems.length === 0 && (
           <span className="text-[9px] text-muted-foreground italic">Sem itens</span>
         )}
       </div>
