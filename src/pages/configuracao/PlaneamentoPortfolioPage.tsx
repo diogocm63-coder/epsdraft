@@ -12,7 +12,8 @@ import { PortfolioView } from "@/components/portfolio/PortfolioView";
 const PlaneamentoPortfolioPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get("tab") === "procura" ? "procura" : "produtizacao";
+  const tabParam = searchParams.get("tab");
+  const defaultTab = tabParam === "procura" ? "procura" : tabParam === "portfolio" ? "portfolio" : "produtizacao";
   const [mercadosState, setMercadosState] = useState<PortfolioMercado[]>(portfolioMercados);
   const [assocState, setAssocState] = useState<ProdutoMercadoAssoc[]>(produtoMercadoAssociations);
 
@@ -31,7 +32,7 @@ const PlaneamentoPortfolioPage = () => {
       <div className="flex-1 flex flex-col min-h-screen">
         <EPSHeader title="Planeamento de Portfólio" icon={<Briefcase className="w-4 h-4" />} />
         <main className="flex-1 p-4 overflow-auto">
-          <Tabs defaultValue={defaultTab} className="w-full">
+          <Tabs key={defaultTab} defaultValue={defaultTab} className="w-full">
             <TabsList className="mb-4">
               <TabsTrigger value="produtizacao" className="gap-1.5 text-xs">
                 <Package className="w-3.5 h-3.5" /> Produtização

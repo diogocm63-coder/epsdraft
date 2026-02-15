@@ -97,6 +97,10 @@ export const StartPageSidebar = ({
                     onConfigItemChange?.(item.id);
                     if (item.id === "transformacao") {
                       navigate("/configuracao/transformacao-adegas");
+                    } else if (item.id === "procura") {
+                      navigate("/configuracao/planeamento-portfolio?tab=procura");
+                    } else if (item.id === "produtizacao") {
+                      navigate("/configuracao/planeamento-portfolio?tab=produtizacao");
                     } else {
                       navigate("/configuracao/planeamento-portfolio");
                     }
