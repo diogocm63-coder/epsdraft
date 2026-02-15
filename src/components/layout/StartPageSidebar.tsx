@@ -101,6 +101,8 @@ export const StartPageSidebar = ({
                       navigate("/configuracao/planeamento-portfolio?tab=procura");
                     } else if (item.id === "produtizacao") {
                       navigate("/configuracao/planeamento-portfolio?tab=produtizacao");
+                    } else if (item.id === "agricultura") {
+                      navigate("/configuracao/agricultura");
                     } else {
                       navigate("/configuracao/planeamento-portfolio");
                     }
