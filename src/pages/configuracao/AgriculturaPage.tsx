@@ -178,7 +178,6 @@ const AgriculturaPage = () => {
                     <TableHead className="text-xs font-semibold min-w-[250px]">Nome</TableHead>
                     <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
                     <TableHead className="text-xs font-semibold text-center">Casta</TableHead>
-                    <TableHead className="text-xs font-semibold text-center">Produto</TableHead>
                     <TableHead className="text-xs font-semibold text-center">Rácio Kg/L</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -270,7 +269,6 @@ const AgriculturaPage = () => {
                                             <span className="text-[11px] font-medium">{row.casta}</span>
                                           </div>
                                         </TableCell>
-                                        <TableCell className="text-center py-1 text-[10px] text-muted-foreground">{row.produto}</TableCell>
                                         <TableCell className="text-center py-1 font-mono text-[11px]">{row.ratioConversao}</TableCell>
                                       </TableRow>
                                     ))}
