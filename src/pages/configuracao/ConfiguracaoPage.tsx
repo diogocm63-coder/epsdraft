@@ -96,8 +96,8 @@ const getVintageAtStage = (
   barricaMeses: number,
   garrafaMeses: number
 ) => {
-  // For each stage, find which vintage (harvest year) is at that stage on Jan 1 of budgetYear
-  const refDate = new Date(budgetYear, 0, 1); // Jan 1 of budget year
+  const byStart = new Date(budgetYear, 0, 1);
+  const byEnd = new Date(budgetYear, 11, 31);
   const results: Record<string, number | null> = {
     vendima: null,
     cuba: null,
@@ -106,10 +106,11 @@ const getVintageAtStage = (
     acabado: null,
   };
 
-  // Check vintages from budgetYear back to budgetYear-8
-  for (let v = budgetYear; v >= budgetYear - 8; v--) {
-    const harvest = new Date(v, 10, 30); // Nov 30
-    const fimCuba = new Date(harvest);
+  // Check vintages from budgetYear back to budgetYear-10
+  for (let v = budgetYear; v >= budgetYear - 10; v--) {
+    const harvest = new Date(v, 9, 1); // Oct 1 (start of harvest)
+    const harvestEnd = new Date(v, 10, 30); // Nov 30
+    const fimCuba = new Date(harvestEnd);
     fimCuba.setMonth(fimCuba.getMonth() + cubaMeses);
     const fimBarrica = new Date(fimCuba);
     fimBarrica.setMonth(fimBarrica.getMonth() + barricaMeses);
@@ -120,20 +121,24 @@ const getVintageAtStage = (
     const disponivel = new Date(fimGarrafa);
     disponivel.setMonth(disponivel.getMonth() + LOGISTICA_MESES);
 
-    // Determine stage at refDate
-    if (refDate >= disponivel && !results.acabado) {
-      results.acabado = v;
-    } else if (refDate >= fimLoteamento && refDate < disponivel && !results.garrafa) {
-      results.garrafa = v;
-    } else if (refDate >= fimCuba && refDate < fimBarrica && !results.barrica) {
-      results.barrica = v;
-    } else if (refDate >= harvest && refDate < fimCuba && !results.cuba) {
+    // Check if each stage overlaps with the budget year [byStart, byEnd]
+    const overlaps = (stageStart: Date, stageEnd: Date) =>
+      stageStart <= byEnd && stageEnd >= byStart;
+
+    if (!results.vendima && overlaps(harvest, harvestEnd)) {
+      results.vendima = v;
+    }
+    if (!results.cuba && overlaps(harvestEnd, fimCuba)) {
       results.cuba = v;
     }
-
-    // Vendima is always the budget year itself (Nov)
-    if (v === budgetYear) {
-      results.vendima = budgetYear;
+    if (!results.barrica && overlaps(fimCuba, fimBarrica)) {
+      results.barrica = v;
+    }
+    if (!results.garrafa && overlaps(fimLoteamento, fimGarrafa)) {
+      results.garrafa = v;
+    }
+    if (!results.acabado && overlaps(disponivel, new Date(disponivel.getFullYear() + 2, 0, 1))) {
+      results.acabado = v;
     }
   }
 
