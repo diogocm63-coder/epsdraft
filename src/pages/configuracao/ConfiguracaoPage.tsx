@@ -89,10 +89,64 @@ const formatDate = (d: Date) => {
   return `${m.charAt(0).toUpperCase() + m.slice(1)} ${d.getFullYear()}`;
 };
 
+// For "Ano de Orçamento" view: determine which harvest year is at each stage during budget year
+const getVintageAtStage = (
+  budgetYear: number,
+  cubaMeses: number,
+  barricaMeses: number,
+  garrafaMeses: number
+) => {
+  // For each stage, find which vintage (harvest year) is at that stage on Jan 1 of budgetYear
+  const refDate = new Date(budgetYear, 0, 1); // Jan 1 of budget year
+  const results: Record<string, number | null> = {
+    vendima: null,
+    cuba: null,
+    barrica: null,
+    garrafa: null,
+    acabado: null,
+  };
+
+  // Check vintages from budgetYear back to budgetYear-8
+  for (let v = budgetYear; v >= budgetYear - 8; v--) {
+    const harvest = new Date(v, 10, 30); // Nov 30
+    const fimCuba = new Date(harvest);
+    fimCuba.setMonth(fimCuba.getMonth() + cubaMeses);
+    const fimBarrica = new Date(fimCuba);
+    fimBarrica.setMonth(fimBarrica.getMonth() + barricaMeses);
+    const fimLoteamento = new Date(fimBarrica);
+    fimLoteamento.setMonth(fimLoteamento.getMonth() + LOTEAMENTO_MESES);
+    const fimGarrafa = new Date(fimLoteamento);
+    fimGarrafa.setMonth(fimGarrafa.getMonth() + garrafaMeses);
+    const disponivel = new Date(fimGarrafa);
+    disponivel.setMonth(disponivel.getMonth() + LOGISTICA_MESES);
+
+    // Determine stage at refDate
+    if (refDate >= disponivel && !results.acabado) {
+      results.acabado = v;
+    } else if (refDate >= fimLoteamento && refDate < disponivel && !results.garrafa) {
+      results.garrafa = v;
+    } else if (refDate >= fimCuba && refDate < fimBarrica && !results.barrica) {
+      results.barrica = v;
+    } else if (refDate >= harvest && refDate < fimCuba && !results.cuba) {
+      results.cuba = v;
+    }
+
+    // Vendima is always the budget year itself (Nov)
+    if (v === budgetYear) {
+      results.vendima = budgetYear;
+    }
+  }
+
+  return results;
+};
+
+type ViewMode = "evolucao" | "orcamento";
+
 const ConfiguracaoPage = () => {
   const navigate = useNavigate();
   const [activeConfigItem, setActiveConfigItem] = useState<string>("procura");
   const [anoVenda, setAnoVenda] = useState<number>(2027);
+  const [viewMode, setViewMode] = useState<ViewMode>("evolucao");
   const [filterTipo, setFilterTipo] = useState<string>("all");
   const [filterCategoria, setFilterCategoria] = useState<string>("all");
   const [filterRegiao, setFilterRegiao] = useState<string>("all");
@@ -114,9 +168,12 @@ const ConfiguracaoPage = () => {
         const timeline = calcTimeline(anoVenda, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa);
         const assoc = produtoMercadoAssociations.find((a) => a.produto === p.produto);
         const mercados = assoc?.mercados.map((m) => m.mercado) || [];
-        return { ...p, ...timeline, mercados };
+        const stages = viewMode === "orcamento"
+          ? getVintageAtStage(anoVenda, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa)
+          : null;
+        return { ...p, ...timeline, mercados, stages };
       });
-  }, [anoVenda, filterTipo, filterCategoria, filterRegiao, filterMercado]);
+  }, [anoVenda, filterTipo, filterCategoria, filterRegiao, filterMercado, viewMode]);
 
   return (
     <div className="min-h-screen flex w-full bg-eps-background">
@@ -179,16 +236,43 @@ const ConfiguracaoPage = () => {
             <div className="flex items-center gap-3 mb-4">
               <Calendar className="w-5 h-5 text-eps-primary" />
               <h2 className="text-lg font-bold text-eps-primary">Planeamento Temporal de Produtos</h2>
+              <div className="ml-auto flex gap-1 bg-muted rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("evolucao")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    viewMode === "evolucao"
+                      ? "bg-eps-primary text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Evolução de Estágios
+                </button>
+                <button
+                  onClick={() => setViewMode("orcamento")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    viewMode === "orcamento"
+                      ? "bg-eps-primary text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Ano de Orçamento
+                </button>
+              </div>
             </div>
+
+            {/* Description */}
             <p className="text-xs text-muted-foreground mb-4">
-              Com base no ano de venda, calcula retroativamente: Ano de Vendima → Entrada em Barrica → Engarrafamento → Rotulagem → Disponível para venda.
-              Fórmula: Vendima (Nov) + Cuba + Barrica + Loteamento (1m) + Garrafa + Logística (1m) = Data disponível.
+              {viewMode === "evolucao"
+                ? "Com base no ano de venda, calcula retroativamente: Vendima → Barrica → Engarrafamento → Rotulagem → Disponível. Fórmula: Vendima (Nov) + Cuba + Barrica + Loteamento (1m) + Garrafa + Logística (1m)."
+                : `Para o ano de orçamento ${anoVenda}, mostra qual a colheita (ano de vindima) que está em cada fase do processo produtivo.`}
             </p>
 
             {/* Filters row */}
             <div className="flex flex-wrap items-end gap-3 mb-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-muted-foreground">Ano de Venda</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {viewMode === "evolucao" ? "Ano de Venda" : "Ano de Orçamento"}
+                </label>
                 <Input
                   type="number"
                   value={anoVenda}
@@ -252,15 +336,27 @@ const ConfiguracaoPage = () => {
                     <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
                     <TableHead className="text-xs font-semibold text-center">Categoria</TableHead>
                     <TableHead className="text-xs font-semibold text-center">Região</TableHead>
-                    <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Cuba (m)</TableHead>
-                    <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Barrica (m)</TableHead>
-                    <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Garrafa (m)</TableHead>
-                    <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Total (m)</TableHead>
-                    <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🍇 Vendima</TableHead>
-                    <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🪵 Barrica</TableHead>
-                    <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🍾 Engarrafar</TableHead>
-                    <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🏷️ Rotular</TableHead>
-                    <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">📦 Disponível</TableHead>
+                    {viewMode === "evolucao" ? (
+                      <>
+                        <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Cuba (m)</TableHead>
+                        <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Barrica (m)</TableHead>
+                        <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Garrafa (m)</TableHead>
+                        <TableHead className="text-xs font-semibold text-center whitespace-nowrap">Total (m)</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🍇 Vendima</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🪵 Barrica</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🍾 Engarrafar</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">🏷️ Rotular</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-eps-primary/5 whitespace-nowrap">📦 Disponível</TableHead>
+                      </>
+                    ) : (
+                      <>
+                        <TableHead className="text-xs font-semibold text-center bg-purple-50 whitespace-nowrap">🍇 Vindima</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-amber-50 whitespace-nowrap">🫙 Cuba</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-orange-50 whitespace-nowrap">🪵 Barrica</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-blue-50 whitespace-nowrap">🍾 Garrafa</TableHead>
+                        <TableHead className="text-xs font-semibold text-center bg-green-50 whitespace-nowrap">✅ Acabado</TableHead>
+                      </>
+                    )}
                     <TableHead className="text-xs font-semibold min-w-[140px]">Mercados</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -277,15 +373,27 @@ const ConfiguracaoPage = () => {
                       </TableCell>
                       <TableCell className="text-center text-muted-foreground">{row.categoria}</TableCell>
                       <TableCell className="text-center text-muted-foreground">{row.regiao}</TableCell>
-                      <TableCell className="text-center">{row.estagioCuba}</TableCell>
-                      <TableCell className="text-center">{row.estagioBarrica}</TableCell>
-                      <TableCell className="text-center">{row.estagioGarrafa}</TableCell>
-                      <TableCell className="text-center font-semibold text-eps-primary">{row.totalMeses}</TableCell>
-                      <TableCell className="text-center bg-eps-primary/5 font-medium">Nov {row.anoVendima}</TableCell>
-                      <TableCell className="text-center bg-eps-primary/5">{row.inicioBarrica}</TableCell>
-                      <TableCell className="text-center bg-eps-primary/5">{row.engarrafamento}</TableCell>
-                      <TableCell className="text-center bg-eps-primary/5">{row.rotulagem}</TableCell>
-                      <TableCell className="text-center bg-eps-primary/5 font-medium text-green-700">{row.disponivel}</TableCell>
+                      {viewMode === "evolucao" ? (
+                        <>
+                          <TableCell className="text-center">{row.estagioCuba}</TableCell>
+                          <TableCell className="text-center">{row.estagioBarrica}</TableCell>
+                          <TableCell className="text-center">{row.estagioGarrafa}</TableCell>
+                          <TableCell className="text-center font-semibold text-eps-primary">{row.totalMeses}</TableCell>
+                          <TableCell className="text-center bg-eps-primary/5 font-medium">Nov {row.anoVendima}</TableCell>
+                          <TableCell className="text-center bg-eps-primary/5">{row.inicioBarrica}</TableCell>
+                          <TableCell className="text-center bg-eps-primary/5">{row.engarrafamento}</TableCell>
+                          <TableCell className="text-center bg-eps-primary/5">{row.rotulagem}</TableCell>
+                          <TableCell className="text-center bg-eps-primary/5 font-medium text-green-700">{row.disponivel}</TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="text-center bg-purple-50 font-medium">{row.stages?.vendima ?? "—"}</TableCell>
+                          <TableCell className="text-center bg-amber-50 font-medium">{row.stages?.cuba ?? "—"}</TableCell>
+                          <TableCell className="text-center bg-orange-50 font-medium">{row.stages?.barrica ?? "—"}</TableCell>
+                          <TableCell className="text-center bg-blue-50 font-medium">{row.stages?.garrafa ?? "—"}</TableCell>
+                          <TableCell className="text-center bg-green-50 font-semibold text-green-700">{row.stages?.acabado ?? "—"}</TableCell>
+                        </>
+                      )}
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {row.mercados.length > 0 ? row.mercados.map((m) => (
