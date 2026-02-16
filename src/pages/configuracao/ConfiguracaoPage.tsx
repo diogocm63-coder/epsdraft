@@ -98,12 +98,12 @@ const getVintageAtStage = (
 ) => {
   const byStart = new Date(budgetYear, 0, 1);
   const byEnd = new Date(budgetYear, 11, 31);
-  const results: Record<string, number | null> = {
-    vendima: null,
-    cuba: null,
-    barrica: null,
-    garrafa: null,
-    acabado: null,
+  const results: Record<string, number[]> = {
+    vendima: [],
+    cuba: [],
+    barrica: [],
+    garrafa: [],
+    acabado: [],
   };
 
   // Check vintages from budgetYear back to budgetYear-10
@@ -125,20 +125,20 @@ const getVintageAtStage = (
     const overlaps = (stageStart: Date, stageEnd: Date) =>
       stageStart <= byEnd && stageEnd >= byStart;
 
-    if (!results.vendima && overlaps(harvest, harvestEnd)) {
-      results.vendima = v;
+    if (overlaps(harvest, harvestEnd)) {
+      results.vendima.push(v);
     }
-    if (!results.cuba && overlaps(harvestEnd, fimCuba)) {
-      results.cuba = v;
+    if (overlaps(harvestEnd, fimCuba)) {
+      results.cuba.push(v);
     }
-    if (!results.barrica && overlaps(fimCuba, fimBarrica)) {
-      results.barrica = v;
+    if (barricaMeses > 0 && overlaps(fimCuba, fimBarrica)) {
+      results.barrica.push(v);
     }
-    if (!results.garrafa && overlaps(fimLoteamento, fimGarrafa)) {
-      results.garrafa = v;
+    if (overlaps(fimLoteamento, fimGarrafa)) {
+      results.garrafa.push(v);
     }
-    if (!results.acabado && overlaps(disponivel, new Date(disponivel.getFullYear() + 2, 0, 1))) {
-      results.acabado = v;
+    if (overlaps(disponivel, new Date(disponivel.getFullYear() + 2, 0, 1))) {
+      results.acabado.push(v);
     }
   }
 
@@ -392,11 +392,11 @@ const ConfiguracaoPage = () => {
                         </>
                       ) : (
                         <>
-                          <TableCell className="text-center bg-purple-50 font-medium">{row.stages?.vendima ?? "—"}</TableCell>
-                          <TableCell className="text-center bg-amber-50 font-medium">{row.stages?.cuba ?? "—"}</TableCell>
-                          <TableCell className="text-center bg-orange-50 font-medium">{row.stages?.barrica ?? "—"}</TableCell>
-                          <TableCell className="text-center bg-blue-50 font-medium">{row.stages?.garrafa ?? "—"}</TableCell>
-                          <TableCell className="text-center bg-green-50 font-semibold text-green-700">{row.stages?.acabado ?? "—"}</TableCell>
+                          <TableCell className="text-center bg-purple-50 font-medium">{row.stages?.vendima.length ? row.stages.vendima.join(", ") : "—"}</TableCell>
+                          <TableCell className="text-center bg-amber-50 font-medium">{row.stages?.cuba.length ? row.stages.cuba.join(", ") : "—"}</TableCell>
+                          <TableCell className="text-center bg-orange-50 font-medium">{row.stages?.barrica.length ? row.stages.barrica.join(", ") : "—"}</TableCell>
+                          <TableCell className="text-center bg-blue-50 font-medium">{row.stages?.garrafa.length ? row.stages.garrafa.join(", ") : "—"}</TableCell>
+                          <TableCell className="text-center bg-green-50 font-semibold text-green-700">{row.stages?.acabado.length ? row.stages.acabado.join(", ") : "—"}</TableCell>
                         </>
                       )}
                       <TableCell>

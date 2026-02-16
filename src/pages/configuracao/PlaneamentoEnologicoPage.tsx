@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const categorias = ["Regional", "Reserva", "Premium"] as const;
+const categorias = ["Regional", "Reserva", "Premium", "Mesa"] as const;
 const tipos = ["Tinto", "Branco", "Rosé"] as const;
 
 const tipoBgColor: Record<string, string> = {
@@ -27,6 +27,7 @@ const categoriaBadge: Record<string, string> = {
   Regional: "bg-muted text-muted-foreground",
   Reserva: "bg-eps-primary/10 text-eps-primary",
   Premium: "bg-eps-gold/20 text-amber-800",
+  Mesa: "bg-slate-100 text-slate-600",
 };
 
 const PlaneamentoEnologicoPage = () => {
