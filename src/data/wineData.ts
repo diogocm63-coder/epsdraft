@@ -37,16 +37,20 @@ export const wineProducts = [
   { regiao: 'Dão', tipo: 'Branco', produto: 'V&W Encruzado Premium', categoria: 'Premium' },
   { regiao: 'Vinho Verde', tipo: 'Branco', produto: 'V&W Monovarietal Premium', categoria: 'Premium' },
   { regiao: 'Lisboa', tipo: 'Tinto', produto: 'V&W Atlantic Gold Premium', categoria: 'Premium' },
+  // Mesa Line (table wines - simple, short aging)
+  { regiao: 'Portugal', tipo: 'Tinto', produto: 'V&W Mesa Tinto', categoria: 'Mesa' },
+  { regiao: 'Portugal', tipo: 'Branco', produto: 'V&W Mesa Branco', categoria: 'Mesa' },
+  { regiao: 'Portugal', tipo: 'Rosé', produto: 'V&W Mesa Rosé', categoria: 'Mesa' },
 ];
 
 // Wine regions
-export const wineRegioes = ['Douro', 'Alentejo', 'Dão', 'Vinho Verde', 'Lisboa'];
+export const wineRegioes = ['Douro', 'Alentejo', 'Dão', 'Vinho Verde', 'Lisboa', 'Portugal'];
 
 // Wine types
 export const wineTipos = ['Tinto', 'Branco', 'Rosé'];
 
 // Wine categories
-export const wineCategorias = ['Regional', 'Reserva', 'Premium'];
+export const wineCategorias = ['Regional', 'Reserva', 'Premium', 'Mesa'];
 
 // ========== EXECUTIVO PAGE DATA ==========
 export const executivoMonthlyData = [

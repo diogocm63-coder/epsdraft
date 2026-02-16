@@ -32,9 +32,17 @@ const getAgingProfile = (categoria: string, tipo: string): { barrica: number; cu
         ? { barrica: 0, cuba: 3, garrafa: 3 }
         : { barrica: 6, cuba: 3, garrafa: 4 };
   }
-  // Regional
+  if (categoria === 'Mesa') {
+    // Mesa: no barrica, short cuba only, minimal garrafa
+    return tipo === 'Tinto'
+      ? { barrica: 0, cuba: 3, garrafa: 1 }
+      : tipo === 'Rosé'
+        ? { barrica: 0, cuba: 1, garrafa: 1 }
+        : { barrica: 0, cuba: 2, garrafa: 1 };
+  }
+  // Regional: no barrica
   return tipo === 'Tinto'
-    ? { barrica: 4, cuba: 6, garrafa: 3 }
+    ? { barrica: 0, cuba: 6, garrafa: 3 }
     : tipo === 'Rosé'
       ? { barrica: 0, cuba: 2, garrafa: 2 }
       : { barrica: 0, cuba: 4, garrafa: 2 };
