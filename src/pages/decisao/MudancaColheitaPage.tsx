@@ -106,40 +106,57 @@ const MudancaColheitaPage = () => {
     });
   }, [filtered, ano]);
 
-  // Compara view: per product, two rows (Actual vintage / Nova vintage) with volumes per month
+  // Compara view: per product, "Actual" = old vintage (before change), "Nova" = new vintage (from change month)
   const comparaData = useMemo(() => {
     return filtered.map((p, pIdx) => {
       const vol = getBaseVolume(p.produto, pIdx);
-      const rowsActual: number[] = new Array(12).fill(0);
-      const rowsNova: number[] = new Array(12).fill(0);
-      const vintageActual: (number | null)[] = [];
-      const vintageNova: (number | null)[] = [];
 
+      // Get optimal vintages per month to find the change point
+      const vintagesOptimal: (number | null)[] = [];
       for (let m = 0; m < 12; m++) {
         const ref = new Date(ano, m, 15);
-        const vOtima = getAvailableVintageOptimal(ref, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa);
-        const vPrevista = getAvailableVintagePrevista(ref, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa, pIdx);
-        vintageActual.push(vOtima);
-        vintageNova.push(vPrevista);
-
-        // Actual row shows volume for the optimal vintage
-        if (vOtima !== null) rowsActual[m] = vol;
-        // Nova row shows volume for predicted vintage (only differs when vintage changes)
-        if (vPrevista !== null) rowsNova[m] = vol;
+        vintagesOptimal.push(getAvailableVintageOptimal(ref, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa));
       }
 
-      // Determine which vintage year each row represents (most common)
-      const actualYear = vintageActual.filter(v => v !== null).sort()[0] ?? null;
-      const novaYear = vintageNova.filter(v => v !== null).sort()[0] ?? null;
+      // Find the month where vintage changes (mudança)
+      let changeMonth = -1;
+      for (let m = 1; m < 12; m++) {
+        if (vintagesOptimal[m] !== null && vintagesOptimal[m - 1] !== null && vintagesOptimal[m] !== vintagesOptimal[m - 1]) {
+          changeMonth = m;
+          break;
+        }
+      }
+
+      const oldVintage = vintagesOptimal[0]; // vintage before change
+      const newVintage = changeMonth >= 0 ? vintagesOptimal[changeMonth] : null; // vintage after change
+
+      // Actual row: old vintage volume, shown in months BEFORE the change (where it's being sold)
+      // Nova row: new vintage volume, shown from the change month onwards
+      const rowsActual: number[] = new Array(12).fill(0);
+      const rowsNova: number[] = new Array(12).fill(0);
+
+      for (let m = 0; m < 12; m++) {
+        if (changeMonth < 0) {
+          // No change this year - all actual
+          if (vintagesOptimal[m] !== null) rowsActual[m] = vol;
+        } else {
+          if (m < changeMonth) {
+            // Before change: old vintage selling
+            rowsActual[m] = vol;
+          } else {
+            // From change month: new vintage available
+            rowsNova[m] = vol;
+          }
+        }
+      }
 
       return {
         ...p,
         rowsActual,
         rowsNova,
-        vintageActual,
-        vintageNova,
-        actualYear,
-        novaYear,
+        actualYear: oldVintage,
+        novaYear: newVintage,
+        changeMonth,
       };
     });
   }, [filtered, ano]);
@@ -264,16 +281,14 @@ const MudancaColheitaPage = () => {
                             {row.actualYear ?? '—'}
                           </TableCell>
                           {row.rowsActual.map((vol, m) => {
-                            const vActual = row.vintageActual[m];
-                            const vNova = row.vintageNova[m];
-                            // Color: red background if actual vintage has volume but nova differs (rupture)
-                            const isRupture = vActual !== null && vNova !== null && vActual !== vNova && vol > 0;
+                            // Actual row: highlight months near the end (approaching change) with warm tone
+                            const isLastMonths = row.changeMonth >= 0 && m >= row.changeMonth - 2 && m < row.changeMonth && vol > 0;
                             return (
                               <TableCell
                                 key={m}
                                 className={`text-center py-1 font-mono text-[11px] font-bold ${
                                   vol === 0 ? 'text-muted-foreground' :
-                                  isRupture ? 'bg-destructive/15 text-destructive' : ''
+                                  isLastMonths ? 'bg-destructive/10 text-destructive' : ''
                                 }`}
                               >
                                 {vol > 0 ? formatLitros(vol) : '0'}
@@ -288,17 +303,12 @@ const MudancaColheitaPage = () => {
                             {row.novaYear ?? '—'}
                           </TableCell>
                           {row.rowsNova.map((vol, m) => {
-                            const vActual = row.vintageActual[m];
-                            const vNova = row.vintageNova[m];
-                            const isNew = vNova !== null && vActual !== null && vNova !== vActual && vol > 0;
-                            const isAligned = vNova !== null && vActual !== null && vNova === vActual && vol > 0;
                             return (
                               <TableCell
                                 key={m}
                                 className={`text-center py-1 font-mono text-[11px] font-bold ${
                                   vol === 0 ? 'text-muted-foreground' :
-                                  isNew ? 'bg-secondary/15 text-secondary-foreground' :
-                                  isAligned ? '' : ''
+                                  'bg-secondary/15'
                                 }`}
                               >
                                 {vol > 0 ? formatLitros(vol) : '0'}
