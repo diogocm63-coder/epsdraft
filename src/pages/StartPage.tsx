@@ -14,6 +14,7 @@ import {
   Link,
 } from "lucide-react";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
+import { BudgetScenarioGrid } from "@/components/start/BudgetScenarioGrid";
 
 const modules = [
   {
@@ -148,6 +149,9 @@ const StartPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Budget & Scenario Grid */}
+            <BudgetScenarioGrid />
           </>
         ) : (
           /* Configuração Content */
