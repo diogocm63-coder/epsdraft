@@ -102,6 +102,9 @@ export const BudgetScenarioGrid = () => {
   const [newAno, setNewAno] = useState(2026);
   const [addMode, setAddMode] = useState<'zero' | 'copy'>('zero');
   const [copyFromId, setCopyFromId] = useState<number | null>(null);
+  const [newOrigens, setNewOrigens] = useState<Record<Origem, OrigemConfig>>(
+    () => Object.fromEntries(ORIGENS.map(o => [o, { origem: '', tipo: 'Modelo' as Tipo, ano: 2026 }])) as Record<Origem, OrigemConfig>
+  );
 
   const anos = [...new Set(entries.map(e => e.ano))].sort((a, b) => b - a);
 
@@ -140,13 +143,12 @@ export const BudgetScenarioGrid = () => {
         origens: { ...source.origens },
       };
     } else {
-      const emptyOrigem: OrigemConfig = { origem: '—', tipo: 'Modelo', ano: newAno };
       newEntry = {
         id: maxId + 1,
         cenario: newName,
         ano: newAno,
         closed: false,
-        origens: Object.fromEntries(ORIGENS.map(o => [o, { ...emptyOrigem }])) as Record<Origem, OrigemConfig>,
+        origens: { ...newOrigens },
       };
     }
 
@@ -155,6 +157,7 @@ export const BudgetScenarioGrid = () => {
     setNewName('');
     setAddMode('zero');
     setCopyFromId(null);
+    setNewOrigens(Object.fromEntries(ORIGENS.map(o => [o, { origem: '', tipo: 'Modelo' as Tipo, ano: 2026 }])) as Record<Origem, OrigemConfig>);
   };
 
   return (
@@ -281,42 +284,33 @@ export const BudgetScenarioGrid = () => {
 
       {/* Add Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-sm">Novo Fluxo de Orçamento</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant={addMode === 'zero' ? 'default' : 'outline'}
-                className="flex-1 h-8 text-xs gap-1"
-                onClick={() => setAddMode('zero')}
-              >
+              <Button size="sm" variant={addMode === 'zero' ? 'default' : 'outline'} className="flex-1 h-8 text-xs gap-1" onClick={() => setAddMode('zero')}>
                 <FilePlus className="w-3.5 h-3.5" /> De Raiz
               </Button>
-              <Button
-                size="sm"
-                variant={addMode === 'copy' ? 'default' : 'outline'}
-                className="flex-1 h-8 text-xs gap-1"
-                onClick={() => setAddMode('copy')}
-              >
+              <Button size="sm" variant={addMode === 'copy' ? 'default' : 'outline'} className="flex-1 h-8 text-xs gap-1" onClick={() => setAddMode('copy')}>
                 <Copy className="w-3.5 h-3.5" /> Copiar Existente
               </Button>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Nome do Cenário</label>
-              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Ex: Cenário Pessimista" className="h-8 text-sm" />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Ano</label>
-              <Input type="number" value={newAno} onChange={e => setNewAno(Number(e.target.value))} className="h-8 text-sm w-28" min={2024} max={2040} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Nome do Cenário</label>
+                <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Ex: Cenário Pessimista" className="h-8 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Ano</label>
+                <Input type="number" value={newAno} onChange={e => setNewAno(Number(e.target.value))} className="h-8 text-sm" min={2024} max={2040} />
+              </div>
             </div>
 
             {addMode === 'copy' && (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Copiar de</label>
                 <Select value={copyFromId ? String(copyFromId) : ''} onValueChange={v => setCopyFromId(Number(v))}>
                   <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecionar cenário..." /></SelectTrigger>
@@ -326,6 +320,57 @@ export const BudgetScenarioGrid = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            )}
+
+            {addMode === 'zero' && (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Configurar Origens por Fluxo</label>
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-[10px] font-semibold w-28">Fluxo</TableHead>
+                        <TableHead className="text-[10px] font-semibold">Origem</TableHead>
+                        <TableHead className="text-[10px] font-semibold w-28">Tipo</TableHead>
+                        <TableHead className="text-[10px] font-semibold w-20">Ano</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {ORIGENS.map(o => (
+                        <TableRow key={o}>
+                          <TableCell className="py-1 text-[11px] font-medium text-eps-primary">{o}</TableCell>
+                          <TableCell className="py-1">
+                            <Input
+                              value={newOrigens[o].origem}
+                              onChange={e => setNewOrigens(prev => ({ ...prev, [o]: { ...prev[o], origem: e.target.value } }))}
+                              placeholder={o}
+                              className="h-7 text-[11px]"
+                            />
+                          </TableCell>
+                          <TableCell className="py-1">
+                            <Select value={newOrigens[o].tipo} onValueChange={v => setNewOrigens(prev => ({ ...prev, [o]: { ...prev[o], tipo: v as Tipo } }))}>
+                              <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {TIPOS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="py-1">
+                            <Input
+                              type="number"
+                              value={newOrigens[o].ano}
+                              onChange={e => setNewOrigens(prev => ({ ...prev, [o]: { ...prev[o], ano: Number(e.target.value) } }))}
+                              className="h-7 text-[11px] w-16"
+                              min={2024}
+                              max={2040}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
           </div>
