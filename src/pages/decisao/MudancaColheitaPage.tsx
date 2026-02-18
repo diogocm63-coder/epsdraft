@@ -21,7 +21,18 @@ const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set
 
 type ViewMode = 'otima' | 'prevista' | 'compara';
 
-// Optimal: theoretical calculation based on aging profiles
+// Simulated base volume per product (litros)
+const getBaseVolume = (produto: string, idx: number): number => {
+  const seed = (produto.length * 31 + idx * 17) % 100;
+  return 5000 + seed * 200;
+};
+
+const formatLitros = (v: number): string => {
+  if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;
+  return v.toLocaleString('pt-PT');
+};
+
+// Optimal vintage calculation
 const getAvailableVintageOptimal = (
   refDate: Date,
   cubaMeses: number,
@@ -46,8 +57,7 @@ const getAvailableVintageOptimal = (
   return null;
 };
 
-// Predicted: simulates real stock availability (may differ from optimal due to stock constraints)
-// In a real system this would come from stock data; here we simulate small deviations
+// Predicted vintage (simulated stock deviations)
 const getAvailableVintagePrevista = (
   refDate: Date,
   cubaMeses: number,
@@ -55,12 +65,10 @@ const getAvailableVintagePrevista = (
   garrafaMeses: number,
   productIndex: number
 ): number | null => {
-  // Simulate: some products have stock delays (1-2 months later) or early depletion
   const seed = (productIndex * 7 + refDate.getMonth() * 3) % 10;
   let desvioMeses = 0;
-  if (seed <= 2) desvioMeses = 1;  // stock delay → old vintage stays 1 month longer
-  else if (seed === 3) desvioMeses = -1; // stock depleted early → new vintage forced earlier
-  // else desvioMeses = 0 → matches optimal
+  if (seed <= 2) desvioMeses = 1;
+  else if (seed === 3) desvioMeses = -1;
 
   const adjustedRef = new Date(refDate);
   adjustedRef.setMonth(adjustedRef.getMonth() - desvioMeses);
@@ -72,7 +80,6 @@ const MudancaColheitaPage = () => {
   const [filterTipo, setFilterTipo] = useState('all');
   const [filterCategoria, setFilterCategoria] = useState('all');
   const [filterRegiao, setFilterRegiao] = useState('all');
-
   const [viewMode, setViewMode] = useState<ViewMode>('otima');
 
   const filtered = useMemo(() =>
@@ -85,6 +92,7 @@ const MudancaColheitaPage = () => {
     [filterTipo, filterCategoria, filterRegiao]
   );
 
+  // Per-product grid (for Ótima / Prevista modes)
   const gridData = useMemo(() => {
     return filtered.map((p, pIdx) => {
       const monthsOtima: (number | null)[] = [];
@@ -96,6 +104,41 @@ const MudancaColheitaPage = () => {
       }
       return { ...p, monthsOtima, monthsPrevista };
     });
+  }, [filtered, ano]);
+
+  // Compara view: aggregate litros by vintage year × month
+  const comparaData = useMemo(() => {
+    // Collect all vintages that appear
+    const vintageSet = new Set<number>();
+    const otimaByVintageMonth: Record<number, number[]> = {};
+    const previstaByVintageMonth: Record<number, number[]> = {};
+
+    filtered.forEach((p, pIdx) => {
+      const vol = getBaseVolume(p.produto, pIdx);
+      for (let m = 0; m < 12; m++) {
+        const ref = new Date(ano, m, 15);
+        const vOtima = getAvailableVintageOptimal(ref, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa);
+        const vPrevista = getAvailableVintagePrevista(ref, p.estagioCuba, p.estagioBarrica, p.estagioGarrafa, pIdx);
+
+        if (vOtima !== null) {
+          vintageSet.add(vOtima);
+          if (!otimaByVintageMonth[vOtima]) otimaByVintageMonth[vOtima] = new Array(12).fill(0);
+          otimaByVintageMonth[vOtima][m] += vol;
+        }
+        if (vPrevista !== null) {
+          vintageSet.add(vPrevista);
+          if (!previstaByVintageMonth[vPrevista]) previstaByVintageMonth[vPrevista] = new Array(12).fill(0);
+          previstaByVintageMonth[vPrevista][m] += vol;
+        }
+      }
+    });
+
+    const vintages = Array.from(vintageSet).sort((a, b) => b - a);
+    return vintages.map(v => ({
+      vintage: v,
+      otima: otimaByVintageMonth[v] || new Array(12).fill(0),
+      prevista: previstaByVintageMonth[v] || new Array(12).fill(0),
+    }));
   }, [filtered, ano]);
 
   return (
@@ -179,112 +222,179 @@ const MudancaColheitaPage = () => {
         {/* Grid */}
         <div className="bg-white rounded-lg border shadow-sm">
           <ScrollArea className="max-h-[calc(100vh-260px)]">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="text-xs font-semibold sticky left-0 bg-muted/50 z-10 min-w-[200px]">Produto</TableHead>
-                  <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
-                  <TableHead className="text-xs font-semibold text-center">Cat.</TableHead>
-                  {mesesNomes.map(m => (
-                    <TableHead key={m} className="text-xs font-semibold text-center min-w-[60px]">{m}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {gridData.map((row, idx) => {
-                  const months = viewMode === 'prevista' ? row.monthsPrevista : row.monthsOtima;
-                  const changeMonths = new Set<number>();
-                  for (let m = 1; m < 12; m++) {
-                    if (months[m] !== months[m - 1]) changeMonths.add(m);
-                  }
+            {viewMode === 'compara' ? (
+              /* === COMPARA VIEW: vintage years in rows, litros per month === */
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="text-xs font-semibold sticky left-0 bg-muted/50 z-10 min-w-[100px]">Colheita</TableHead>
+                    {mesesNomes.map(m => (
+                      <TableHead key={m} className="text-xs font-semibold text-center min-w-[80px]">{m}</TableHead>
+                    ))}
+                    <TableHead className="text-xs font-semibold text-center min-w-[90px]">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {comparaData.map(row => {
+                    const totalOtima = row.otima.reduce((s, v) => s + v, 0);
+                    const totalPrevista = row.prevista.reduce((s, v) => s + v, 0);
 
-                  return (
-                    <TableRow key={idx} className="text-xs">
-                      <TableCell className="font-medium sticky left-0 bg-white z-10 py-1.5">{row.produto}</TableCell>
-                      <TableCell className="text-center py-1.5">
-                        <Badge variant="outline" className={`text-[10px] ${
-                          row.tipo === 'Tinto' ? 'border-red-300 text-red-700' :
-                          row.tipo === 'Branco' ? 'border-yellow-300 text-yellow-700' :
-                          'border-pink-300 text-pink-600'
-                        }`}>{row.tipo}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center py-1.5 text-muted-foreground">{row.categoria}</TableCell>
-                      {months.map((vintage, m) => {
-                        const isChange = changeMonths.has(m);
+                    return (
+                      <TableRow key={row.vintage} className="text-xs">
+                        <TableCell className="font-bold sticky left-0 bg-white z-10 py-1.5 text-eps-primary">
+                          {row.vintage}
+                        </TableCell>
+                        {row.otima.map((volOtima, m) => {
+                          const volPrevista = row.prevista[m];
+                          const diff = volPrevista - volOtima;
 
-                        // Compare mode: color based on otima vs prevista
-                        let compareBg = '';
-                        let compareText = '';
-                        if (viewMode === 'compara') {
-                          const vOtima = row.monthsOtima[m];
-                          const vPrevista = row.monthsPrevista[m];
-                          if (vOtima === vPrevista) {
-                            // Green: match
-                            compareBg = 'bg-green-100';
-                            compareText = 'text-green-800';
-                          } else if (vOtima !== null && vPrevista !== null && vOtima > vPrevista) {
-                            // Yellow: theoretical vintage is newer (ahead), real still on old → delay
-                            compareBg = 'bg-yellow-100';
-                            compareText = 'text-yellow-800';
+                          // Color: green if equal, yellow if prevista < otima (delay/less stock), red if prevista > otima (rupture risk)
+                          let cellBg = '';
+                          let cellText = '';
+                          if (volOtima === 0 && volPrevista === 0) {
+                            cellBg = '';
+                            cellText = 'text-muted-foreground';
+                          } else if (Math.abs(diff) < 100) {
+                            // Equal (within tolerance)
+                            cellBg = 'bg-green-50';
+                            cellText = 'text-green-800';
+                          } else if (diff < 0) {
+                            // Prevista less than Ótima → delay / shortage
+                            cellBg = 'bg-yellow-50';
+                            cellText = 'text-yellow-800';
                           } else {
-                            // Red: theoretical vintage is older than real → rupture
-                            compareBg = 'bg-red-100';
-                            compareText = 'text-red-800 font-bold';
+                            // Prevista more than Ótima → vintage forced early / rupture on other
+                            cellBg = 'bg-red-100';
+                            cellText = 'text-red-800 font-bold';
                           }
-                        }
 
-                        const displayValue = viewMode === 'compara'
-                          ? `${row.monthsOtima[m] ?? '—'} / ${row.monthsPrevista[m] ?? '—'}`
-                          : (vintage ?? '—');
+                          return (
+                            <TableCell key={m} className={`text-center py-1 font-mono text-[10px] ${cellBg} ${cellText}`}>
+                              <div>{formatLitros(volOtima)} L</div>
+                              {diff !== 0 && (
+                                <div className={`text-[9px] ${diff > 0 ? 'text-red-600' : 'text-yellow-600'}`}>
+                                  {diff > 0 ? '+' : ''}{formatLitros(diff)} L
+                                </div>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell className="text-center py-1.5 font-mono text-[11px] font-bold">
+                          <div>{formatLitros(totalOtima)} L</div>
+                          {totalPrevista !== totalOtima && (
+                            <div className={`text-[9px] ${totalPrevista > totalOtima ? 'text-red-600' : 'text-yellow-600'}`}>
+                              {totalPrevista > totalOtima ? '+' : ''}{formatLitros(totalPrevista - totalOtima)} L
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {/* Totals row */}
+                  <TableRow className="text-xs bg-muted/30 font-bold border-t-2">
+                    <TableCell className="sticky left-0 bg-muted/30 z-10 py-1.5 font-bold">Total</TableCell>
+                    {mesesNomes.map((_, m) => {
+                      const totOtima = comparaData.reduce((s, r) => s + r.otima[m], 0);
+                      const totPrevista = comparaData.reduce((s, r) => s + r.prevista[m], 0);
+                      const diff = totPrevista - totOtima;
+                      return (
+                        <TableCell key={m} className="text-center py-1 font-mono text-[10px]">
+                          <div>{formatLitros(totOtima)} L</div>
+                          {Math.abs(diff) >= 100 && (
+                            <div className={`text-[9px] ${diff > 0 ? 'text-red-600' : 'text-yellow-600'}`}>
+                              {diff > 0 ? '+' : ''}{formatLitros(diff)} L
+                            </div>
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                    <TableCell className="text-center py-1.5 font-mono text-[11px] font-bold">
+                      {formatLitros(comparaData.reduce((s, r) => s + r.otima.reduce((a, b) => a + b, 0), 0))} L
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            ) : (
+              /* === ÓTIMA / PREVISTA VIEW: products in rows === */
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="text-xs font-semibold sticky left-0 bg-muted/50 z-10 min-w-[200px]">Produto</TableHead>
+                    <TableHead className="text-xs font-semibold text-center">Tipo</TableHead>
+                    <TableHead className="text-xs font-semibold text-center">Cat.</TableHead>
+                    {mesesNomes.map(m => (
+                      <TableHead key={m} className="text-xs font-semibold text-center min-w-[60px]">{m}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gridData.map((row, idx) => {
+                    const months = viewMode === 'prevista' ? row.monthsPrevista : row.monthsOtima;
+                    const changeMonths = new Set<number>();
+                    for (let m = 1; m < 12; m++) {
+                      if (months[m] !== months[m - 1]) changeMonths.add(m);
+                    }
 
-                        return (
-                          <TableCell
-                            key={m}
-                            className={`text-center py-1.5 font-mono text-[11px] ${
-                              viewMode === 'compara'
-                                ? `${compareBg} ${compareText}`
-                                : isChange
+                    return (
+                      <TableRow key={idx} className="text-xs">
+                        <TableCell className="font-medium sticky left-0 bg-white z-10 py-1.5">{row.produto}</TableCell>
+                        <TableCell className="text-center py-1.5">
+                          <Badge variant="outline" className={`text-[10px] ${
+                            row.tipo === 'Tinto' ? 'border-red-300 text-red-700' :
+                            row.tipo === 'Branco' ? 'border-yellow-300 text-yellow-700' :
+                            'border-pink-300 text-pink-600'
+                          }`}>{row.tipo}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center py-1.5 text-muted-foreground">{row.categoria}</TableCell>
+                        {months.map((vintage, m) => {
+                          const isChange = changeMonths.has(m);
+                          return (
+                            <TableCell
+                              key={m}
+                              className={`text-center py-1.5 font-mono text-[11px] ${
+                                isChange
                                   ? 'bg-eps-primary/15 font-bold text-eps-primary border-l-2 border-eps-primary'
                                   : ''
-                            }`}
-                          >
-                            {displayValue}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                              }`}
+                            >
+                              {vintage ?? '—'}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </ScrollArea>
         </div>
 
         {/* Legend */}
         <div className="flex items-center gap-4 text-[10px] text-muted-foreground flex-wrap">
-          {viewMode !== 'compara' ? (
+          {viewMode === 'compara' ? (
+            <>
+              <span className="flex items-center gap-1">
+                <span className="w-4 h-3 rounded bg-green-50 border border-green-300"></span>
+                Real = Teórico
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-4 h-3 rounded bg-yellow-50 border border-yellow-300"></span>
+                Prevista &lt; Ótima (atraso)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-4 h-3 rounded bg-red-100 border border-red-300"></span>
+                Prevista &gt; Ótima (rotura)
+              </span>
+              <span>Valores em Litros · Diferença mostrada abaixo</span>
+            </>
+          ) : (
             <>
               <span className="flex items-center gap-1">
                 <span className="w-4 h-3 rounded bg-eps-primary/15 border-l-2 border-eps-primary"></span>
                 Mês de mudança de colheita
               </span>
               <span>Cada célula mostra o ano da colheita disponível para venda nesse mês</span>
-            </>
-          ) : (
-            <>
-              <span className="flex items-center gap-1">
-                <span className="w-4 h-3 rounded bg-green-100 border border-green-300"></span>
-                Real = Teórico
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-4 h-3 rounded bg-yellow-100 border border-yellow-300"></span>
-                Teórica antes da Real (atraso)
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-4 h-3 rounded bg-red-100 border border-red-300"></span>
-                Teórica depois da Real (rotura)
-              </span>
-              <span>Formato: Ótima / Prevista</span>
             </>
           )}
         </div>
