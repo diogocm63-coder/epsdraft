@@ -106,10 +106,14 @@ const MudancaColheitaPage = () => {
     });
   }, [filtered, ano]);
 
-  // Compara view: per product, "Actual" = old vintage (before change), "Nova" = new vintage (from change month)
+  // Compara view: stock decreases with sales; colors = green/yellow/red
   const comparaData = useMemo(() => {
     return filtered.map((p, pIdx) => {
-      const vol = getBaseVolume(p.produto, pIdx);
+      const initialStock = getBaseVolume(p.produto, pIdx);
+      // Monthly sales rate (simulated: ~8-15% of initial stock per month)
+      const salesSeed = (p.produto.length * 13 + pIdx * 7) % 8;
+      const monthlySalesRate = 0.08 + salesSeed * 0.01;
+      const monthlySales = Math.round(initialStock * monthlySalesRate);
 
       // Get optimal vintages per month to find the change point
       const vintagesOptimal: (number | null)[] = [];
@@ -127,25 +131,66 @@ const MudancaColheitaPage = () => {
         }
       }
 
-      const oldVintage = vintagesOptimal[0]; // vintage before change
-      const newVintage = changeMonth >= 0 ? vintagesOptimal[changeMonth] : null; // vintage after change
+      const oldVintage = vintagesOptimal[0];
+      const newVintage = changeMonth >= 0 ? vintagesOptimal[changeMonth] : null;
 
-      // Actual row: old vintage volume, shown in months BEFORE the change (where it's being sold)
-      // Nova row: new vintage volume, shown from the change month onwards
+      // Actual row: old vintage stock decreasing with sales
       const rowsActual: number[] = new Array(12).fill(0);
+      // Nova row: new vintage stock from changeMonth, also decreasing
       const rowsNova: number[] = new Array(12).fill(0);
+      // Color per month: 'green' | 'yellow' | 'red'
+      const cellColors: ('green' | 'yellow' | 'red')[] = new Array(12).fill('green');
+
+      let actualStock = initialStock;
+      let novaStock = 0;
+      const novaInitialStock = Math.round(initialStock * (0.7 + (pIdx % 4) * 0.1));
+
+      // Simulate some products running out early (yellow/red scenarios)
+      // Products with index % 5 === 0: run out of actual before nova arrives (red gap)
+      // Products with index % 5 === 1: overlap period (yellow)
+      const forceRedGap = pIdx % 5 === 0 && changeMonth > 2;
+      const forceYellowOverlap = pIdx % 5 === 1 && changeMonth > 1;
+
+      // For red gap: actual runs out 1-2 months before changeMonth
+      const actualDepleteMonth = forceRedGap ? changeMonth - 2 : changeMonth;
+      // For yellow overlap: nova arrives 1 month early
+      const novaStartMonth = forceYellowOverlap && changeMonth > 0 ? changeMonth - 1 : changeMonth;
 
       for (let m = 0; m < 12; m++) {
+        // Update actual stock (old vintage)
         if (changeMonth < 0) {
-          // No change this year - all actual
-          if (vintagesOptimal[m] !== null) rowsActual[m] = vol;
+          // No change this year
+          rowsActual[m] = Math.max(0, actualStock);
+          actualStock -= monthlySales;
+          if (actualStock < 0) actualStock = 0;
+          cellColors[m] = rowsActual[m] > 0 ? 'green' : 'red';
         } else {
-          if (m < changeMonth) {
-            // Before change: old vintage selling
-            rowsActual[m] = vol;
+          // Actual vintage sells until it depletes or changeMonth
+          if (m < (forceRedGap ? actualDepleteMonth : 12)) {
+            rowsActual[m] = Math.max(0, actualStock);
+            actualStock -= monthlySales;
+            if (actualStock < 0) actualStock = 0;
           } else {
-            // From change month: new vintage available
-            rowsNova[m] = vol;
+            rowsActual[m] = 0;
+          }
+
+          // Nova vintage available from novaStartMonth
+          if (m >= novaStartMonth && novaStartMonth >= 0) {
+            if (m === novaStartMonth) novaStock = novaInitialStock;
+            rowsNova[m] = Math.max(0, novaStock);
+            novaStock -= monthlySales;
+            if (novaStock < 0) novaStock = 0;
+          }
+
+          // Determine color
+          const hasActual = rowsActual[m] > 0;
+          const hasNova = rowsNova[m] > 0;
+          if (hasActual && hasNova) {
+            cellColors[m] = 'yellow'; // both vintages in stock (overlap)
+          } else if (hasActual || hasNova) {
+            cellColors[m] = 'green'; // one vintage in stock
+          } else {
+            cellColors[m] = 'red'; // no stock at all
           }
         }
       }
@@ -154,9 +199,10 @@ const MudancaColheitaPage = () => {
         ...p,
         rowsActual,
         rowsNova,
+        cellColors,
         actualYear: oldVintage,
         novaYear: newVintage,
-        changeMonth,
+        changeMonth: changeMonth >= 0 ? changeMonth : -1,
       };
     });
   }, [filtered, ano]);
@@ -281,17 +327,19 @@ const MudancaColheitaPage = () => {
                             {row.actualYear ?? '—'}
                           </TableCell>
                           {row.rowsActual.map((vol, m) => {
-                            // Actual row: highlight months near the end (approaching change) with warm tone
-                            const isLastMonths = row.changeMonth >= 0 && m >= row.changeMonth - 2 && m < row.changeMonth && vol > 0;
+                            const color = row.cellColors[m];
+                            const bgClass = color === 'red' ? 'bg-red-100' :
+                                            color === 'yellow' ? 'bg-yellow-50' :
+                                            vol > 0 ? 'bg-green-50' : '';
+                            const textClass = color === 'red' ? 'text-red-700' :
+                                              color === 'yellow' ? 'text-yellow-700' :
+                                              vol === 0 ? 'text-muted-foreground' : 'text-green-800';
                             return (
                               <TableCell
                                 key={m}
-                                className={`text-center py-1 font-mono text-[11px] font-bold ${
-                                  vol === 0 ? 'text-muted-foreground' :
-                                  isLastMonths ? 'bg-destructive/10 text-destructive' : ''
-                                }`}
+                                className={`text-center py-1 font-mono text-[11px] font-bold ${bgClass} ${textClass}`}
                               >
-                                {vol > 0 ? formatLitros(vol) : '0'}
+                                {vol > 0 ? formatLitros(vol) : '—'}
                               </TableCell>
                             );
                           })}
@@ -303,15 +351,19 @@ const MudancaColheitaPage = () => {
                             {row.novaYear ?? '—'}
                           </TableCell>
                           {row.rowsNova.map((vol, m) => {
+                            const color = row.cellColors[m];
+                            const bgClass = color === 'red' ? 'bg-red-100' :
+                                            color === 'yellow' ? 'bg-yellow-50' :
+                                            vol > 0 ? 'bg-green-50' : '';
+                            const textClass = color === 'red' ? 'text-red-700' :
+                                              color === 'yellow' ? 'text-yellow-700' :
+                                              vol === 0 ? 'text-muted-foreground' : 'text-green-800';
                             return (
                               <TableCell
                                 key={m}
-                                className={`text-center py-1 font-mono text-[11px] font-bold ${
-                                  vol === 0 ? 'text-muted-foreground' :
-                                  'bg-secondary/15'
-                                }`}
+                                className={`text-center py-1 font-mono text-[11px] font-bold ${bgClass} ${textClass}`}
                               >
-                                {vol > 0 ? formatLitros(vol) : '0'}
+                                {vol > 0 ? formatLitros(vol) : '—'}
                               </TableCell>
                             );
                           })}
@@ -382,14 +434,18 @@ const MudancaColheitaPage = () => {
           {viewMode === 'compara' ? (
             <>
               <span className="flex items-center gap-1">
-                <span className="w-4 h-3 rounded bg-destructive/15 border border-destructive/30"></span>
-                Actual com rotura (colheita diferente)
+                <span className="w-4 h-3 rounded bg-green-100 border border-green-300"></span>
+                Stock disponível (uma colheita)
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-4 h-3 rounded bg-secondary/15 border border-secondary/30"></span>
-                Nova colheita disponível
+                <span className="w-4 h-3 rounded bg-yellow-50 border border-yellow-300"></span>
+                Sobreposição de colheitas (duas em stock)
               </span>
-              <span>Valores em Litros por mês</span>
+              <span className="flex items-center gap-1">
+                <span className="w-4 h-3 rounded bg-red-100 border border-red-300"></span>
+                Sem stock (rutura)
+              </span>
+              <span>Stock em Litros (decresce com vendas previstas)</span>
             </>
           ) : (
             <>
