@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Filter, RotateCcw, ChevronRight, ChevronDown, ChevronsRight, ChevronsDown, Plus, Minus } from 'lucide-react';
+import { Filter, RotateCcw, ChevronRight, ChevronDown, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { wineProducts, wineRegioes } from '@/data/wineData';
 
@@ -22,13 +22,12 @@ interface StockMasterRow {
   yoy2025: number;
   budget2026: number;
   dtUvas: number;
-  lx: number;
-  alen: number;
-  bair: number;
-  beir: number;
-  douro: number;
-  setubal: number;
-  mosc: number;
+  vinifDouro: number;
+  vinifAlentejo: number;
+  vinifDao: number;
+  vinifVinhoVerde: number;
+  vinifLisboa: number;
+  vinifPortugal: number;
   totalVinif: number;
   transfVinhos2024: number;
   necIdeCompra2025: number;
@@ -48,6 +47,15 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
+const REGIAO_TO_VINIF_KEY: Record<string, keyof StockMasterRow> = {
+  'Douro': 'vinifDouro',
+  'Alentejo': 'vinifAlentejo',
+  'Dão': 'vinifDao',
+  'Vinho Verde': 'vinifVinhoVerde',
+  'Lisboa': 'vinifLisboa',
+  'Portugal': 'vinifPortugal',
+};
+
 const generateData = (): StockMasterRow[] => {
   const rows: StockMasterRow[] = [];
 
@@ -57,6 +65,16 @@ const generateData = (): StockMasterRow[] => {
     const prev = Math.floor(base * (0.8 + seededRandom(seed + 1) * 0.4));
     const tmsf = seededRandom(seed + 7) > 0.7 ? Math.floor(seededRandom(seed + 8) * 20000) * (seededRandom(seed + 9) > 0.5 ? 1 : -1) : 0;
 
+    // Vinification: product vinifies in its own region
+    const vinifValue = Math.floor(seededRandom(seed + 12) * 10000) + 500;
+    const vinifDouro = prod.regiao === 'Douro' ? vinifValue : 0;
+    const vinifAlentejo = prod.regiao === 'Alentejo' ? vinifValue : 0;
+    const vinifDao = prod.regiao === 'Dão' ? vinifValue : 0;
+    const vinifVinhoVerde = prod.regiao === 'Vinho Verde' ? vinifValue : 0;
+    const vinifLisboa = prod.regiao === 'Lisboa' ? vinifValue : 0;
+    const vinifPortugal = prod.regiao === 'Portugal' ? vinifValue : 0;
+    const totalVinif = vinifDouro + vinifAlentejo + vinifDao + vinifVinhoVerde + vinifLisboa + vinifPortugal;
+
     rows.push({
       regiao: prod.regiao, submarca: prod.produto, categoria: prod.categoria, tipo: prod.tipo,
       stockAtualERP: base, stockDtAntes: Math.floor(base * 0.95), tmsfMarcas: tmsf, stock: base + tmsf,
@@ -65,12 +83,8 @@ const generateData = (): StockMasterRow[] => {
       yoy2025: Math.floor(prev * (0.85 + seededRandom(seed + 3) * 0.3)),
       budget2026: Math.floor(prev * (0.9 + seededRandom(seed + 4) * 0.2)),
       dtUvas: seededRandom(seed + 10) > 0.6 ? Math.floor(seededRandom(seed + 11) * 15000) : 0,
-      lx: prod.regiao === 'Lisboa' ? Math.floor(seededRandom(seed + 12) * 8000) : 0,
-      alen: prod.regiao === 'Alentejo' ? Math.floor(seededRandom(seed + 13) * 10000) : 0,
-      bair: 0, beir: 0,
-      douro: prod.regiao === 'Douro' ? Math.floor(seededRandom(seed + 14) * 8000) : 0,
-      setubal: 0, mosc: 0,
-      totalVinif: Math.floor(seededRandom(seed + 5) * 25000),
+      vinifDouro, vinifAlentejo, vinifDao, vinifVinhoVerde, vinifLisboa, vinifPortugal,
+      totalVinif,
       transfVinhos2024: seededRandom(seed + 15) > 0.8 ? Math.floor(seededRandom(seed + 16) * 40000) * -1 : 0,
       necIdeCompra2025: 0,
       transfVinhos2025: seededRandom(seed + 17) > 0.8 ? Math.floor(seededRandom(seed + 18) * 10000) * -1 : 0,
@@ -84,7 +98,7 @@ const generateData = (): StockMasterRow[] => {
   });
 
   const allRows = [...rows];
-  const sumFields = ['stockAtualERP','stockDtAntes','tmsfMarcas','stock','prevUvas','yoy2024','yoy2025','budget2026','dtUvas','lx','alen','bair','beir','douro','setubal','mosc','totalVinif','transfVinhos2024','necIdeCompra2025','transfVinhos2025','retifGrau','totalCompras','nec2024','stockNova','excessoStock'] as const;
+  const sumFields = ['stockAtualERP','stockDtAntes','tmsfMarcas','stock','prevUvas','yoy2024','yoy2025','budget2026','dtUvas','vinifDouro','vinifAlentejo','vinifDao','vinifVinhoVerde','vinifLisboa','vinifPortugal','totalVinif','transfVinhos2024','necIdeCompra2025','transfVinhos2025','retifGrau','totalCompras','nec2024','stockNova','excessoStock'] as const;
 
   wineRegioes.forEach(regiao => {
     const regionRows = rows.filter(r => r.regiao === regiao);
@@ -112,7 +126,7 @@ const COL_GROUPS = [
   { id: 'stockERP', label: 'Stock ERP', cols: ['stockDtAntes', 'tmsfMarcas', 'stock'] },
   { id: 'previsao', label: 'Previsão', cols: ['prevUvas'] },
   { id: 'vendas', label: 'Vendas', cols: ['yoy2024', 'yoy2025', 'budget2026'] },
-  { id: 'vinificacao', label: 'Vinificação', cols: ['dtUvas', 'lx', 'alen', 'bair', 'beir', 'douro', 'setubal', 'mosc', 'totalVinif'] },
+  { id: 'vinificacao', label: 'Vinificação', cols: ['dtUvas', 'vinifDouro', 'vinifAlentejo', 'vinifDao', 'vinifVinhoVerde', 'vinifLisboa', 'vinifPortugal', 'totalVinif'] },
   { id: 'compras', label: 'Compras/Transf.', cols: ['transfVinhos2024', 'necIdeCompra2025', 'transfVinhos2025', 'retifGrau', 'totalCompras'] },
   { id: 'resultado', label: 'Resultado', cols: ['nec2024', 'stockNova', 'excessoStock', 'inicioVenda', 'fimVenda'] },
 ] as const;
@@ -128,13 +142,12 @@ const COL_HEADERS: Record<string, { label: string; sub?: string; align: string; 
   yoy2025: { label: 'YOY 2025', align: 'right', minW: '70px' },
   budget2026: { label: 'Budget', sub: '2026', align: 'right', minW: '75px', special: 'budget' },
   dtUvas: { label: 'DT.UVAS', align: 'right', minW: '65px' },
-  lx: { label: 'LX', align: 'right', minW: '45px' },
-  alen: { label: 'Alen', align: 'right', minW: '45px' },
-  bair: { label: 'Bair', align: 'right', minW: '45px' },
-  beir: { label: 'Beir', align: 'right', minW: '45px' },
-  douro: { label: 'Douro', align: 'right', minW: '45px' },
-  setubal: { label: 'Setubal', align: 'right', minW: '55px' },
-  mosc: { label: 'Mosc', align: 'right', minW: '45px' },
+  vinifDouro: { label: 'Douro', align: 'right', minW: '55px' },
+  vinifAlentejo: { label: 'Alentejo', align: 'right', minW: '60px' },
+  vinifDao: { label: 'Dão', align: 'right', minW: '50px' },
+  vinifVinhoVerde: { label: 'V.Verde', align: 'right', minW: '55px' },
+  vinifLisboa: { label: 'Lisboa', align: 'right', minW: '55px' },
+  vinifPortugal: { label: 'Portugal', align: 'right', minW: '60px' },
   totalVinif: { label: 'TOTAL', align: 'right', minW: '65px' },
   transfVinhos2024: { label: 'TRANSF°', sub: 'Vinhos 2024', align: 'right', minW: '75px' },
   necIdeCompra2025: { label: 'NEC.IDE', sub: 'COMPRA 2025', align: 'right', minW: '80px' },
@@ -148,20 +161,12 @@ const COL_HEADERS: Record<string, { label: string; sub?: string; align: string; 
   fimVenda: { label: 'FIM VEND°', align: 'center', minW: '85px', special: 'accent' },
 };
 
-const getCellValue = (row: StockMasterRow, col: string): string => {
-  const val = (row as any)[col];
-  if (col === 'inicioVenda' || col === 'fimVenda') return val || '';
-  return formatNum(val);
-};
-
 export default function VisaoIntegradaPage() {
   const [filterRegiao, setFilterRegiao] = useState('Todas');
   const [filterCategoria, setFilterCategoria] = useState('Todas');
   const [filterTipo, setFilterTipo] = useState('Todos');
 
-  // Row expand/collapse per region
   const [expandedRows, setExpandedRows] = useState<Set<string>>(() => new Set(wineRegioes));
-  // Column expand/collapse per group
   const [expandedCols, setExpandedCols] = useState<Set<ColGroupId>>(() => new Set(COL_GROUPS.map(g => g.id)));
 
   const toggleRow = useCallback((regiao: string) => {
@@ -203,12 +208,10 @@ export default function VisaoIntegradaPage() {
     });
   }, [filterRegiao, filterCategoria, filterTipo]);
 
-  // Visible rows: totals always shown, products only if region expanded
   const visibleRows = useMemo(() => {
     return filteredData.filter(r => r.isTotal || expandedRows.has(r.regiao));
   }, [filteredData, expandedRows]);
 
-  // Visible columns
   const visibleColGroups = useMemo(() => {
     return COL_GROUPS.map(g => ({
       ...g,
@@ -262,7 +265,6 @@ export default function VisaoIntegradaPage() {
           </Select>
           <div className="flex-1" />
 
-          {/* Expand/Collapse controls */}
           <div className="flex items-center gap-1 border-l pl-3 border-border">
             <span className="text-[10px] text-muted-foreground mr-1">Linhas:</span>
             <Button variant="outline" size="sm" onClick={allRowsExpanded ? collapseAllRows : expandAllRows} className="h-6 px-2 text-[10px] gap-1">
@@ -289,7 +291,6 @@ export default function VisaoIntegradaPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-[11px] border-collapse">
                 <thead>
-                  {/* Group header row with expand/collapse buttons */}
                   <tr className="bg-muted/80">
                     <th colSpan={2} className="border border-border px-2 py-1.5 text-left font-semibold bg-muted min-w-[280px]"></th>
                     {visibleColGroups.map(g => {
@@ -310,13 +311,11 @@ export default function VisaoIntegradaPage() {
                       );
                     })}
                   </tr>
-                  {/* Sub-header row */}
                   <tr className="bg-muted/50 text-[10px]">
                     <th className="border border-border px-2 py-1 text-left font-semibold sticky left-0 bg-muted/50 z-10 min-w-[80px]">Região</th>
                     <th className="border border-border px-2 py-1 text-left font-semibold sticky left-[80px] bg-muted/50 z-10 min-w-[200px]">Submarca</th>
                     {visibleColGroups.map(g => {
                       if (!expandedCols.has(g.id)) {
-                        // Collapsed: show summary column
                         return (
                           <th key={g.id} className="border border-border px-2 py-1 text-center font-medium min-w-[40px] bg-muted/30">
                             <span className="text-[9px] text-muted-foreground">···</span>
@@ -361,7 +360,6 @@ export default function VisaoIntegradaPage() {
                         </td>
                         {visibleColGroups.map(g => {
                           if (!expandedCols.has(g.id)) {
-                            // Collapsed: show empty placeholder
                             return (
                               <td key={g.id} className="border border-border px-1 py-1 text-center bg-muted/10">
                                 <span className="text-[9px] text-muted-foreground">···</span>
