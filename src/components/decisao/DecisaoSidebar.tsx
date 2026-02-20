@@ -15,11 +15,13 @@ import {
   Grape, 
   Wine, 
   Calendar,
-  Layers
+  Layers,
+  Eye
 } from 'lucide-react';
 
 const menuItems = [
   { title: 'Decisão', path: '/decisao', icon: LayoutDashboard },
+  { title: 'Visão Integrada', path: '/decisao/visao-integrada', icon: Eye },
   { title: 'Stocks Iniciais', path: '/decisao/stocks-iniciais', icon: Package },
   { title: 'Previsão de Vendima', path: '/decisao/previsao-vendima', icon: TrendingUp },
   { title: 'Plano de Engarrafamento', path: '/decisao/plano-engarrafamento', icon: Package },
