@@ -1,10 +1,10 @@
 import { Eye } from 'lucide-react';
 import { DecisaoLayout } from '@/components/decisao/DecisaoLayout';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Filter, RotateCcw } from 'lucide-react';
+import { Filter, RotateCcw, ChevronRight, ChevronDown, ChevronsRight, ChevronsDown, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { wineProducts, wineRegioes } from '@/data/wineData';
 
@@ -43,7 +43,6 @@ interface StockMasterRow {
   isTotal?: boolean;
 }
 
-// Seed-based pseudo-random for consistent data
 const seededRandom = (seed: number) => {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
@@ -51,45 +50,31 @@ const seededRandom = (seed: number) => {
 
 const generateData = (): StockMasterRow[] => {
   const rows: StockMasterRow[] = [];
-  
+
   wineProducts.forEach((prod, idx) => {
     const seed = idx * 7 + 13;
     const base = Math.floor(seededRandom(seed) * 45000) + 1000;
     const prev = Math.floor(base * (0.8 + seededRandom(seed + 1) * 0.4));
-    const yoy24 = Math.floor(prev * (0.9 + seededRandom(seed + 2) * 0.2));
-    const yoy25 = Math.floor(prev * (0.85 + seededRandom(seed + 3) * 0.3));
-    const budget = Math.floor(prev * (0.9 + seededRandom(seed + 4) * 0.2));
-    const vinifTotal = Math.floor(seededRandom(seed + 5) * 25000);
-    const compraTotal = Math.floor(seededRandom(seed + 6) * 5000);
     const tmsf = seededRandom(seed + 7) > 0.7 ? Math.floor(seededRandom(seed + 8) * 20000) * (seededRandom(seed + 9) > 0.5 ? 1 : -1) : 0;
-    
+
     rows.push({
-      regiao: prod.regiao,
-      submarca: prod.produto,
-      categoria: prod.categoria,
-      tipo: prod.tipo,
-      stockAtualERP: base,
-      stockDtAntes: Math.floor(base * 0.95),
-      tmsfMarcas: tmsf,
-      stock: base + tmsf,
+      regiao: prod.regiao, submarca: prod.produto, categoria: prod.categoria, tipo: prod.tipo,
+      stockAtualERP: base, stockDtAntes: Math.floor(base * 0.95), tmsfMarcas: tmsf, stock: base + tmsf,
       prevUvas: prev,
-      yoy2024: yoy24,
-      yoy2025: yoy25,
-      budget2026: budget,
+      yoy2024: Math.floor(prev * (0.9 + seededRandom(seed + 2) * 0.2)),
+      yoy2025: Math.floor(prev * (0.85 + seededRandom(seed + 3) * 0.3)),
+      budget2026: Math.floor(prev * (0.9 + seededRandom(seed + 4) * 0.2)),
       dtUvas: seededRandom(seed + 10) > 0.6 ? Math.floor(seededRandom(seed + 11) * 15000) : 0,
       lx: prod.regiao === 'Lisboa' ? Math.floor(seededRandom(seed + 12) * 8000) : 0,
       alen: prod.regiao === 'Alentejo' ? Math.floor(seededRandom(seed + 13) * 10000) : 0,
-      bair: 0,
-      beir: 0,
+      bair: 0, beir: 0,
       douro: prod.regiao === 'Douro' ? Math.floor(seededRandom(seed + 14) * 8000) : 0,
-      setubal: 0,
-      mosc: 0,
-      totalVinif: vinifTotal,
+      setubal: 0, mosc: 0,
+      totalVinif: Math.floor(seededRandom(seed + 5) * 25000),
       transfVinhos2024: seededRandom(seed + 15) > 0.8 ? Math.floor(seededRandom(seed + 16) * 40000) * -1 : 0,
       necIdeCompra2025: 0,
       transfVinhos2025: seededRandom(seed + 17) > 0.8 ? Math.floor(seededRandom(seed + 18) * 10000) * -1 : 0,
-      retifGrau: 0,
-      totalCompras: compraTotal,
+      retifGrau: 0, totalCompras: Math.floor(seededRandom(seed + 6) * 5000),
       nec2024: Math.floor(base * 0.6 + seededRandom(seed + 19) * base * 0.4),
       stockNova: Math.floor(seededRandom(seed + 20) * 200000),
       excessoStock: seededRandom(seed + 21) > 0.7 ? Math.floor(seededRandom(seed + 22) * 5000) : 0,
@@ -98,66 +83,75 @@ const generateData = (): StockMasterRow[] => {
     });
   });
 
-  // Generate totals per region
   const allRows = [...rows];
+  const sumFields = ['stockAtualERP','stockDtAntes','tmsfMarcas','stock','prevUvas','yoy2024','yoy2025','budget2026','dtUvas','lx','alen','bair','beir','douro','setubal','mosc','totalVinif','transfVinhos2024','necIdeCompra2025','transfVinhos2025','retifGrau','totalCompras','nec2024','stockNova','excessoStock'] as const;
+
   wineRegioes.forEach(regiao => {
     const regionRows = rows.filter(r => r.regiao === regiao);
     if (regionRows.length === 0) return;
-    
-    const sumRow: StockMasterRow = {
-      regiao,
-      submarca: `${regiao} Total`,
-      categoria: '',
-      tipo: '',
-      stockAtualERP: regionRows.reduce((s, r) => s + r.stockAtualERP, 0),
-      stockDtAntes: regionRows.reduce((s, r) => s + r.stockDtAntes, 0),
-      tmsfMarcas: regionRows.reduce((s, r) => s + r.tmsfMarcas, 0),
-      stock: regionRows.reduce((s, r) => s + r.stock, 0),
-      prevUvas: regionRows.reduce((s, r) => s + r.prevUvas, 0),
-      yoy2024: regionRows.reduce((s, r) => s + r.yoy2024, 0),
-      yoy2025: regionRows.reduce((s, r) => s + r.yoy2025, 0),
-      budget2026: regionRows.reduce((s, r) => s + r.budget2026, 0),
-      dtUvas: regionRows.reduce((s, r) => s + r.dtUvas, 0),
-      lx: regionRows.reduce((s, r) => s + r.lx, 0),
-      alen: regionRows.reduce((s, r) => s + r.alen, 0),
-      bair: regionRows.reduce((s, r) => s + r.bair, 0),
-      beir: regionRows.reduce((s, r) => s + r.beir, 0),
-      douro: regionRows.reduce((s, r) => s + r.douro, 0),
-      setubal: regionRows.reduce((s, r) => s + r.setubal, 0),
-      mosc: regionRows.reduce((s, r) => s + r.mosc, 0),
-      totalVinif: regionRows.reduce((s, r) => s + r.totalVinif, 0),
-      transfVinhos2024: regionRows.reduce((s, r) => s + r.transfVinhos2024, 0),
-      necIdeCompra2025: regionRows.reduce((s, r) => s + r.necIdeCompra2025, 0),
-      transfVinhos2025: regionRows.reduce((s, r) => s + r.transfVinhos2025, 0),
-      retifGrau: regionRows.reduce((s, r) => s + r.retifGrau, 0),
-      totalCompras: regionRows.reduce((s, r) => s + r.totalCompras, 0),
-      nec2024: regionRows.reduce((s, r) => s + r.nec2024, 0),
-      stockNova: regionRows.reduce((s, r) => s + r.stockNova, 0),
-      excessoStock: regionRows.reduce((s, r) => s + r.excessoStock, 0),
-      inicioVenda: '',
-      fimVenda: '',
-      isTotal: true,
-    };
-    allRows.push(sumRow);
+    const sumRow: any = { regiao, submarca: `${regiao} Total`, categoria: '', tipo: '', inicioVenda: '', fimVenda: '', isTotal: true };
+    sumFields.forEach(f => { sumRow[f] = regionRows.reduce((s, r) => s + (r as any)[f], 0); });
+    allRows.push(sumRow as StockMasterRow);
   });
 
-  // Sort: group by region, products first then total
   const sorted: StockMasterRow[] = [];
   wineRegioes.forEach(regiao => {
-    const prods = allRows.filter(r => r.regiao === regiao && !r.isTotal);
     const total = allRows.find(r => r.regiao === regiao && r.isTotal);
-    sorted.push(...prods);
+    const prods = allRows.filter(r => r.regiao === regiao && !r.isTotal);
     if (total) sorted.push(total);
+    sorted.push(...prods);
   });
-
   return sorted;
 };
 
 const allData = generateData();
+const formatNum = (n: number) => n === 0 ? '' : n.toLocaleString('pt-PT');
 
-const formatNum = (n: number) => {
-  if (n === 0) return '';
-  return n.toLocaleString('pt-PT');
+// Column group definitions
+const COL_GROUPS = [
+  { id: 'stockERP', label: 'Stock ERP', cols: ['stockDtAntes', 'tmsfMarcas', 'stock'] },
+  { id: 'previsao', label: 'Previsão', cols: ['prevUvas'] },
+  { id: 'vendas', label: 'Vendas', cols: ['yoy2024', 'yoy2025', 'budget2026'] },
+  { id: 'vinificacao', label: 'Vinificação', cols: ['dtUvas', 'lx', 'alen', 'bair', 'beir', 'douro', 'setubal', 'mosc', 'totalVinif'] },
+  { id: 'compras', label: 'Compras/Transf.', cols: ['transfVinhos2024', 'necIdeCompra2025', 'transfVinhos2025', 'retifGrau', 'totalCompras'] },
+  { id: 'resultado', label: 'Resultado', cols: ['nec2024', 'stockNova', 'excessoStock', 'inicioVenda', 'fimVenda'] },
+] as const;
+
+type ColGroupId = typeof COL_GROUPS[number]['id'];
+
+const COL_HEADERS: Record<string, { label: string; sub?: string; align: string; minW: string; special?: string }> = {
+  stockDtAntes: { label: 'STOCK Dt', sub: '08/07/2025', align: 'right', minW: '80px' },
+  tmsfMarcas: { label: 'Tmsf°', sub: 'Marcas', align: 'right', minW: '70px' },
+  stock: { label: 'Stock', align: 'right', minW: '70px' },
+  prevUvas: { label: 'UVAS', align: 'right', minW: '70px', special: 'previsao' },
+  yoy2024: { label: 'YOY 2024', align: 'right', minW: '70px' },
+  yoy2025: { label: 'YOY 2025', align: 'right', minW: '70px' },
+  budget2026: { label: 'Budget', sub: '2026', align: 'right', minW: '75px', special: 'budget' },
+  dtUvas: { label: 'DT.UVAS', align: 'right', minW: '65px' },
+  lx: { label: 'LX', align: 'right', minW: '45px' },
+  alen: { label: 'Alen', align: 'right', minW: '45px' },
+  bair: { label: 'Bair', align: 'right', minW: '45px' },
+  beir: { label: 'Beir', align: 'right', minW: '45px' },
+  douro: { label: 'Douro', align: 'right', minW: '45px' },
+  setubal: { label: 'Setubal', align: 'right', minW: '55px' },
+  mosc: { label: 'Mosc', align: 'right', minW: '45px' },
+  totalVinif: { label: 'TOTAL', align: 'right', minW: '65px' },
+  transfVinhos2024: { label: 'TRANSF°', sub: 'Vinhos 2024', align: 'right', minW: '75px' },
+  necIdeCompra2025: { label: 'NEC.IDE', sub: 'COMPRA 2025', align: 'right', minW: '80px' },
+  transfVinhos2025: { label: 'TRANSF°', sub: 'Vinhos 2025', align: 'right', minW: '75px' },
+  retifGrau: { label: 'Retif.', sub: 'Grau', align: 'right', minW: '55px' },
+  totalCompras: { label: 'TOTAL', align: 'right', minW: '65px' },
+  nec2024: { label: 'Nec 2024', align: 'right', minW: '70px' },
+  stockNova: { label: 'Stock Nova', align: 'right', minW: '80px' },
+  excessoStock: { label: 'EXCESSO', sub: 'DE STOCK', align: 'right', minW: '75px', special: 'accent' },
+  inicioVenda: { label: 'INICIO', sub: 'VENDA', align: 'center', minW: '85px', special: 'accent' },
+  fimVenda: { label: 'FIM VEND°', align: 'center', minW: '85px', special: 'accent' },
+};
+
+const getCellValue = (row: StockMasterRow, col: string): string => {
+  const val = (row as any)[col];
+  if (col === 'inicioVenda' || col === 'fimVenda') return val || '';
+  return formatNum(val);
 };
 
 export default function VisaoIntegradaPage() {
@@ -165,16 +159,41 @@ export default function VisaoIntegradaPage() {
   const [filterCategoria, setFilterCategoria] = useState('Todas');
   const [filterTipo, setFilterTipo] = useState('Todos');
 
+  // Row expand/collapse per region
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(() => new Set(wineRegioes));
+  // Column expand/collapse per group
+  const [expandedCols, setExpandedCols] = useState<Set<ColGroupId>>(() => new Set(COL_GROUPS.map(g => g.id)));
+
+  const toggleRow = useCallback((regiao: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      next.has(regiao) ? next.delete(regiao) : next.add(regiao);
+      return next;
+    });
+  }, []);
+
+  const expandAllRows = useCallback(() => setExpandedRows(new Set(wineRegioes)), []);
+  const collapseAllRows = useCallback(() => setExpandedRows(new Set()), []);
+
+  const toggleCol = useCallback((id: ColGroupId) => {
+    setExpandedCols(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const expandAllCols = useCallback(() => setExpandedCols(new Set(COL_GROUPS.map(g => g.id))), []);
+  const collapseAllCols = useCallback(() => setExpandedCols(new Set()), []);
+
   const filteredData = useMemo(() => {
     return allData.filter(r => {
       if (filterRegiao !== 'Todas' && r.regiao !== filterRegiao) return false;
       if (r.isTotal) {
-        // Show total only if its region's products pass filters
         if (filterCategoria !== 'Todas' || filterTipo !== 'Todos') {
-          const hasProducts = allData.some(p => !p.isTotal && p.regiao === r.regiao &&
+          return allData.some(p => !p.isTotal && p.regiao === r.regiao &&
             (filterCategoria === 'Todas' || p.categoria === filterCategoria) &&
             (filterTipo === 'Todos' || p.tipo === filterTipo));
-          return hasProducts;
         }
         return true;
       }
@@ -184,13 +203,24 @@ export default function VisaoIntegradaPage() {
     });
   }, [filterRegiao, filterCategoria, filterTipo]);
 
-  const activeFilters = [filterRegiao !== 'Todas', filterCategoria !== 'Todas', filterTipo !== 'Todos'].filter(Boolean).length;
+  // Visible rows: totals always shown, products only if region expanded
+  const visibleRows = useMemo(() => {
+    return filteredData.filter(r => r.isTotal || expandedRows.has(r.regiao));
+  }, [filteredData, expandedRows]);
 
-  const resetFilters = () => {
-    setFilterRegiao('Todas');
-    setFilterCategoria('Todas');
-    setFilterTipo('Todos');
-  };
+  // Visible columns
+  const visibleColGroups = useMemo(() => {
+    return COL_GROUPS.map(g => ({
+      ...g,
+      visibleCols: expandedCols.has(g.id) ? g.cols : ([] as string[]),
+    }));
+  }, [expandedCols]);
+
+  const activeFilters = [filterRegiao !== 'Todas', filterCategoria !== 'Todas', filterTipo !== 'Todos'].filter(Boolean).length;
+  const resetFilters = () => { setFilterRegiao('Todas'); setFilterCategoria('Todas'); setFilterTipo('Todos'); };
+
+  const allRowsExpanded = expandedRows.size === wineRegioes.length;
+  const allColsExpanded = expandedCols.size === COL_GROUPS.length;
 
   return (
     <DecisaoLayout title="EPS Vinhos" icon={<Eye className="w-4 h-4" />}>
@@ -206,37 +236,48 @@ export default function VisaoIntegradaPage() {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">Filtros</span>
             {activeFilters > 0 && (
-              <Badge variant="default" className="bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center text-xs">
-                {activeFilters}
-              </Badge>
+              <Badge variant="default" className="bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center text-xs">{activeFilters}</Badge>
             )}
           </div>
-
           <Select value={filterRegiao} onValueChange={setFilterRegiao}>
-            <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Região" /></SelectTrigger>
+            <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Todas">Todas as Regiões</SelectItem>
               {wineRegioes.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
             </SelectContent>
           </Select>
-
           <Select value={filterCategoria} onValueChange={setFilterCategoria}>
-            <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue placeholder="Categoria" /></SelectTrigger>
+            <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Todas">Todas Categorias</SelectItem>
               {['Regional', 'Reserva', 'Premium', 'Mesa'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-
           <Select value={filterTipo} onValueChange={setFilterTipo}>
-            <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue placeholder="Tipo" /></SelectTrigger>
+            <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Todos">Todos Tipos</SelectItem>
               {['Tinto', 'Branco', 'Rosé'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
             </SelectContent>
           </Select>
-
           <div className="flex-1" />
+
+          {/* Expand/Collapse controls */}
+          <div className="flex items-center gap-1 border-l pl-3 border-border">
+            <span className="text-[10px] text-muted-foreground mr-1">Linhas:</span>
+            <Button variant="outline" size="sm" onClick={allRowsExpanded ? collapseAllRows : expandAllRows} className="h-6 px-2 text-[10px] gap-1">
+              {allRowsExpanded ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              {allRowsExpanded ? 'Fechar' : 'Abrir'}
+            </Button>
+          </div>
+          <div className="flex items-center gap-1 border-l pl-3 border-border">
+            <span className="text-[10px] text-muted-foreground mr-1">Colunas:</span>
+            <Button variant="outline" size="sm" onClick={allColsExpanded ? collapseAllCols : expandAllCols} className="h-6 px-2 text-[10px] gap-1">
+              {allColsExpanded ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              {allColsExpanded ? 'Fechar' : 'Abrir'}
+            </Button>
+          </div>
+
           <Button variant="ghost" size="sm" onClick={resetFilters} className="text-muted-foreground hover:text-foreground h-8 text-xs">
             <RotateCcw className="h-3 w-3 mr-1" /> Limpar
           </Button>
@@ -244,88 +285,107 @@ export default function VisaoIntegradaPage() {
 
         {/* Grid */}
         <div className="border rounded-lg overflow-hidden">
-          <ScrollArea className="w-full" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+          <ScrollArea className="w-full" style={{ maxHeight: 'calc(100vh - 240px)' }}>
             <div className="overflow-x-auto">
-              <table className="w-full text-[11px] border-collapse min-w-[2200px]">
+              <table className="w-full text-[11px] border-collapse">
                 <thead>
+                  {/* Group header row with expand/collapse buttons */}
                   <tr className="bg-muted/80">
-                    <th colSpan={2} className="border border-border px-2 py-1.5 text-left font-semibold bg-muted"></th>
-                    <th colSpan={3} className="border border-border px-2 py-1.5 text-center font-semibold bg-muted">STOCK ATUAL - ERP</th>
-                    <th className="border border-border px-2 py-1.5 text-center font-semibold bg-muted"></th>
-                    <th className="border border-border px-2 py-1.5 text-center font-bold text-destructive bg-destructive/10">PREVISÃO</th>
-                    <th colSpan={4} className="border border-border px-2 py-1.5 text-center font-semibold bg-muted">VENDAS</th>
-                    <th colSpan={8} className="border border-border px-2 py-1.5 text-center font-semibold bg-muted">VINIFICAÇÃO</th>
-                    <th colSpan={5} className="border border-border px-2 py-1.5 text-center font-semibold bg-muted">COMPRAS / TRANSF./VENDAS</th>
-                    <th colSpan={2} className="border border-border px-2 py-1.5 text-center font-semibold bg-muted"></th>
-                    <th colSpan={3} className="border border-border px-2 py-1.5 text-center font-semibold bg-accent/50"></th>
+                    <th colSpan={2} className="border border-border px-2 py-1.5 text-left font-semibold bg-muted min-w-[280px]"></th>
+                    {visibleColGroups.map(g => {
+                      const isExpanded = expandedCols.has(g.id);
+                      const colSpan = isExpanded ? g.cols.length : 1;
+                      const specialBg = g.id === 'previsao' ? 'bg-destructive/10 text-destructive' :
+                                        g.id === 'resultado' ? 'bg-accent/50' : 'bg-muted';
+                      return (
+                        <th key={g.id} colSpan={colSpan} className={`border border-border px-1 py-1 text-center font-semibold ${specialBg}`}>
+                          <button
+                            onClick={() => toggleCol(g.id)}
+                            className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity"
+                          >
+                            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            <span className="text-[10px]">{g.label}</span>
+                          </button>
+                        </th>
+                      );
+                    })}
                   </tr>
+                  {/* Sub-header row */}
                   <tr className="bg-muted/50 text-[10px]">
                     <th className="border border-border px-2 py-1 text-left font-semibold sticky left-0 bg-muted/50 z-10 min-w-[80px]">Região</th>
                     <th className="border border-border px-2 py-1 text-left font-semibold sticky left-[80px] bg-muted/50 z-10 min-w-[200px]">Submarca</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[80px]">STOCK Dt<br/>08/07/2025</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[70px]">Tmsf°<br/>Marcas</th>
-                    <th className="border border-border px-2 py-1 text-right font-semibold min-w-[70px]">Stock</th>
-                    <th className="border border-border px-2 py-1 text-right font-bold text-destructive bg-destructive/10 min-w-[70px]">UVAS</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[70px]">YOY 2024</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[70px]">YOY 2025</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium bg-accent/30 min-w-[75px]">Budget<br/>2026</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[65px]">DT.UVAS</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[45px]">LX</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[45px]">Alen</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[45px]">Bair</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[45px]">Beir</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[45px]">Douro</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[55px]">Setubal</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[45px]">Mosc</th>
-                    <th className="border border-border px-2 py-1 text-right font-semibold min-w-[65px]">TOTAL</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[75px]">TRANSF°<br/>Vinhos 2024</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[80px]">NEC.IDE<br/>COMPRA 2025</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[75px]">TRANSF°<br/>Vinhos 2025</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[55px]">Retif.<br/>Grau</th>
-                    <th className="border border-border px-2 py-1 text-right font-semibold min-w-[65px]">TOTAL</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[70px]">Nec 2024</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium min-w-[80px]">Stock Nova</th>
-                    <th className="border border-border px-2 py-1 text-right font-medium bg-accent/30 min-w-[75px]">EXCESSO<br/>DE STOCK</th>
-                    <th className="border border-border px-2 py-1 text-center font-medium bg-accent/30 min-w-[85px]">INICIO<br/>VENDA</th>
-                    <th className="border border-border px-2 py-1 text-center font-medium bg-accent/30 min-w-[85px]">FIM VEND°</th>
+                    {visibleColGroups.map(g => {
+                      if (!expandedCols.has(g.id)) {
+                        // Collapsed: show summary column
+                        return (
+                          <th key={g.id} className="border border-border px-2 py-1 text-center font-medium min-w-[40px] bg-muted/30">
+                            <span className="text-[9px] text-muted-foreground">···</span>
+                          </th>
+                        );
+                      }
+                      return g.cols.map(col => {
+                        const h = COL_HEADERS[col];
+                        const specialClass = h.special === 'previsao' ? 'font-bold text-destructive bg-destructive/10' :
+                                            h.special === 'budget' ? 'bg-accent/30' :
+                                            h.special === 'accent' ? 'bg-accent/30' : '';
+                        return (
+                          <th key={col} className={`border border-border px-2 py-1 text-${h.align} font-medium ${specialClass}`} style={{ minWidth: h.minW }}>
+                            {h.label}{h.sub && <><br />{h.sub}</>}
+                          </th>
+                        );
+                      });
+                    })}
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((row, idx) => {
+                  {visibleRows.map((row, idx) => {
                     const isTotalRow = row.isTotal;
+                    const isRowExpanded = expandedRows.has(row.regiao);
                     const bgClass = isTotalRow ? 'bg-primary/10 font-bold' : idx % 2 === 0 ? 'bg-card' : 'bg-muted/20';
                     const stickyBg = isTotalRow ? 'bg-primary/10' : idx % 2 === 0 ? 'bg-card' : 'bg-muted/20';
-                    
+
                     return (
-                      <tr key={idx} className={`${bgClass} hover:bg-accent/30 transition-colors`}>
-                        <td className={`border border-border px-2 py-1 font-medium sticky left-0 z-10 ${stickyBg}`}>{row.regiao}</td>
-                        <td className={`border border-border px-2 py-1 sticky left-[80px] z-10 ${stickyBg} ${isTotalRow ? 'font-bold' : ''}`}>{row.submarca}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.stockAtualERP)}</td>
-                        <td className={`border border-border px-2 py-1 text-right ${row.tmsfMarcas < 0 ? 'text-destructive font-medium' : ''}`}>{formatNum(row.tmsfMarcas)}</td>
-                        <td className="border border-border px-2 py-1 text-right font-semibold">{formatNum(row.stock)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.prevUvas)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.yoy2024)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.yoy2025)}</td>
-                        <td className="border border-border px-2 py-1 text-right bg-accent/10">{formatNum(row.budget2026)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.dtUvas)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.lx)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.alen)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.bair)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.beir)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.douro)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.setubal)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.mosc)}</td>
-                        <td className="border border-border px-2 py-1 text-right font-semibold">{formatNum(row.totalVinif)}</td>
-                        <td className={`border border-border px-2 py-1 text-right ${row.transfVinhos2024 < 0 ? 'text-destructive font-medium' : ''}`}>{formatNum(row.transfVinhos2024)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.necIdeCompra2025)}</td>
-                        <td className={`border border-border px-2 py-1 text-right ${row.transfVinhos2025 < 0 ? 'text-destructive font-medium' : ''}`}>{formatNum(row.transfVinhos2025)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.retifGrau)}</td>
-                        <td className="border border-border px-2 py-1 text-right font-semibold">{formatNum(row.totalCompras)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.nec2024)}</td>
-                        <td className="border border-border px-2 py-1 text-right">{formatNum(row.stockNova)}</td>
-                        <td className={`border border-border px-2 py-1 text-right bg-accent/10 ${row.excessoStock > 0 ? 'text-destructive font-medium' : ''}`}>{formatNum(row.excessoStock)}</td>
-                        <td className="border border-border px-2 py-1 text-center text-[10px] bg-accent/10">{row.inicioVenda}</td>
-                        <td className="border border-border px-2 py-1 text-center text-[10px] bg-accent/10">{row.fimVenda}</td>
+                      <tr key={`${row.regiao}-${row.submarca}-${idx}`} className={`${bgClass} hover:bg-accent/30 transition-colors`}>
+                        <td className={`border border-border px-2 py-1 font-medium sticky left-0 z-10 ${stickyBg}`}>
+                          {isTotalRow ? (
+                            <button onClick={() => toggleRow(row.regiao)} className="flex items-center gap-1 hover:opacity-70 w-full">
+                              {isRowExpanded ? <ChevronDown className="h-3 w-3 flex-shrink-0" /> : <ChevronRight className="h-3 w-3 flex-shrink-0" />}
+                              <span>{row.regiao}</span>
+                            </button>
+                          ) : (
+                            <span className="pl-4">{row.regiao}</span>
+                          )}
+                        </td>
+                        <td className={`border border-border px-2 py-1 sticky left-[80px] z-10 ${stickyBg} ${isTotalRow ? 'font-bold' : ''}`}>
+                          {row.submarca}
+                        </td>
+                        {visibleColGroups.map(g => {
+                          if (!expandedCols.has(g.id)) {
+                            // Collapsed: show empty placeholder
+                            return (
+                              <td key={g.id} className="border border-border px-1 py-1 text-center bg-muted/10">
+                                <span className="text-[9px] text-muted-foreground">···</span>
+                              </td>
+                            );
+                          }
+                          return g.cols.map(col => {
+                            const h = COL_HEADERS[col];
+                            const val = (row as any)[col];
+                            const isDate = col === 'inicioVenda' || col === 'fimVenda';
+                            const isNeg = typeof val === 'number' && val < 0;
+                            const isExcesso = col === 'excessoStock' && val > 0;
+                            const specialClass = h.special === 'budget' ? 'bg-accent/10' :
+                                                h.special === 'accent' ? 'bg-accent/10' : '';
+                            const textClass = isNeg || isExcesso ? 'text-destructive font-medium' : '';
+                            const fontClass = col === 'stock' || col === 'totalVinif' || col === 'totalCompras' ? 'font-semibold' : '';
+
+                            return (
+                              <td key={col} className={`border border-border px-2 py-1 text-${h.align} ${specialClass} ${textClass} ${fontClass} ${isDate ? 'text-[10px]' : ''}`}>
+                                {isDate ? (val || '') : formatNum(val)}
+                              </td>
+                            );
+                          });
+                        })}
                       </tr>
                     );
                   })}
