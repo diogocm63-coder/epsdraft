@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CostCenterDialog, type CostCenterAllocation, allCostCenters } from "@/components/configuracao/CostCenterDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CashMapView } from "@/components/configuracao/CashMapView";
 
 // ========== Types ==========
 type VolumeUnit = "cx9L" | "L" | "Kg";
@@ -221,6 +222,7 @@ const ConfiguracaoFinanceiraPage = () => {
                 <TabsTrigger value="distribuicao" className="text-xs">Distribuição Transversais</TabsTrigger>
                 <TabsTrigger value="ccmatrix" className="text-xs">Matriz CC → Áreas</TabsTrigger>
                 <TabsTrigger value="volumes" className="text-xs">Custos & Volumes</TabsTrigger>
+                <TabsTrigger value="cashmap" className="text-xs">Mapa de Cash</TabsTrigger>
               </TabsList>
 
               {/* ============= TAB 1: Areas ============= */}
@@ -710,6 +712,10 @@ const ConfiguracaoFinanceiraPage = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+              {/* ============= TAB 5: Mapa de Cash ============= */}
+              <TabsContent value="cashmap">
+                <CashMapView />
               </TabsContent>
             </Tabs>
           </main>
