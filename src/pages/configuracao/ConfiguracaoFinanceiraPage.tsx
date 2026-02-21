@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Grape, FlaskConical, Wine, Package, Truck, 
@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CostCenterDialog, type CostCenterAllocation, allCostCenters } from "@/components/configuracao/CostCenterDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// ========== Volume unit per area ==========
+// ========== Types ==========
 type VolumeUnit = "cx9L" | "L" | "Kg";
 
 interface AreaProducao {
@@ -58,6 +58,12 @@ const defaultTransversais: AreaTransversal[] = [
   { id: "outros", label: "Outros Custos Indirectos", icon: HelpCircle, description: "Diversos não classificados", costPct: 1 },
 ];
 
+// All areas combined for the matrix
+const allAreas = [
+  ...areasProducao.map(a => ({ id: a.id, label: a.label, icon: a.icon, type: "producao" as const })),
+  ...defaultTransversais.map(t => ({ id: t.id, label: t.label, icon: t.icon, type: "transversal" as const })),
+];
+
 type DistributionMatrix = Record<string, Record<string, number>>;
 
 const buildDefaultDistribution = (): DistributionMatrix => {
@@ -73,10 +79,47 @@ const buildDefaultDistribution = (): DistributionMatrix => {
   return matrix;
 };
 
+// CC → Area distribution matrix: each CC distributes 100% across areas
+type CCDistMatrix = Record<string, Record<string, number>>; // ccId -> areaId -> %
+
+const buildDefaultCCDist = (): CCDistMatrix => {
+  const matrix: CCDistMatrix = {};
+  allCostCenters.forEach(cc => {
+    matrix[cc.id] = {};
+    // Default: assign 100% to the matching group area
+    const groupMap: Record<string, string> = {
+      "Agricultura": "agricultura",
+      "Vinificação": "vinificacao",
+      "Estágio": "estagio",
+      "Engarrafamento": "engarrafamento",
+      "Distribuição": "distribuicao",
+    };
+    const defaultArea = groupMap[cc.group];
+    allAreas.forEach(a => {
+      matrix[cc.id][a.id] = a.id === defaultArea ? 100 : 0;
+    });
+    // Transversal CCs: split evenly across production areas
+    if (!defaultArea) {
+      areasProducao.forEach(a => {
+        matrix[cc.id][a.id] = Math.round(100 / areasProducao.length);
+      });
+      const sum = areasProducao.reduce((s, a) => s + (matrix[cc.id][a.id] || 0), 0);
+      matrix[cc.id][areasProducao[areasProducao.length - 1].id] += (100 - sum);
+    }
+  });
+  return matrix;
+};
+
 const formatVolume = (val: number): string => {
   if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
   if (val >= 1_000) return `${(val / 1_000).toFixed(0)}K`;
   return val.toFixed(0);
+};
+
+const formatCurrency = (val: number): string => {
+  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(2)}M €`;
+  if (val >= 1_000) return `${(val / 1_000).toFixed(0)}K €`;
+  return `${val.toFixed(0)} €`;
 };
 
 const ConfiguracaoFinanceiraPage = () => {
@@ -91,8 +134,9 @@ const ConfiguracaoFinanceiraPage = () => {
   const [volumes, setVolumes] = useState<Record<string, number>>(
     () => Object.fromEntries(areasProducao.map(a => [a.id, a.defaultVolume]))
   );
+  const [ccDistMatrix, setCcDistMatrix] = useState<CCDistMatrix>(buildDefaultCCDist);
 
-  // Cost center allocations per area (production + transversal)
+  // Cost center allocations per area (for dialog)
   const [ccAllocations, setCcAllocations] = useState<Record<string, CostCenterAllocation[]>>({});
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
 
@@ -107,6 +151,30 @@ const ConfiguracaoFinanceiraPage = () => {
     }));
   };
 
+  const handleCCDistChange = (ccId: string, areaId: string, val: string) => {
+    setCcDistMatrix(prev => ({
+      ...prev,
+      [ccId]: { ...prev[ccId], [areaId]: parseFloat(val) || 0 }
+    }));
+  };
+
+  // Cost allocated to each area from CC distribution
+  const costByAreaFromCC = useMemo(() => {
+    const result: Record<string, number> = {};
+    areasProducao.forEach(a => { result[a.id] = 0; });
+    defaultTransversais.forEach(t => { result[t.id] = 0; });
+    
+    allCostCenters.forEach(cc => {
+      const dist = ccDistMatrix[cc.id] || {};
+      Object.entries(dist).forEach(([areaId, pct]) => {
+        if (result[areaId] !== undefined) {
+          result[areaId] += cc.cost * pct / 100;
+        }
+      });
+    });
+    return result;
+  }, [ccDistMatrix]);
+
   const totalByArea = areasProducao.map(area => {
     const direct = producaoCosts[area.id] || 0;
     const allocated = defaultTransversais.reduce((sum, t) => {
@@ -114,13 +182,14 @@ const ConfiguracaoFinanceiraPage = () => {
       const pct = distribution[t.id]?.[area.id] || 0;
       return sum + (tCost * pct / 100);
     }, 0);
-    return { ...area, direct, allocated: +allocated.toFixed(2), total: +(direct + allocated).toFixed(2) };
+    const ccCost = costByAreaFromCC[area.id] || 0;
+    return { ...area, direct, allocated: +allocated.toFixed(2), total: +(direct + allocated).toFixed(2), ccCost };
   });
 
   const getCcCount = (areaId: string) => (ccAllocations[areaId] || []).length;
   const getCcValid = (areaId: string) => {
     const allocs = ccAllocations[areaId] || [];
-    if (allocs.length === 0) return null; // not configured
+    if (allocs.length === 0) return null;
     const total = allocs.reduce((s, a) => s + a.pct, 0);
     return Math.abs(total - 100) < 0.5;
   };
@@ -130,6 +199,9 @@ const ConfiguracaoFinanceiraPage = () => {
        ...defaultTransversais.map(t => ({ id: t.id, label: t.label, icon: t.icon }))
       ].find(x => x.id === dialogOpen)
     : null;
+
+  // Only production areas for the CC matrix columns
+  const productionAreaIds = areasProducao.map(a => a.id);
 
   return (
     <TooltipProvider>
@@ -146,7 +218,8 @@ const ConfiguracaoFinanceiraPage = () => {
             <Tabs defaultValue="areas" className="space-y-6">
               <TabsList className="h-9">
                 <TabsTrigger value="areas" className="text-xs">Áreas & Centros de Custo</TabsTrigger>
-                <TabsTrigger value="distribuicao" className="text-xs">Distribuição de Custos Transversais</TabsTrigger>
+                <TabsTrigger value="distribuicao" className="text-xs">Distribuição Transversais</TabsTrigger>
+                <TabsTrigger value="ccmatrix" className="text-xs">Matriz CC → Áreas</TabsTrigger>
                 <TabsTrigger value="volumes" className="text-xs">Custos & Volumes</TabsTrigger>
               </TabsList>
 
@@ -176,7 +249,7 @@ const ConfiguracaoFinanceiraPage = () => {
                   </Card>
                 </div>
 
-                {/* Value Chain Areas — clickable for cost centers */}
+                {/* Value Chain Areas */}
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                     <ArrowRight className="h-4 w-4 text-eps-primary" />
@@ -190,6 +263,7 @@ const ConfiguracaoFinanceiraPage = () => {
                       const Icon = area.icon;
                       const ccCount = getCcCount(area.id);
                       const ccValid = getCcValid(area.id);
+                      const ccCost = costByAreaFromCC[area.id] || 0;
                       return (
                         <Card
                           key={area.id}
@@ -212,7 +286,12 @@ const ConfiguracaoFinanceiraPage = () => {
                               />
                               <span className="text-[10px] text-muted-foreground">%</span>
                             </div>
-                            {/* CC indicator */}
+                            {/* CC cost from matrix */}
+                            {ccCost > 0 && (
+                              <Badge variant="secondary" className="text-[9px]">
+                                {formatCurrency(ccCost)}
+                              </Badge>
+                            )}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Badge
@@ -235,7 +314,7 @@ const ConfiguracaoFinanceiraPage = () => {
                   </div>
                 </div>
 
-                {/* Transversal Areas — clickable */}
+                {/* Transversal Areas */}
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                     <Percent className="h-4 w-4 text-amber-600" />
@@ -294,7 +373,7 @@ const ConfiguracaoFinanceiraPage = () => {
                 </div>
               </TabsContent>
 
-              {/* ============= TAB 2: Distribution Matrix ============= */}
+              {/* ============= TAB 2: Distribution Matrix (transversais) ============= */}
               <TabsContent value="distribuicao" className="space-y-6">
                 <p className="text-xs text-muted-foreground">
                   Defina como cada custo transversal é distribuído pelas áreas da cadeia de valor (em %). O total de cada linha deve somar 100%.
@@ -387,10 +466,95 @@ const ConfiguracaoFinanceiraPage = () => {
                 </div>
               </TabsContent>
 
-              {/* ============= TAB 3: Custos & Volumes ============= */}
+              {/* ============= TAB 3: CC → Áreas Matrix ============= */}
+              <TabsContent value="ccmatrix" className="space-y-6">
+                <p className="text-xs text-muted-foreground">
+                  Para cada centro de custo, distribua 100% do seu custo pelas áreas de produção. O custo de cada área = soma dos custos dos CCs alocados.
+                </p>
+
+                <ScrollArea className="rounded-md border" style={{ maxHeight: "600px" }}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-xs font-semibold min-w-[220px] sticky left-0 bg-muted/50 z-10">Centro de Custo</TableHead>
+                        <TableHead className="text-xs font-semibold text-center min-w-[90px]">Custo Total</TableHead>
+                        {areasProducao.map(a => {
+                          const Icon = a.icon;
+                          return (
+                            <TableHead key={a.id} className="text-center min-w-[80px]">
+                              <div className="flex flex-col items-center gap-1">
+                                <Icon className="w-4 h-4 text-eps-primary" />
+                                <span className="text-[10px] font-medium leading-tight">{a.label.split(' ')[0]}</span>
+                              </div>
+                            </TableHead>
+                          );
+                        })}
+                        <TableHead className="text-xs font-semibold text-center">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allCostCenters.map(cc => {
+                        const rowSum = areasProducao.reduce((s, a) => s + (ccDistMatrix[cc.id]?.[a.id] || 0), 0);
+                        const isValid = Math.abs(rowSum - 100) < 0.5;
+                        return (
+                          <TableRow key={cc.id} className={`text-xs ${!isValid ? 'bg-destructive/5' : ''}`}>
+                            <TableCell className="sticky left-0 bg-background z-10">
+                              <div>
+                                <span className="font-medium">{cc.name}</span>
+                                <span className="block text-[10px] text-muted-foreground">{cc.group}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="outline" className="text-[10px]">{formatCurrency(cc.cost)}</Badge>
+                            </TableCell>
+                            {areasProducao.map(a => (
+                              <TableCell key={a.id} className="text-center p-1">
+                                <Input
+                                  type="number"
+                                  value={ccDistMatrix[cc.id]?.[a.id] ?? 0}
+                                  onChange={e => handleCCDistChange(cc.id, a.id, e.target.value)}
+                                  className="w-14 h-7 text-xs text-center mx-auto"
+                                  min={0} max={100} step={5}
+                                />
+                              </TableCell>
+                            ))}
+                            <TableCell className="text-center">
+                              <span className={`text-xs font-semibold ${isValid ? 'text-emerald-600' : 'text-destructive'}`}>
+                                {rowSum.toFixed(0)}%
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      {/* Totals row */}
+                      <TableRow className="bg-muted/30 font-semibold text-xs border-t-2">
+                        <TableCell className="sticky left-0 bg-muted/30 z-10">
+                          <span className="font-bold">Total Alocado por Área</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className="text-[10px]">
+                            {formatCurrency(allCostCenters.reduce((s, cc) => s + cc.cost, 0))}
+                          </Badge>
+                        </TableCell>
+                        {areasProducao.map(a => {
+                          const areaCost = costByAreaFromCC[a.id] || 0;
+                          return (
+                            <TableCell key={a.id} className="text-center">
+                              <span className="font-bold text-eps-primary">{formatCurrency(areaCost)}</span>
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell />
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </TabsContent>
+
+              {/* ============= TAB 4: Custos & Volumes ============= */}
               <TabsContent value="volumes" className="space-y-6">
                 <p className="text-xs text-muted-foreground">
-                  Custos totais por área com indicadores de volume. Cada área utiliza a unidade de medida relevante.
+                  Custos totais por área com rácios €/unidade. Cada área utiliza a unidade de medida relevante para calcular o custo unitário.
                 </p>
 
                 <div className="grid grid-cols-5 gap-4">
@@ -398,6 +562,8 @@ const ConfiguracaoFinanceiraPage = () => {
                     const Icon = area.icon;
                     const areaData = areasProducao.find(a => a.id === area.id)!;
                     const vol = volumes[area.id] || 0;
+                    const ccCost = costByAreaFromCC[area.id] || 0;
+                    const costPerUnit = vol > 0 ? ccCost / vol : 0;
                     return (
                       <Card key={area.id} className="border-eps-primary/20 hover:shadow-md transition-shadow">
                         <CardContent className="p-4 flex flex-col items-center text-center gap-2">
@@ -406,7 +572,6 @@ const ConfiguracaoFinanceiraPage = () => {
                           </div>
                           <span className="text-xs font-semibold">{area.label}</span>
 
-                          {/* Unit badge */}
                           <Badge variant="outline" className="text-[9px]">
                             {unitLabels[areaData.volumeUnit]}
                           </Badge>
@@ -431,21 +596,15 @@ const ConfiguracaoFinanceiraPage = () => {
                               <span className="font-semibold">{area.total}%</span>
                             </div>
                             <div className="flex justify-between text-[10px]">
-                              <span className="text-muted-foreground">Directo</span>
-                              <span className="font-medium">{area.direct}%</span>
+                              <span className="text-muted-foreground">Custo CC</span>
+                              <span className="font-medium text-eps-primary">{formatCurrency(ccCost)}</span>
                             </div>
-                            <div className="flex justify-between text-[10px]">
-                              <span className="text-muted-foreground">Alocado</span>
-                              <span className="font-medium text-amber-600">{area.allocated}%</span>
+                            {/* Cost per unit ratio */}
+                            <div className="flex justify-between text-[10px] bg-eps-primary/5 rounded p-1">
+                              <span className="text-muted-foreground font-medium">€/{unitLabels[areaData.volumeUnit]}</span>
+                              <span className="font-bold text-eps-primary">{costPerUnit.toFixed(2)} €</span>
                             </div>
                           </div>
-
-                          {/* CC count */}
-                          {getCcCount(area.id) > 0 && (
-                            <Badge variant="secondary" className="text-[9px]">
-                              {getCcCount(area.id)} CC associados
-                            </Badge>
-                          )}
                         </CardContent>
                       </Card>
                     );
@@ -455,26 +614,26 @@ const ConfiguracaoFinanceiraPage = () => {
                 {/* Global summary */}
                 <Card className="border-sky-200 bg-sky-50/30">
                   <CardContent className="p-4">
-                    <h4 className="text-xs font-semibold mb-3">Resumo Global de Volumes</h4>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground">Volume Global</p>
-                        <p className="text-lg font-bold text-foreground">
-                          {formatVolume((volumes["distribuicao"] || 0))} <span className="text-xs font-normal text-muted-foreground">Cx 9L</span>
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground">Engarrafamento</p>
-                        <p className="text-lg font-bold text-foreground">
-                          {formatVolume((volumes["engarrafamento"] || 0))} <span className="text-xs font-normal text-muted-foreground">Litros</span>
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground">Agricultura & Vinificação</p>
-                        <p className="text-lg font-bold text-foreground">
-                          {formatVolume((volumes["agricultura"] || 0))} <span className="text-xs font-normal text-muted-foreground">Kg</span>
-                        </p>
-                      </div>
+                    <h4 className="text-xs font-semibold mb-3">Resumo Global de Volumes & Rácios</h4>
+                    <div className="grid grid-cols-5 gap-4">
+                      {totalByArea.map(area => {
+                        const areaData = areasProducao.find(a => a.id === area.id)!;
+                        const vol = volumes[area.id] || 0;
+                        const ccCost = costByAreaFromCC[area.id] || 0;
+                        const costPerUnit = vol > 0 ? ccCost / vol : 0;
+                        return (
+                          <div key={area.id} className="text-center space-y-1">
+                            <p className="text-[10px] text-muted-foreground font-medium">{area.label.split(' ')[0]}</p>
+                            <p className="text-sm font-bold text-foreground">
+                              {formatVolume(vol)} <span className="text-[10px] font-normal text-muted-foreground">{unitLabels[areaData.volumeUnit]}</span>
+                            </p>
+                            <p className="text-xs font-semibold text-eps-primary">
+                              {costPerUnit.toFixed(2)} €/{unitLabels[areaData.volumeUnit]}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">{formatCurrency(ccCost)}</p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

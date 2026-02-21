@@ -7,33 +7,39 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Mock cost centers
+// Mock cost centers with absolute costs (€)
 const allCostCenters = [
-  { id: "cc01", name: "CC01 - Vinha Douro", group: "Agricultura" },
-  { id: "cc02", name: "CC02 - Vinha Alentejo", group: "Agricultura" },
-  { id: "cc03", name: "CC03 - Vinha Dão", group: "Agricultura" },
-  { id: "cc04", name: "CC04 - Adega Principal", group: "Vinificação" },
-  { id: "cc05", name: "CC05 - Adega Secundária", group: "Vinificação" },
-  { id: "cc06", name: "CC06 - Cave Barrica", group: "Estágio" },
-  { id: "cc07", name: "CC07 - Cave Cuba", group: "Estágio" },
-  { id: "cc08", name: "CC08 - Linha Engarrafamento 1", group: "Engarrafamento" },
-  { id: "cc09", name: "CC09 - Linha Engarrafamento 2", group: "Engarrafamento" },
-  { id: "cc10", name: "CC10 - Armazém Secos", group: "Engarrafamento" },
-  { id: "cc11", name: "CC11 - Logística Norte", group: "Distribuição" },
-  { id: "cc12", name: "CC12 - Logística Sul", group: "Distribuição" },
-  { id: "cc13", name: "CC13 - Armazém Central", group: "Distribuição" },
-  { id: "cc14", name: "CC14 - Administração Geral", group: "Transversal" },
-  { id: "cc15", name: "CC15 - Dept. Comercial", group: "Transversal" },
-  { id: "cc16", name: "CC16 - Marketing", group: "Transversal" },
-  { id: "cc17", name: "CC17 - Financeiro", group: "Transversal" },
-  { id: "cc18", name: "CC18 - Recursos Humanos", group: "Transversal" },
-  { id: "cc19", name: "CC19 - Manutenção", group: "Transversal" },
-  { id: "cc20", name: "CC20 - Qualidade", group: "Transversal" },
+  { id: "cc01", name: "CC01 - Vinha Douro", group: "Agricultura", cost: 850000 },
+  { id: "cc02", name: "CC02 - Vinha Alentejo", group: "Agricultura", cost: 620000 },
+  { id: "cc03", name: "CC03 - Vinha Dão", group: "Agricultura", cost: 430000 },
+  { id: "cc04", name: "CC04 - Adega Principal", group: "Vinificação", cost: 780000 },
+  { id: "cc05", name: "CC05 - Adega Secundária", group: "Vinificação", cost: 340000 },
+  { id: "cc06", name: "CC06 - Cave Barrica", group: "Estágio", cost: 290000 },
+  { id: "cc07", name: "CC07 - Cave Cuba", group: "Estágio", cost: 210000 },
+  { id: "cc08", name: "CC08 - Linha Engarrafamento 1", group: "Engarrafamento", cost: 520000 },
+  { id: "cc09", name: "CC09 - Linha Engarrafamento 2", group: "Engarrafamento", cost: 380000 },
+  { id: "cc10", name: "CC10 - Armazém Secos", group: "Engarrafamento", cost: 150000 },
+  { id: "cc11", name: "CC11 - Logística Norte", group: "Distribuição", cost: 410000 },
+  { id: "cc12", name: "CC12 - Logística Sul", group: "Distribuição", cost: 350000 },
+  { id: "cc13", name: "CC13 - Armazém Central", group: "Distribuição", cost: 280000 },
+  { id: "cc14", name: "CC14 - Administração Geral", group: "Transversal", cost: 520000 },
+  { id: "cc15", name: "CC15 - Dept. Comercial", group: "Transversal", cost: 380000 },
+  { id: "cc16", name: "CC16 - Marketing", group: "Transversal", cost: 250000 },
+  { id: "cc17", name: "CC17 - Financeiro", group: "Transversal", cost: 180000 },
+  { id: "cc18", name: "CC18 - Recursos Humanos", group: "Transversal", cost: 160000 },
+  { id: "cc19", name: "CC19 - Manutenção", group: "Transversal", cost: 290000 },
+  { id: "cc20", name: "CC20 - Qualidade", group: "Transversal", cost: 210000 },
 ];
 
 export interface CostCenterAllocation {
   centerId: string;
   pct: number;
+}
+
+// Distribution of a single CC across multiple areas
+export interface CCAreaDistribution {
+  ccId: string;
+  areas: Record<string, number>; // areaId -> % (must sum 100)
 }
 
 interface CostCenterDialogProps {
@@ -45,11 +51,21 @@ interface CostCenterDialogProps {
   onAllocationsChange: (allocations: CostCenterAllocation[]) => void;
 }
 
+const formatCost = (val: number): string => {
+  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M €`;
+  if (val >= 1_000) return `${(val / 1_000).toFixed(0)}K €`;
+  return `${val.toFixed(0)} €`;
+};
+
 export const CostCenterDialog = ({
   open, onOpenChange, areaLabel, areaIcon: Icon, allocations, onAllocationsChange
 }: CostCenterDialogProps) => {
   const selectedIds = allocations.map(a => a.centerId);
   const totalPct = allocations.reduce((s, a) => s + a.pct, 0);
+  const totalCost = allocations.reduce((s, a) => {
+    const cc = allCostCenters.find(c => c.id === a.centerId);
+    return s + (cc ? cc.cost * a.pct / 100 : 0);
+  }, 0);
   const isValid = Math.abs(totalPct - 100) < 0.5;
 
   const toggleCenter = (id: string) => {
@@ -84,14 +100,17 @@ export const CostCenterDialog = ({
             Centros de Custo — {areaLabel}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Selecione os centros de custo e distribua 100% do custo.
+            Selecione os centros de custo e defina a % do custo de cada CC alocada a esta área. Cada CC deve ter 100% distribuído globalmente.
           </DialogDescription>
         </DialogHeader>
 
         {/* Validation banner */}
-        <div className={`flex items-center gap-2 p-2 rounded-md text-xs ${isValid ? 'bg-emerald-50 text-emerald-700' : 'bg-destructive/10 text-destructive'}`}>
-          {isValid ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-          <span>Total distribuído: <strong>{totalPct.toFixed(1)}%</strong> {isValid ? '✓' : '(deve somar 100%)'}</span>
+        <div className={`flex items-center justify-between p-2 rounded-md text-xs ${isValid ? 'bg-emerald-50 text-emerald-700' : 'bg-destructive/10 text-destructive'}`}>
+          <div className="flex items-center gap-2">
+            {isValid ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            <span>Total: <strong>{totalPct.toFixed(1)}%</strong> {isValid ? '✓' : '(deve somar 100%)'}</span>
+          </div>
+          <span className="font-semibold">{formatCost(totalCost)}</span>
         </div>
 
         <ScrollArea className="max-h-[400px] pr-2">
@@ -110,7 +129,10 @@ export const CostCenterDialog = ({
                           onCheckedChange={() => toggleCenter(cc.id)}
                           id={cc.id}
                         />
-                        <Label htmlFor={cc.id} className="flex-1 text-xs cursor-pointer">{cc.name}</Label>
+                        <Label htmlFor={cc.id} className="flex-1 text-xs cursor-pointer">
+                          <span>{cc.name}</span>
+                          <span className="ml-2 text-[10px] text-muted-foreground">{formatCost(cc.cost)}</span>
+                        </Label>
                         {isSelected && (
                           <div className="flex items-center gap-1">
                             <Input
