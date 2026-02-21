@@ -35,6 +35,20 @@ const WINE_TYPES = [
   { value: "rose", label: "Rosé" },
 ];
 
+const CLASSIFICACOES = [
+  { value: "todas", label: "Todas" },
+  { value: "dop", label: "DOP" },
+  { value: "regional", label: "Regional" },
+  { value: "mesa", label: "Mesa" },
+];
+
+// Classification weight factors (share of total business)
+const classificacaoWeights: Record<string, number> = {
+  dop: 0.50,
+  regional: 0.35,
+  mesa: 0.15,
+};
+
 const REGIOES = [
   { value: "todas", label: "Todas" },
   { value: "douro", label: "Douro" },
@@ -111,8 +125,10 @@ const formatK = (val: number): string => `${(val / 1000).toFixed(0)}K`;
 export const CashMapView = () => {
   const [wineType, setWineType] = useState("todos");
   const [regiao, setRegiao] = useState("todas");
+  const [classificacao, setClassificacao] = useState("todas");
 
   const regionFactor = regiao === "todas" ? 1 : (regionWeights[regiao] || 0.15);
+  const classificacaoFactor = classificacao === "todas" ? 1 : (classificacaoWeights[classificacao] || 0.15);
 
   const cashData = useMemo(() => {
     const types = wineType === "todos" ? ["tinto", "branco", "rose"] : [wineType];
@@ -125,13 +141,14 @@ export const CashMapView = () => {
         const base = baseValues[t as keyof typeof baseValues];
         const salesPct = salesSeasonality[t as keyof typeof salesSeasonality][i] / 100;
         
-        vendas += base.vendas * salesPct * regionFactor;
-        custosFixos += base.custosFixos * (fixedCostDist[i] / 100) * regionFactor;
-        vinho += base.vinho * (vinhoDist[i] / 100) * regionFactor;
-        uva += base.uva * (uvaDist[i] / 100) * regionFactor;
-        secos += base.secos * (secosDist[i] / 100) * regionFactor;
-        marketing += (marketingFollowsSales ? base.marketing * salesPct : base.marketing / 12) * regionFactor;
-        vinha += base.vinha * (vinhaCampaign[i] / 100) * regionFactor;
+        const factor = regionFactor * classificacaoFactor;
+        vendas += base.vendas * salesPct * factor;
+        custosFixos += base.custosFixos * (fixedCostDist[i] / 100) * factor;
+        vinho += base.vinho * (vinhoDist[i] / 100) * factor;
+        uva += base.uva * (uvaDist[i] / 100) * factor;
+        secos += base.secos * (secosDist[i] / 100) * factor;
+        marketing += (marketingFollowsSales ? base.marketing * salesPct : base.marketing / 12) * factor;
+        vinha += base.vinha * (vinhaCampaign[i] / 100) * factor;
       });
 
       const totalEntradas = vendas;
@@ -143,7 +160,7 @@ export const CashMapView = () => {
     });
 
     return rows;
-  }, [wineType, regionFactor]);
+  }, [wineType, regionFactor, classificacaoFactor]);
 
   const chartData = cashData.map(row => ({
     mes: row.mes,
@@ -214,6 +231,19 @@ export const CashMapView = () => {
               <SelectContent>
                 {REGIOES.map(r => (
                   <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Classificação:</span>
+            <Select value={classificacao} onValueChange={setClassificacao}>
+              <SelectTrigger className="w-32 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CLASSIFICACOES.map(c => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
