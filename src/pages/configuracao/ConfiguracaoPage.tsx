@@ -277,36 +277,23 @@ const ConfiguracaoPage = () => {
               </div>
             </div>
 
-            {viewMode === "impacto" ? (
-              <ImpactoFinanceiroView
-                filterTipo={filterTipo === "all" ? "all" : filterTipo}
-                filterCategoria={filterCategoria === "all" ? "all" : filterCategoria}
-                filterRegiao={filterRegiao === "all" ? "all" : filterRegiao}
-              />
-            ) : (
-            <>
-            {/* Description */}
-            <p className="text-xs text-muted-foreground mb-4">
-              {viewMode === "evolucao"
-                ? "Com base no ano de venda, calcula retroativamente: Vendima → Barrica → Engarrafamento → Rotulagem → Disponível. Fórmula: Vendima (Nov) + Cuba + Barrica + Loteamento (1m) + Garrafa + Logística (1m)."
-                : `Para o ano de orçamento ${anoVenda}, mostra qual a colheita (ano de vindima) que está em cada fase do processo produtivo.`}
-            </p>
-
-            {/* Filters row */}
+          {/* Filters row - shown for all modes */}
             <div className="flex flex-wrap items-end gap-3 mb-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-muted-foreground">
-                  {viewMode === "evolucao" ? "Ano de Venda" : "Ano de Orçamento"}
-                </label>
-                <Input
-                  type="number"
-                  value={anoVenda}
-                  onChange={(e) => setAnoVenda(Number(e.target.value))}
-                  className="w-24 h-8 text-sm"
-                  min={2024}
-                  max={2040}
-                />
-              </div>
+              {viewMode !== "impacto" && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {viewMode === "evolucao" ? "Ano de Venda" : "Ano de Orçamento"}
+                  </label>
+                  <Input
+                    type="number"
+                    value={anoVenda}
+                    onChange={(e) => setAnoVenda(Number(e.target.value))}
+                    className="w-24 h-8 text-sm"
+                    min={2024}
+                    max={2040}
+                  />
+                </div>
+              )}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-muted-foreground">Tipo</label>
                 <Select value={filterTipo} onValueChange={setFilterTipo}>
@@ -337,20 +324,37 @@ const ConfiguracaoPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-muted-foreground">Mercado</label>
-                <Select value={filterMercado} onValueChange={setFilterMercado}>
-                  <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {masterMercados.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              {viewMode !== "impacto" && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-muted-foreground">Mercado</label>
+                  <Select value={filterMercado} onValueChange={setFilterMercado}>
+                    <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      {masterMercados.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <Badge variant="outline" className="h-8 text-xs">
-                {gridData.length} produtos
+                {viewMode === "impacto" ? `${wineProducts.length} produtos` : `${gridData.length} produtos`}
               </Badge>
             </div>
+
+          {viewMode === "impacto" ? (
+              <ImpactoFinanceiroView
+                filterTipo={filterTipo}
+                filterCategoria={filterCategoria}
+                filterRegiao={filterRegiao}
+              />
+            ) : (
+            <>
+            {/* Description */}
+            <p className="text-xs text-muted-foreground mb-4">
+              {viewMode === "evolucao"
+                ? "Com base no ano de venda, calcula retroativamente: Vendima → Barrica → Engarrafamento → Rotulagem → Disponível. Fórmula: Vendima (Nov) + Cuba + Barrica + Loteamento (1m) + Garrafa + Logística (1m)."
+                : `Para o ano de orçamento ${anoVenda}, mostra qual a colheita (ano de vindima) que está em cada fase do processo produtivo.`}
+            </p>
 
             {/* Data grid */}
             <ScrollArea className="rounded-md border" style={{ maxHeight: "520px" }}>
