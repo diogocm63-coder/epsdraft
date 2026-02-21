@@ -60,13 +60,14 @@ const formatCost = (val: number): string => {
 export const CostCenterDialog = ({
   open, onOpenChange, areaLabel, areaIcon: Icon, allocations, onAllocationsChange
 }: CostCenterDialogProps) => {
+  const [search, setSearch] = useState("");
   const selectedIds = allocations.map(a => a.centerId);
-  const totalPct = allocations.reduce((s, a) => s + a.pct, 0);
-  const totalCost = allocations.reduce((s, a) => {
+
+  // Total cost allocated to THIS area (sum of each CC's cost * its %)
+  const totalCostArea = allocations.reduce((s, a) => {
     const cc = allCostCenters.find(c => c.id === a.centerId);
     return s + (cc ? cc.cost * a.pct / 100 : 0);
   }, 0);
-  const isValid = Math.abs(totalPct - 100) < 0.5;
 
   const toggleCenter = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -77,7 +78,7 @@ export const CostCenterDialog = ({
   };
 
   const updatePct = (id: string, val: number) => {
-    onAllocationsChange(allocations.map(a => a.centerId === id ? { ...a, pct: val } : a));
+    onAllocationsChange(allocations.map(a => a.centerId === id ? { ...a, pct: Math.min(100, Math.max(0, val)) } : a));
   };
 
   const groups = useMemo(() => {
@@ -88,6 +89,17 @@ export const CostCenterDialog = ({
     });
     return map;
   }, []);
+
+  const filteredGroups = useMemo(() => {
+    if (!search.trim()) return groups;
+    const q = search.toLowerCase();
+    const map = new Map<string, typeof allCostCenters>();
+    groups.forEach((centers, group) => {
+      const filtered = centers.filter(cc => cc.name.toLowerCase().includes(q) || cc.group.toLowerCase().includes(q));
+      if (filtered.length > 0) map.set(group, filtered);
+    });
+    return map;
+  }, [groups, search]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,28 +112,34 @@ export const CostCenterDialog = ({
             Centros de Custo — {areaLabel}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Selecione os centros de custo e defina a % do custo de cada CC alocada a esta área. Cada CC deve ter 100% distribuído globalmente.
+            Selecione os centros de custo e defina a % do custo de cada CC alocada a esta área.
+            Cada CC deve ter 100% distribuído globalmente (soma de todas as áreas).
           </DialogDescription>
         </DialogHeader>
 
-        {/* Validation banner */}
-        <div className={`flex items-center justify-between p-2 rounded-md text-xs ${isValid ? 'bg-emerald-50 text-emerald-700' : 'bg-destructive/10 text-destructive'}`}>
-          <div className="flex items-center gap-2">
-            {isValid ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-            <span>Total: <strong>{totalPct.toFixed(1)}%</strong> {isValid ? '✓' : '(deve somar 100%)'}</span>
-          </div>
-          <span className="font-semibold">{formatCost(totalCost)}</span>
+        {/* Area total cost banner */}
+        <div className="flex items-center justify-between p-2 rounded-md text-xs bg-muted/50">
+          <span className="text-muted-foreground">Custo total alocado a <strong>{areaLabel}</strong>:</span>
+          <span className="font-bold text-foreground">{formatCost(totalCostArea)}</span>
         </div>
+
+        <Input
+          placeholder="Pesquisar centros de custo..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="h-8 text-xs"
+        />
 
         <ScrollArea className="max-h-[400px] pr-2">
           <div className="space-y-4">
-            {Array.from(groups.entries()).map(([group, centers]) => (
+            {Array.from(filteredGroups.entries()).map(([group, centers]) => (
               <div key={group}>
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{group}</p>
                 <div className="space-y-1.5">
                   {centers.map(cc => {
                     const isSelected = selectedIds.includes(cc.id);
                     const alloc = allocations.find(a => a.centerId === cc.id);
+                    const allocatedCost = cc.cost * (alloc?.pct ?? 0) / 100;
                     return (
                       <div key={cc.id} className={`flex items-center gap-2 p-2 rounded-md border transition-colors ${isSelected ? 'border-eps-primary/30 bg-eps-primary/5' : 'border-transparent hover:bg-muted/50'}`}>
                         <Checkbox
@@ -134,7 +152,8 @@ export const CostCenterDialog = ({
                           <span className="ml-2 text-[10px] text-muted-foreground">{formatCost(cc.cost)}</span>
                         </Label>
                         {isSelected && (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-muted-foreground">{formatCost(allocatedCost)}</span>
                             <Input
                               type="number"
                               value={alloc?.pct ?? 0}
