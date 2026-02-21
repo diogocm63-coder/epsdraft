@@ -58,6 +58,27 @@ const DEFAULT_MIX_TIPO: Record<string, number> = {
   'Rosé': 15,
 };
 
+// Overhead / transversal costs as % of sales (not included in production costs)
+interface CustosTransversais {
+  gastosGeraisFabrico: number;
+  gastosAdministrativos: number;
+  gastosComerciais: number;
+  marketing: number;
+  amortizacoes: number;
+  gastosFinanceiros: number;
+  outros: number;
+}
+
+const DEFAULT_CUSTOS_TRANSVERSAIS: CustosTransversais = {
+  gastosGeraisFabrico: 5,
+  gastosAdministrativos: 4,
+  gastosComerciais: 3,
+  marketing: 2,
+  amortizacoes: 3,
+  gastosFinanceiros: 2,
+  outros: 1,
+};
+
 const DEFAULT_PHASE_CONFIG: Record<string, PhaseConfig> = {
   'Mesa':     { colheita: 15, vinificacao: 30, estagio: 60,  engarrafamento: 15 },
   'Regional': { colheita: 15, vinificacao: 45, estagio: 180, engarrafamento: 15 },
@@ -110,19 +131,22 @@ const PHASES_DISPLAY = [
 
 // ========== Prazos Dialog ==========
 function PrazosDialog({ 
-  phaseConfigs, prazosExternos, custos,
-  onUpdatePhases, onUpdatePrazos, onUpdateCustos 
+  phaseConfigs, prazosExternos, custos, custosTransversais,
+  onUpdatePhases, onUpdatePrazos, onUpdateCustos, onUpdateCustosTransversais
 }: {
   phaseConfigs: Record<string, PhaseConfig>;
   prazosExternos: Record<string, PrazosExternos>;
   custos: Record<string, CustoCategoria>;
+  custosTransversais: CustosTransversais;
   onUpdatePhases: (v: Record<string, PhaseConfig>) => void;
   onUpdatePrazos: (v: Record<string, PrazosExternos>) => void;
   onUpdateCustos: (v: Record<string, CustoCategoria>) => void;
+  onUpdateCustosTransversais: (v: CustosTransversais) => void;
 }) {
   const [localPhases, setLocalPhases] = useState(() => JSON.parse(JSON.stringify(phaseConfigs)));
   const [localPrazos, setLocalPrazos] = useState(() => JSON.parse(JSON.stringify(prazosExternos)));
   const [localCustos, setLocalCustos] = useState(() => JSON.parse(JSON.stringify(custos)));
+  const [localTransversais, setLocalTransversais] = useState(() => ({ ...custosTransversais }));
 
   const handlePhaseChange = (cat: string, field: keyof PhaseConfig, val: string) => {
     setLocalPhases((prev: Record<string, PhaseConfig>) => ({ ...prev, [cat]: { ...prev[cat], [field]: parseInt(val) || 0 } }));
@@ -133,11 +157,15 @@ function PrazosDialog({
   const handleCustoChange = (cat: string, field: keyof CustoCategoria, val: string) => {
     setLocalCustos((prev: Record<string, CustoCategoria>) => ({ ...prev, [cat]: { ...prev[cat], [field]: parseFloat(val) || 0 } }));
   };
+  const handleTransversalChange = (field: keyof CustosTransversais, val: string) => {
+    setLocalTransversais((prev: CustosTransversais) => ({ ...prev, [field]: parseFloat(val) || 0 }));
+  };
 
   const applyAll = () => {
     onUpdatePhases(localPhases);
     onUpdatePrazos(localPrazos);
     onUpdateCustos(localCustos);
+    onUpdateCustosTransversais(localTransversais);
   };
 
   const phaseFields: { key: keyof PhaseConfig; label: string }[] = [
@@ -177,10 +205,11 @@ function PrazosDialog({
           <DialogTitle className="text-sm">Configurar Prazos e Estrutura de Custos por Categoria</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="ciclo" className="mt-2">
-          <TabsList className="grid w-full grid-cols-3 h-8">
-            <TabsTrigger value="ciclo" className="text-xs">Ciclo Produtivo (dias)</TabsTrigger>
-            <TabsTrigger value="prazos" className="text-xs">Prazos Externos (dias)</TabsTrigger>
-            <TabsTrigger value="custos" className="text-xs">Custos (% vendas)</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 h-8">
+            <TabsTrigger value="ciclo" className="text-xs">Ciclo Produtivo</TabsTrigger>
+            <TabsTrigger value="prazos" className="text-xs">Prazos Externos</TabsTrigger>
+            <TabsTrigger value="custos" className="text-xs">Custos Produção</TabsTrigger>
+            <TabsTrigger value="transversais" className="text-xs">Custos Transversais</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ciclo" className="mt-3">
@@ -269,6 +298,40 @@ function PrazosDialog({
               </TableBody>
             </Table>
           </TabsContent>
+
+          <TabsContent value="transversais" className="mt-3">
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Custos transversais como % das vendas — não incluídos nos custos de produção directos. Inclui gastos gerais de fabrico, administrativos, comerciais, etc.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {([
+                { key: 'gastosGeraisFabrico' as keyof CustosTransversais, label: 'Gastos Gerais de Fabrico' },
+                { key: 'gastosAdministrativos' as keyof CustosTransversais, label: 'Gastos Administrativos' },
+                { key: 'gastosComerciais' as keyof CustosTransversais, label: 'Gastos Comerciais' },
+                { key: 'marketing' as keyof CustosTransversais, label: 'Marketing & Comunicação' },
+                { key: 'amortizacoes' as keyof CustosTransversais, label: 'Amortizações & Depreciações' },
+                { key: 'gastosFinanceiros' as keyof CustosTransversais, label: 'Gastos Financeiros' },
+                { key: 'outros' as keyof CustosTransversais, label: 'Outros Custos Indirectos' },
+              ]).map(f => (
+                <div key={f.key} className="flex items-center justify-between gap-2 py-1">
+                  <label className="text-xs text-muted-foreground">{f.label}</label>
+                  <div className="flex items-center gap-1">
+                    <Input type="number" value={localTransversais[f.key] ?? 0}
+                      onChange={e => handleTransversalChange(f.key, e.target.value)}
+                      className="w-16 h-7 text-xs text-center" min={0} step={0.5} />
+                    <span className="text-[10px] text-muted-foreground">%</span>
+                  </div>
+                </div>
+              ))}
+              <div className="col-span-2 flex items-center justify-between pt-2 border-t">
+                <span className="text-xs font-semibold">Total Custos Transversais</span>
+                {(() => {
+                  const total = Object.values(localTransversais).reduce((a, b) => a + b, 0);
+                  return <span className={`text-sm font-bold ${total > 25 ? 'text-destructive' : 'text-foreground'}`}>{total.toFixed(1)}%</span>;
+                })()}
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
         <div className="flex justify-end mt-4">
           <Button size="sm" onClick={applyAll} className="text-xs">Aplicar Alterações</Button>
@@ -308,6 +371,14 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
   );
   const [mixTipo, setMixTipo] = useState<Record<string, number>>(
     () => ({ ...DEFAULT_MIX_TIPO })
+  );
+  const [custosTransversais, setCustosTransversais] = useState<CustosTransversais>(
+    () => ({ ...DEFAULT_CUSTOS_TRANSVERSAIS })
+  );
+
+  const totalTransversais = useMemo(() => 
+    Object.values(custosTransversais).reduce((a, b) => a + b, 0),
+    [custosTransversais]
   );
 
   const buildData = useCallback((): ProductFinancialRow[] => {
@@ -422,9 +493,11 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
           phaseConfigs={phaseConfigs}
           prazosExternos={prazosExternos}
           custos={custos}
+          custosTransversais={custosTransversais}
           onUpdatePhases={setPhaseConfigs}
           onUpdatePrazos={setPrazosExternos}
           onUpdateCustos={setCustos}
+          onUpdateCustosTransversais={setCustosTransversais}
         />
       </div>
 
@@ -521,23 +594,30 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
         </Table>
       </ScrollArea>
 
-      {/* Summary: TIR by category + weighted TIR */}
+      {/* Summary: TIR by category + weighted TIR + Cash Livre */}
       <div className="p-3 bg-muted/40 rounded-lg border">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-semibold flex items-center gap-1">
             <TrendingUp className="h-3 w-3" /> Resumo por Categoria & TIR
           </h4>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">TIR Ponderada:</span>
-            <Badge className={`text-xs ${tirPonderada > 20 ? 'bg-emerald-600' : tirPonderada > 10 ? 'bg-amber-500' : 'bg-destructive'}`}>
-              {tirPonderada.toFixed(1)}%
-            </Badge>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">Custos Transv.:</span>
+              <Badge variant="outline" className="text-[10px]">{totalTransversais.toFixed(1)}%</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">TIR Ponderada:</span>
+              <Badge className={`text-xs ${tirPonderada > 20 ? 'bg-emerald-600' : tirPonderada > 10 ? 'bg-amber-500' : 'bg-destructive'}`}>
+                {tirPonderada.toFixed(1)}%
+              </Badge>
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {tirByCategory.map(t => {
             const anos = (t.avgCiclo / 365).toFixed(1);
             const prazos = prazosExternos[t.cat];
+            const cashLivre = 100 - t.totalCusto - totalTransversais;
             return (
               <div key={t.cat} className="bg-white rounded-md p-2.5 border">
                 <div className="flex items-center justify-between">
@@ -550,16 +630,24 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
                   Ciclo: <span className="font-semibold">{t.avgCiclo}d</span> ({anos} anos)
                 </div>
                 <div className="text-[10px]">
-                  Margem: <span className="font-semibold">{t.margem.toFixed(1)}%</span> · Custos: <span className="font-semibold">{t.totalCusto.toFixed(1)}%</span>
+                  Custos Prod: <span className="font-semibold">{t.totalCusto.toFixed(1)}%</span> · Transv: <span className="font-semibold">{totalTransversais.toFixed(1)}%</span>
                 </div>
                 <div className="text-[10px]">
                   Receb: <span className="font-semibold">{prazos?.prazoRecebimento}d</span> · Pgto Uvas: <span className="font-semibold">{prazos?.pagamentoUvasCompradas}d</span>
                 </div>
-                <div className="mt-1 flex items-center gap-1">
-                  <span className="text-[9px] text-muted-foreground">TIR:</span>
-                  <span className={`text-xs font-bold ${t.tir > 20 ? 'text-emerald-600' : t.tir > 10 ? 'text-amber-600' : 'text-destructive'}`}>
-                    {t.tir.toFixed(1)}%
-                  </span>
+                <div className="mt-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">TIR:</span>
+                    <span className={`text-xs font-bold ${t.tir > 20 ? 'text-emerald-600' : t.tir > 10 ? 'text-amber-600' : 'text-destructive'}`}>
+                      {t.tir.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">Cash Livre:</span>
+                    <span className={`text-xs font-bold ${cashLivre > 15 ? 'text-emerald-600' : cashLivre > 5 ? 'text-amber-600' : 'text-destructive'}`}>
+                      {cashLivre.toFixed(1)}%
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -573,11 +661,29 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
           <h4 className="text-xs font-semibold flex items-center gap-1">
             <TrendingUp className="h-3 w-3" /> Mix de Vendas por Tipo & TIR Global
           </h4>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">TIR Global:</span>
-            <Badge className={`text-sm font-bold ${tirGlobal > 20 ? 'bg-emerald-600' : tirGlobal > 10 ? 'bg-amber-500' : 'bg-destructive'}`}>
-              {tirGlobal.toFixed(1)}%
-            </Badge>
+          <div className="flex items-center gap-4">
+            {(() => {
+              const avgCustoProd = tirByTipo.length > 0 
+                ? tirByTipo.reduce((s, t) => s + t.totalCusto * t.peso, 0) / Math.max(tirByTipo.reduce((s, t) => s + t.peso, 0), 1)
+                : 0;
+              const cashLivreGlobal = 100 - avgCustoProd - totalTransversais;
+              return (
+                <>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">Cash Livre Global:</span>
+                    <Badge className={`text-sm font-bold ${cashLivreGlobal > 15 ? 'bg-emerald-600' : cashLivreGlobal > 5 ? 'bg-amber-500' : 'bg-destructive'}`}>
+                      {cashLivreGlobal.toFixed(1)}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">TIR Global:</span>
+                    <Badge className={`text-sm font-bold ${tirGlobal > 20 ? 'bg-emerald-600' : tirGlobal > 10 ? 'bg-amber-500' : 'bg-destructive'}`}>
+                      {tirGlobal.toFixed(1)}%
+                    </Badge>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -612,11 +718,24 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
                 <div className="text-[10px]">
                   Margem: <span className="font-semibold">{t.margem.toFixed(1)}%</span> · Custos: <span className="font-semibold">{t.totalCusto.toFixed(1)}%</span>
                 </div>
-                <div className="mt-1.5 flex items-center gap-1">
-                  <span className="text-[9px] text-muted-foreground">TIR:</span>
-                  <span className={`text-sm font-bold ${t.tir > 20 ? 'text-emerald-600' : t.tir > 10 ? 'text-amber-600' : 'text-destructive'}`}>
-                    {t.tir.toFixed(1)}%
-                  </span>
+                <div className="mt-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">TIR:</span>
+                    <span className={`text-sm font-bold ${t.tir > 20 ? 'text-emerald-600' : t.tir > 10 ? 'text-amber-600' : 'text-destructive'}`}>
+                      {t.tir.toFixed(1)}%
+                    </span>
+                  </div>
+                  {(() => {
+                    const cl = 100 - t.totalCusto - totalTransversais;
+                    return (
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-muted-foreground">Cash Livre:</span>
+                        <span className={`text-xs font-bold ${cl > 15 ? 'text-emerald-600' : cl > 5 ? 'text-amber-600' : 'text-destructive'}`}>
+                          {cl.toFixed(1)}%
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             );
