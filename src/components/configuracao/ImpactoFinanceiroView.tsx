@@ -51,6 +51,13 @@ interface CustoCategoria {
   pesoVendas: number; // % of total sales this category represents
 }
 
+// Sales mix by wine type
+const DEFAULT_MIX_TIPO: Record<string, number> = {
+  'Tinto': 55,
+  'Branco': 30,
+  'Rosé': 15,
+};
+
 const DEFAULT_PHASE_CONFIG: Record<string, PhaseConfig> = {
   'Mesa':     { colheita: 15, vinificacao: 30, estagio: 60,  engarrafamento: 15 },
   'Regional': { colheita: 15, vinificacao: 45, estagio: 180, engarrafamento: 15 },
@@ -299,6 +306,9 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
   const [custos, setCustos] = useState<Record<string, CustoCategoria>>(
     () => JSON.parse(JSON.stringify(DEFAULT_CUSTOS))
   );
+  const [mixTipo, setMixTipo] = useState<Record<string, number>>(
+    () => ({ ...DEFAULT_MIX_TIPO })
+  );
 
   const buildData = useCallback((): ProductFinancialRow[] => {
     return wineProducts.map(p => {
@@ -361,6 +371,38 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
       return { cat, avgFinanciamento, avgCiclo, totalCusto, margem, tir, peso: c?.pesoVendas || 0 };
     }).filter(Boolean) as { cat: string; avgFinanciamento: number; avgCiclo: number; totalCusto: number; margem: number; tir: number; peso: number }[];
   }, [allData, custos]);
+
+  // TIR by wine type
+  const tirByTipo = useMemo(() => {
+    return wineTipos.map(tipo => {
+      const tipoData = allData.filter(r => r.tipo === tipo);
+      if (tipoData.length === 0) return null;
+      const avgFinanciamento = Math.round(tipoData.reduce((s, r) => s + r.diasFinanciamento, 0) / tipoData.length);
+      const avgCiclo = Math.round(tipoData.reduce((s, r) => s + r.totalCiclo, 0) / tipoData.length);
+      // Average cost across categories for this type
+      const categories = [...new Set(tipoData.map(r => r.categoria))];
+      let totalCusto = 0;
+      let catCount = 0;
+      categories.forEach(cat => {
+        const c = custos[cat];
+        if (c) {
+          totalCusto += (c.custoUvas || 0) + (c.custoVinificacao || 0) + (c.custoEstagio || 0) + (c.custoEngarrafSecos || 0) + (c.custoDistribuicao || 0);
+          catCount++;
+        }
+      });
+      totalCusto = catCount > 0 ? totalCusto / catCount : 65;
+      const margem = 100 - totalCusto;
+      const tir = computeTIR(totalCusto, avgFinanciamento);
+      const peso = mixTipo[tipo] || 0;
+      return { tipo, avgFinanciamento, avgCiclo, totalCusto, margem, tir, peso };
+    }).filter(Boolean) as { tipo: string; avgFinanciamento: number; avgCiclo: number; totalCusto: number; margem: number; tir: number; peso: number }[];
+  }, [allData, custos, mixTipo]);
+
+  const tirGlobal = useMemo(() => {
+    const totalPeso = tirByTipo.reduce((s, t) => s + t.peso, 0);
+    if (totalPeso === 0) return 0;
+    return tirByTipo.reduce((s, t) => s + t.tir * (t.peso / totalPeso), 0);
+  }, [tirByTipo]);
 
   const tirPonderada = useMemo(() => {
     const totalPeso = tirByCategory.reduce((s, t) => s + t.peso, 0);
@@ -523,6 +565,70 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
             );
           })}
         </div>
+      </div>
+
+      {/* Mix by wine type + Global TIR */}
+      <div className="p-3 bg-muted/40 rounded-lg border">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs font-semibold flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" /> Mix de Vendas por Tipo & TIR Global
+          </h4>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">TIR Global:</span>
+            <Badge className={`text-sm font-bold ${tirGlobal > 20 ? 'bg-emerald-600' : tirGlobal > 10 ? 'bg-amber-500' : 'bg-destructive'}`}>
+              {tirGlobal.toFixed(1)}%
+            </Badge>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {tirByTipo.map(t => {
+            const tipoColor = t.tipo === 'Tinto' ? 'border-red-300' : t.tipo === 'Branco' ? 'border-yellow-300' : 'border-pink-300';
+            const anos = (t.avgCiclo / 365).toFixed(1);
+            return (
+              <div key={t.tipo} className={`bg-white rounded-md p-3 border-2 ${tipoColor}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline" className={`text-[10px] ${
+                    t.tipo === 'Tinto' ? 'border-red-300 text-red-700' :
+                    t.tipo === 'Branco' ? 'border-yellow-300 text-yellow-700' :
+                    'border-pink-300 text-pink-600'
+                  }`}>{t.tipo}</Badge>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">Mix:</span>
+                    <Input
+                      type="number"
+                      value={mixTipo[t.tipo] || 0}
+                      onChange={(e) => setMixTipo(prev => ({ ...prev, [t.tipo]: parseFloat(e.target.value) || 0 }))}
+                      className="w-14 h-6 text-[10px] text-center"
+                      min={0} max={100} step={1}
+                    />
+                    <span className="text-[9px] text-muted-foreground">%</span>
+                  </div>
+                </div>
+                <div className="text-lg font-bold">{t.avgFinanciamento}d</div>
+                <div className="text-[9px] text-muted-foreground">financiamento médio</div>
+                <div className="text-[10px] mt-1">
+                  Ciclo: <span className="font-semibold">{t.avgCiclo}d</span> ({anos} anos)
+                </div>
+                <div className="text-[10px]">
+                  Margem: <span className="font-semibold">{t.margem.toFixed(1)}%</span> · Custos: <span className="font-semibold">{t.totalCusto.toFixed(1)}%</span>
+                </div>
+                <div className="mt-1.5 flex items-center gap-1">
+                  <span className="text-[9px] text-muted-foreground">TIR:</span>
+                  <span className={`text-sm font-bold ${t.tir > 20 ? 'text-emerald-600' : t.tir > 10 ? 'text-amber-600' : 'text-destructive'}`}>
+                    {t.tir.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {/* Mix total validation */}
+        {(() => {
+          const totalMix = Object.values(mixTipo).reduce((a, b) => a + b, 0);
+          return totalMix !== 100 ? (
+            <p className="text-[10px] text-destructive mt-2">⚠ Mix total: {totalMix.toFixed(0)}% (deve ser 100%)</p>
+          ) : null;
+        })()}
       </div>
     </div>
   );
