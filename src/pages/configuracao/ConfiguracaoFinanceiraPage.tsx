@@ -557,65 +557,120 @@ const ConfiguracaoFinanceiraPage = () => {
                   Custos totais por área com rácios €/unidade. Cada área utiliza a unidade de medida relevante para calcular o custo unitário.
                 </p>
 
-                <div className="grid grid-cols-5 gap-4">
-                  {totalByArea.map(area => {
-                    const Icon = area.icon;
-                    const areaData = areasProducao.find(a => a.id === area.id)!;
-                    const vol = volumes[area.id] || 0;
-                    const ccCost = costByAreaFromCC[area.id] || 0;
-                    const costPerUnit = vol > 0 ? ccCost / vol : 0;
-                    return (
-                      <Card key={area.id} className="border-eps-primary/20 hover:shadow-md transition-shadow">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                          <div className="w-12 h-12 rounded-full bg-eps-primary/10 flex items-center justify-center">
-                            <Icon className="w-6 h-6 text-eps-primary" />
-                          </div>
-                          <span className="text-xs font-semibold">{area.label}</span>
-
-                          <Badge variant="outline" className="text-[9px]">
-                            {unitLabels[areaData.volumeUnit]}
-                          </Badge>
-
-                          {/* Volume input */}
-                          <div className="w-full space-y-1" onClick={e => e.stopPropagation()}>
-                            <label className="text-[10px] text-muted-foreground">{areaData.volumeLabel}</label>
-                            <Input
-                              type="number"
-                              value={vol}
-                              onChange={e => setVolumes(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
-                              className="h-7 text-xs text-center"
-                              min={0} step={1000}
-                            />
-                            <p className="text-[10px] text-muted-foreground">{formatVolume(vol)} {unitLabels[areaData.volumeUnit]}</p>
-                          </div>
-
-                          {/* Cost summary */}
-                          <div className="w-full border-t pt-2 mt-1 space-y-1">
-                            <div className="flex justify-between text-[10px]">
-                              <span className="text-muted-foreground">Custo %</span>
-                              <span className="font-semibold">{area.total}%</span>
+                {/* Production areas */}
+                <div>
+                  <h4 className="text-xs font-semibold mb-3 flex items-center gap-2">
+                    <ArrowRight className="h-3 w-3 text-eps-primary" />
+                    Áreas de Produção
+                  </h4>
+                  <div className="grid grid-cols-5 gap-4">
+                    {totalByArea.map(area => {
+                      const Icon = area.icon;
+                      const areaData = areasProducao.find(a => a.id === area.id)!;
+                      const vol = volumes[area.id] || 0;
+                      const ccCost = costByAreaFromCC[area.id] || 0;
+                      const costPerUnit = vol > 0 ? ccCost / vol : 0;
+                      return (
+                        <Card key={area.id} className="border-eps-primary/20 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="w-12 h-12 rounded-full bg-eps-primary/10 flex items-center justify-center">
+                              <Icon className="w-6 h-6 text-eps-primary" />
                             </div>
-                            <div className="flex justify-between text-[10px]">
-                              <span className="text-muted-foreground">Custo CC</span>
-                              <span className="font-medium text-eps-primary">{formatCurrency(ccCost)}</span>
+                            <span className="text-xs font-semibold">{area.label}</span>
+
+                            <Badge variant="outline" className="text-[9px]">
+                              {unitLabels[areaData.volumeUnit]}
+                            </Badge>
+
+                            {/* Volume input */}
+                            <div className="w-full space-y-1" onClick={e => e.stopPropagation()}>
+                              <label className="text-[10px] text-muted-foreground">{areaData.volumeLabel}</label>
+                              <Input
+                                type="number"
+                                value={vol}
+                                onChange={e => setVolumes(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
+                                className="h-7 text-xs text-center"
+                                min={0} step={1000}
+                              />
+                              <p className="text-[10px] text-muted-foreground">{formatVolume(vol)} {unitLabels[areaData.volumeUnit]}</p>
                             </div>
-                            {/* Cost per unit ratio */}
-                            <div className="flex justify-between text-[10px] bg-eps-primary/5 rounded p-1">
-                              <span className="text-muted-foreground font-medium">€/{unitLabels[areaData.volumeUnit]}</span>
-                              <span className="font-bold text-eps-primary">{costPerUnit.toFixed(2)} €</span>
+
+                            {/* Cost summary */}
+                            <div className="w-full border-t pt-2 mt-1 space-y-1">
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-muted-foreground">Custo %</span>
+                                <span className="font-semibold">{area.total}%</span>
+                              </div>
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-muted-foreground">Custo CC</span>
+                                <span className="font-medium text-eps-primary">{formatCurrency(ccCost)}</span>
+                              </div>
+                              {/* Cost per unit ratio */}
+                              <div className="flex justify-between text-[10px] bg-eps-primary/5 rounded p-1">
+                                <span className="text-muted-foreground font-medium">€/{unitLabels[areaData.volumeUnit]}</span>
+                                <span className="font-bold text-eps-primary">{costPerUnit.toFixed(2)} €</span>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Transversal areas: Comercial & Marketing */}
+                <div>
+                  <h4 className="text-xs font-semibold mb-3 flex items-center gap-2">
+                    <Percent className="h-3 w-3 text-amber-600" />
+                    Áreas Transversais — Custos & Volumes
+                  </h4>
+                  <div className="grid grid-cols-4 gap-4">
+                    {defaultTransversais.map(trans => {
+                      const Icon = trans.icon;
+                      const ccCost = costByAreaFromCC[trans.id] || 0;
+                      const costPct = transversaisCosts[trans.id] || 0;
+                      // Transversal areas use Cx 9L as reference volume (total distribution volume)
+                      const refVolume = volumes["distribuicao"] || 194000;
+                      const costPerCx = refVolume > 0 ? ccCost / refVolume : 0;
+                      return (
+                        <Card key={trans.id} className="border-amber-200/50 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                              <Icon className="w-5 h-5 text-amber-700" />
+                            </div>
+                            <span className="text-xs font-semibold">{trans.label}</span>
+                            <Badge variant="outline" className="text-[9px] border-amber-300">
+                              % Vendas
+                            </Badge>
+
+                            <div className="w-full border-t pt-2 mt-1 space-y-1">
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-muted-foreground">Custo %</span>
+                                <span className="font-semibold text-amber-700">{costPct.toFixed(1)}%</span>
+                              </div>
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-muted-foreground">Custo CC</span>
+                                <span className="font-medium text-amber-700">{formatCurrency(ccCost)}</span>
+                              </div>
+                              {ccCost > 0 && (
+                                <div className="flex justify-between text-[10px] bg-amber-50 rounded p-1">
+                                  <span className="text-muted-foreground font-medium">€/Cx 9L</span>
+                                  <span className="font-bold text-amber-700">{costPerCx.toFixed(2)} €</span>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Global summary */}
                 <Card className="border-sky-200 bg-sky-50/30">
                   <CardContent className="p-4">
                     <h4 className="text-xs font-semibold mb-3">Resumo Global de Volumes & Rácios</h4>
-                    <div className="grid grid-cols-5 gap-4">
+                    <div className="grid grid-cols-5 gap-4 mb-4">
                       {totalByArea.map(area => {
                         const areaData = areasProducao.find(a => a.id === area.id)!;
                         const vol = volumes[area.id] || 0;
@@ -634,6 +689,24 @@ const ConfiguracaoFinanceiraPage = () => {
                           </div>
                         );
                       })}
+                    </div>
+                    {/* Transversal summary */}
+                    <div className="border-t pt-3">
+                      <p className="text-[10px] text-muted-foreground font-medium mb-2">Custos Transversais</p>
+                      <div className="grid grid-cols-7 gap-3">
+                        {defaultTransversais.map(trans => {
+                          const ccCost = costByAreaFromCC[trans.id] || 0;
+                          return (
+                            <div key={trans.id} className="text-center space-y-1">
+                              <p className="text-[10px] text-muted-foreground font-medium">{trans.label.split(' ')[0]}</p>
+                              <p className="text-xs font-semibold text-amber-700">{transversaisCosts[trans.id]}%</p>
+                              {ccCost > 0 && (
+                                <p className="text-[10px] text-muted-foreground">{formatCurrency(ccCost)}</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
