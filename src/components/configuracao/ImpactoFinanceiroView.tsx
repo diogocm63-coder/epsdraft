@@ -1,51 +1,75 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Clock, ArrowRight, Settings2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Clock, ArrowRight, Settings2, TrendingUp } from 'lucide-react';
 import { wineProducts, wineCategorias, wineTipos, wineRegioes } from '@/data/wineData';
 
 // Seasonal distribution weights by month (index 0=Jan) for each wine color
-// White wines peak in summer, Reds peak in autumn/winter, Rosé peaks spring/summer
 const SEASONAL_WEIGHTS: Record<string, number[]> = {
-  'Branco': [5, 5, 7, 8, 10, 13, 15, 14, 9, 6, 4, 4],   // summer-heavy
-  'Tinto':  [9, 8, 8, 7, 7, 6, 6, 6, 9, 12, 11, 11],     // autumn/winter-heavy
-  'Rosé':   [5, 5, 8, 10, 13, 14, 15, 13, 8, 4, 3, 2],    // spring/summer-heavy
+  'Branco': [5, 5, 7, 8, 10, 13, 15, 14, 9, 6, 4, 4],
+  'Tinto':  [9, 8, 8, 7, 7, 6, 6, 6, 9, 12, 11, 11],
+  'Rosé':   [5, 5, 8, 10, 13, 14, 15, 13, 8, 4, 3, 2],
 };
 
-// Compute average sale days based on seasonal distribution
-// Products sell across 365 days but distribution varies: weighted average of "days from availability to sale"
 const computeAvgSaleDays = (tipo: string): number => {
   const weights = SEASONAL_WEIGHTS[tipo] || SEASONAL_WEIGHTS['Tinto'];
   const totalWeight = weights.reduce((a, b) => a + b, 0);
-  // Average sale point is the weighted midpoint across 12 months
-  // Each month spans ~30 days, weighted center of gravity
   let weightedSum = 0;
-  weights.forEach((w, i) => {
-    weightedSum += w * (i * 30 + 15); // midpoint of each month
-  });
+  weights.forEach((w, i) => { weightedSum += w * (i * 30 + 15); });
   return Math.round(weightedSum / totalWeight);
 };
 
-// Phase durations by category (in days) - default values
+// Production phase durations (internal cycle)
 interface PhaseConfig {
   colheita: number;
-  pagamentoUvas: number;
   vinificacao: number;
   estagio: number;
   engarrafamento: number;
+}
+
+// External payment terms
+interface PrazosExternos {
+  pagamentoUvasProprias: number;
+  pagamentoUvasCompradas: number;
+  pagamentoVinho: number;
+  pagamentoSecos: number; // packaging/labeling aligned with bottling
   prazoRecebimento: number;
 }
 
+// Cost structure as % of sales revenue
+interface CustoCategoria {
+  custoUvas: number;
+  custoVinificacao: number;
+  custoEstagio: number;
+  custoEngarrafSecos: number;
+  custoDistribuicao: number;
+  pesoVendas: number; // % of total sales this category represents
+}
+
 const DEFAULT_PHASE_CONFIG: Record<string, PhaseConfig> = {
-  'Mesa':     { colheita: 15, pagamentoUvas: 30, vinificacao: 30, estagio: 60,  engarrafamento: 15, prazoRecebimento: 60 },
-  'Regional': { colheita: 15, pagamentoUvas: 30, vinificacao: 45, estagio: 180, engarrafamento: 15, prazoRecebimento: 60 },
-  'Reserva':  { colheita: 15, pagamentoUvas: 30, vinificacao: 60, estagio: 365, engarrafamento: 15, prazoRecebimento: 90 },
-  'Premium':  { colheita: 15, pagamentoUvas: 30, vinificacao: 90, estagio: 730, engarrafamento: 15, prazoRecebimento: 90 },
+  'Mesa':     { colheita: 15, vinificacao: 30, estagio: 60,  engarrafamento: 15 },
+  'Regional': { colheita: 15, vinificacao: 45, estagio: 180, engarrafamento: 15 },
+  'Reserva':  { colheita: 15, vinificacao: 60, estagio: 365, engarrafamento: 15 },
+  'Premium':  { colheita: 15, vinificacao: 90, estagio: 730, engarrafamento: 15 },
+};
+
+const DEFAULT_PRAZOS_EXTERNOS: Record<string, PrazosExternos> = {
+  'Mesa':     { pagamentoUvasProprias: 0, pagamentoUvasCompradas: 30, pagamentoVinho: 60, pagamentoSecos: 30, prazoRecebimento: 60 },
+  'Regional': { pagamentoUvasProprias: 0, pagamentoUvasCompradas: 30, pagamentoVinho: 60, pagamentoSecos: 30, prazoRecebimento: 60 },
+  'Reserva':  { pagamentoUvasProprias: 0, pagamentoUvasCompradas: 45, pagamentoVinho: 90, pagamentoSecos: 30, prazoRecebimento: 90 },
+  'Premium':  { pagamentoUvasProprias: 0, pagamentoUvasCompradas: 45, pagamentoVinho: 90, pagamentoSecos: 30, prazoRecebimento: 90 },
+};
+
+const DEFAULT_CUSTOS: Record<string, CustoCategoria> = {
+  'Mesa':     { custoUvas: 25, custoVinificacao: 10, custoEstagio: 3,  custoEngarrafSecos: 12, custoDistribuicao: 15, pesoVendas: 20 },
+  'Regional': { custoUvas: 22, custoVinificacao: 12, custoEstagio: 5,  custoEngarrafSecos: 10, custoDistribuicao: 12, pesoVendas: 35 },
+  'Reserva':  { custoUvas: 20, custoVinificacao: 15, custoEstagio: 8,  custoEngarrafSecos: 8,  custoDistribuicao: 10, pesoVendas: 30 },
+  'Premium':  { custoUvas: 18, custoVinificacao: 18, custoEstagio: 12, custoEngarrafSecos: 7,  custoDistribuicao: 8,  pesoVendas: 15 },
 };
 
 const COMPRA_VINHO_ANTES_ENGARRAF = 30;
@@ -56,13 +80,13 @@ interface ProductFinancialRow {
   categoria: string;
   tipo: string;
   colheita: number;
-  pagamentoUvas: number;
   vinificacao: number;
   estagio: number;
-  compraVinhoPossivel: number;
   engarrafamento: number;
   vendaMedia: number;
   prazoRecebimento: number;
+  pagamentoUvas: number;
+  pagamentoSecos: number;
   totalCiclo: number;
   diasFinanciamento: number;
   seasonalLabel: string;
@@ -77,28 +101,60 @@ const PHASES_DISPLAY = [
   { key: 'prazoRecebimento', label: 'Recebimento', color: 'bg-orange-500' },
 ] as const;
 
-// Editable payment terms dialog
-function PrazosDialog({ configs, onUpdate }: {
-  configs: Record<string, PhaseConfig>;
-  onUpdate: (newConfigs: Record<string, PhaseConfig>) => void;
+// ========== Prazos Dialog ==========
+function PrazosDialog({ 
+  phaseConfigs, prazosExternos, custos,
+  onUpdatePhases, onUpdatePrazos, onUpdateCustos 
+}: {
+  phaseConfigs: Record<string, PhaseConfig>;
+  prazosExternos: Record<string, PrazosExternos>;
+  custos: Record<string, CustoCategoria>;
+  onUpdatePhases: (v: Record<string, PhaseConfig>) => void;
+  onUpdatePrazos: (v: Record<string, PrazosExternos>) => void;
+  onUpdateCustos: (v: Record<string, CustoCategoria>) => void;
 }) {
-  const [local, setLocal] = useState<Record<string, PhaseConfig>>(() => JSON.parse(JSON.stringify(configs)));
+  const [localPhases, setLocalPhases] = useState(() => JSON.parse(JSON.stringify(phaseConfigs)));
+  const [localPrazos, setLocalPrazos] = useState(() => JSON.parse(JSON.stringify(prazosExternos)));
+  const [localCustos, setLocalCustos] = useState(() => JSON.parse(JSON.stringify(custos)));
 
-  const handleChange = (cat: string, field: keyof PhaseConfig, val: string) => {
-    const num = parseInt(val) || 0;
-    setLocal(prev => ({
-      ...prev,
-      [cat]: { ...prev[cat], [field]: num },
-    }));
+  const handlePhaseChange = (cat: string, field: keyof PhaseConfig, val: string) => {
+    setLocalPhases((prev: Record<string, PhaseConfig>) => ({ ...prev, [cat]: { ...prev[cat], [field]: parseInt(val) || 0 } }));
+  };
+  const handlePrazoChange = (cat: string, field: keyof PrazosExternos, val: string) => {
+    setLocalPrazos((prev: Record<string, PrazosExternos>) => ({ ...prev, [cat]: { ...prev[cat], [field]: parseInt(val) || 0 } }));
+  };
+  const handleCustoChange = (cat: string, field: keyof CustoCategoria, val: string) => {
+    setLocalCustos((prev: Record<string, CustoCategoria>) => ({ ...prev, [cat]: { ...prev[cat], [field]: parseFloat(val) || 0 } }));
   };
 
-  const fields: { key: keyof PhaseConfig; label: string }[] = [
-    { key: 'colheita', label: 'Colheita (dias)' },
-    { key: 'pagamentoUvas', label: 'Pgto Uvas (dias)' },
-    { key: 'vinificacao', label: 'Vinificação (dias)' },
-    { key: 'estagio', label: 'Estágio (dias)' },
-    { key: 'engarrafamento', label: 'Engarraf. (dias)' },
-    { key: 'prazoRecebimento', label: 'Recebimento (dias)' },
+  const applyAll = () => {
+    onUpdatePhases(localPhases);
+    onUpdatePrazos(localPrazos);
+    onUpdateCustos(localCustos);
+  };
+
+  const phaseFields: { key: keyof PhaseConfig; label: string }[] = [
+    { key: 'colheita', label: 'Colheita' },
+    { key: 'vinificacao', label: 'Vinificação' },
+    { key: 'estagio', label: 'Estágio' },
+    { key: 'engarrafamento', label: 'Engarraf.' },
+  ];
+
+  const prazoFields: { key: keyof PrazosExternos; label: string }[] = [
+    { key: 'pagamentoUvasProprias', label: 'Pgto Uvas Próprias' },
+    { key: 'pagamentoUvasCompradas', label: 'Pgto Uvas Compradas' },
+    { key: 'pagamentoVinho', label: 'Pgto Vinho (granel)' },
+    { key: 'pagamentoSecos', label: 'Pgto Secos (embal./rótul.)' },
+    { key: 'prazoRecebimento', label: 'Prazo Recebimento' },
+  ];
+
+  const custoFields: { key: keyof CustoCategoria; label: string; suffix: string }[] = [
+    { key: 'custoUvas', label: 'Uvas', suffix: '%' },
+    { key: 'custoVinificacao', label: 'Vinificação', suffix: '%' },
+    { key: 'custoEstagio', label: 'Estágio', suffix: '%' },
+    { key: 'custoEngarrafSecos', label: 'Engarraf./Secos', suffix: '%' },
+    { key: 'custoDistribuicao', label: 'Distribuição', suffix: '%' },
+    { key: 'pesoVendas', label: 'Peso Vendas', suffix: '%' },
   ];
 
   return (
@@ -106,51 +162,127 @@ function PrazosDialog({ configs, onUpdate }: {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
           <Settings2 className="h-3.5 w-3.5" />
-          Editar Prazos
+          Editar Prazos & Custos
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm">Configurar Prazos por Categoria</DialogTitle>
+          <DialogTitle className="text-sm">Configurar Prazos e Estrutura de Custos por Categoria</DialogTitle>
         </DialogHeader>
-        <div className="mt-3">
-          <Table>
-            <TableHeader>
-              <TableRow className="text-[11px]">
-                <TableHead className="font-semibold">Categoria</TableHead>
-                {fields.map(f => <TableHead key={f.key} className="text-center font-medium text-[10px]">{f.label}</TableHead>)}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {wineCategorias.map(cat => (
-                <TableRow key={cat} className="text-xs">
-                  <TableCell className="font-medium">{cat}</TableCell>
-                  {fields.map(f => (
-                    <TableCell key={f.key} className="text-center p-1">
-                      <Input
-                        type="number"
-                        value={local[cat]?.[f.key] ?? 0}
-                        onChange={e => handleChange(cat, f.key, e.target.value)}
-                        className="w-16 h-7 text-xs text-center mx-auto"
-                        min={0}
-                      />
-                    </TableCell>
-                  ))}
+        <Tabs defaultValue="ciclo" className="mt-2">
+          <TabsList className="grid w-full grid-cols-3 h-8">
+            <TabsTrigger value="ciclo" className="text-xs">Ciclo Produtivo (dias)</TabsTrigger>
+            <TabsTrigger value="prazos" className="text-xs">Prazos Externos (dias)</TabsTrigger>
+            <TabsTrigger value="custos" className="text-xs">Custos (% vendas)</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ciclo" className="mt-3">
+            <Table>
+              <TableHeader>
+                <TableRow className="text-[11px]">
+                  <TableHead className="font-semibold">Categoria</TableHead>
+                  {phaseFields.map(f => <TableHead key={f.key} className="text-center font-medium text-[10px]">{f.label}</TableHead>)}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="flex justify-end mt-4">
-            <Button size="sm" onClick={() => onUpdate(local)} className="text-xs">
-              Aplicar Alterações
-            </Button>
-          </div>
+              </TableHeader>
+              <TableBody>
+                {wineCategorias.map(cat => (
+                  <TableRow key={cat} className="text-xs">
+                    <TableCell className="font-medium">{cat}</TableCell>
+                    {phaseFields.map(f => (
+                      <TableCell key={f.key} className="text-center p-1">
+                        <Input type="number" value={localPhases[cat]?.[f.key] ?? 0}
+                          onChange={e => handlePhaseChange(cat, f.key, e.target.value)}
+                          className="w-16 h-7 text-xs text-center mx-auto" min={0} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+
+          <TabsContent value="prazos" className="mt-3">
+            <p className="text-[10px] text-muted-foreground mb-2">Prazos de pagamento e recebimento externos ao ciclo produtivo.</p>
+            <Table>
+              <TableHeader>
+                <TableRow className="text-[11px]">
+                  <TableHead className="font-semibold">Categoria</TableHead>
+                  {prazoFields.map(f => <TableHead key={f.key} className="text-center font-medium text-[10px]">{f.label}</TableHead>)}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {wineCategorias.map(cat => (
+                  <TableRow key={cat} className="text-xs">
+                    <TableCell className="font-medium">{cat}</TableCell>
+                    {prazoFields.map(f => (
+                      <TableCell key={f.key} className="text-center p-1">
+                        <Input type="number" value={localPrazos[cat]?.[f.key] ?? 0}
+                          onChange={e => handlePrazoChange(cat, f.key, e.target.value)}
+                          className="w-16 h-7 text-xs text-center mx-auto" min={0} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+
+          <TabsContent value="custos" className="mt-3">
+            <p className="text-[10px] text-muted-foreground mb-2">Estrutura de custos como % das vendas e peso de cada categoria no total de vendas (para cálculo da TIR ponderada).</p>
+            <Table>
+              <TableHeader>
+                <TableRow className="text-[11px]">
+                  <TableHead className="font-semibold">Categoria</TableHead>
+                  {custoFields.map(f => <TableHead key={f.key} className="text-center font-medium text-[10px]">{f.label}</TableHead>)}
+                  <TableHead className="text-center font-medium text-[10px]">Total Custos</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {wineCategorias.map(cat => {
+                  const c = localCustos[cat] as CustoCategoria;
+                  const totalCusto = (c?.custoUvas || 0) + (c?.custoVinificacao || 0) + (c?.custoEstagio || 0) + (c?.custoEngarrafSecos || 0) + (c?.custoDistribuicao || 0);
+                  return (
+                    <TableRow key={cat} className="text-xs">
+                      <TableCell className="font-medium">{cat}</TableCell>
+                      {custoFields.map(f => (
+                        <TableCell key={f.key} className="text-center p-1">
+                          <Input type="number" value={localCustos[cat]?.[f.key] ?? 0}
+                            onChange={e => handleCustoChange(cat, f.key, e.target.value)}
+                            className="w-16 h-7 text-xs text-center mx-auto" min={0} step={0.5} />
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-center font-semibold text-[10px]">
+                        <span className={totalCusto > 80 ? 'text-destructive' : totalCusto > 60 ? 'text-amber-600' : 'text-emerald-600'}>
+                          {totalCusto.toFixed(1)}%
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TabsContent>
+        </Tabs>
+        <div className="flex justify-end mt-4">
+          <Button size="sm" onClick={applyAll} className="text-xs">Aplicar Alterações</Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
+// ========== TIR Calculation ==========
+// Simplified IRR: given cash outflows (costs) and inflow (revenue=100%) over cycle days,
+// compute an annualized return rate using the formula: IRR ≈ (Revenue/Cost)^(365/days) - 1
+function computeTIR(totalCustoPct: number, diasFinanciamento: number): number {
+  if (totalCustoPct <= 0 || diasFinanciamento <= 0) return 0;
+  const costRatio = totalCustoPct / 100;
+  const marginRatio = (1 - costRatio) / costRatio; // profit / investment
+  const annualized = Math.pow(1 + marginRatio, 365 / diasFinanciamento) - 1;
+  return annualized * 100; // as percentage
+}
+
+// ========== Main Component ==========
 interface ImpactoFinanceiroViewProps {
   filterTipo: string;
   filterCategoria: string;
@@ -161,38 +293,46 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
   const [phaseConfigs, setPhaseConfigs] = useState<Record<string, PhaseConfig>>(
     () => JSON.parse(JSON.stringify(DEFAULT_PHASE_CONFIG))
   );
+  const [prazosExternos, setPrazosExternos] = useState<Record<string, PrazosExternos>>(
+    () => JSON.parse(JSON.stringify(DEFAULT_PRAZOS_EXTERNOS))
+  );
+  const [custos, setCustos] = useState<Record<string, CustoCategoria>>(
+    () => JSON.parse(JSON.stringify(DEFAULT_CUSTOS))
+  );
 
   const buildData = useCallback((): ProductFinancialRow[] => {
     return wineProducts.map(p => {
       const config = phaseConfigs[p.categoria] || phaseConfigs['Regional'];
+      const prazos = prazosExternos[p.categoria] || prazosExternos['Regional'];
       const vendaMedia = computeAvgSaleDays(p.tipo);
 
       const colheitaEnd = config.colheita;
-      const pagamentoUvasDay = config.pagamentoUvas;
       const vinificacaoEnd = colheitaEnd + config.vinificacao;
       const estagioEnd = vinificacaoEnd + config.estagio;
-      const compraVinhoPossivel = Math.max(0, COMPRA_VINHO_ANTES_ENGARRAF);
       const engarrafamentoEnd = estagioEnd + config.engarrafamento;
       const vendaEnd = engarrafamentoEnd + vendaMedia;
-      const recebimentoEnd = vendaEnd + config.prazoRecebimento;
-      const diasFinanciamento = recebimentoEnd - pagamentoUvasDay;
+      const recebimentoEnd = vendaEnd + prazos.prazoRecebimento;
 
-      // Seasonal peak label
+      // Financing gap: from first payment (grapes) to last receipt
+      const firstPaymentDay = prazos.pagamentoUvasCompradas || prazos.pagamentoUvasProprias || 30;
+      const diasFinanciamento = recebimentoEnd - firstPaymentDay;
+
       const weights = SEASONAL_WEIGHTS[p.tipo] || SEASONAL_WEIGHTS['Tinto'];
       const peakMonth = weights.indexOf(Math.max(...weights));
       const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-      const seasonalLabel = `Pico: ${months[peakMonth]}`;
 
       return {
         produto: p.produto, regiao: p.regiao, categoria: p.categoria, tipo: p.tipo,
-        colheita: config.colheita, pagamentoUvas: config.pagamentoUvas,
-        vinificacao: config.vinificacao, estagio: config.estagio,
-        compraVinhoPossivel, engarrafamento: config.engarrafamento,
-        vendaMedia, prazoRecebimento: config.prazoRecebimento,
-        totalCiclo: recebimentoEnd, diasFinanciamento, seasonalLabel,
+        colheita: config.colheita, vinificacao: config.vinificacao,
+        estagio: config.estagio, engarrafamento: config.engarrafamento,
+        vendaMedia, prazoRecebimento: prazos.prazoRecebimento,
+        pagamentoUvas: firstPaymentDay,
+        pagamentoSecos: prazos.pagamentoSecos,
+        totalCiclo: recebimentoEnd, diasFinanciamento,
+        seasonalLabel: `Pico: ${months[peakMonth]}`,
       };
     });
-  }, [phaseConfigs]);
+  }, [phaseConfigs, prazosExternos]);
 
   const allData = useMemo(() => buildData(), [buildData]);
 
@@ -207,19 +347,46 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
 
   const maxCiclo = useMemo(() => Math.max(...allData.map(r => r.totalCiclo)), [allData]);
 
+  // TIR by category
+  const tirByCategory = useMemo(() => {
+    return wineCategorias.map(cat => {
+      const catData = allData.filter(r => r.categoria === cat);
+      if (catData.length === 0) return null;
+      const c = custos[cat];
+      const totalCusto = (c?.custoUvas || 0) + (c?.custoVinificacao || 0) + (c?.custoEstagio || 0) + (c?.custoEngarrafSecos || 0) + (c?.custoDistribuicao || 0);
+      const avgFinanciamento = Math.round(catData.reduce((s, r) => s + r.diasFinanciamento, 0) / catData.length);
+      const avgCiclo = Math.round(catData.reduce((s, r) => s + r.totalCiclo, 0) / catData.length);
+      const tir = computeTIR(totalCusto, avgFinanciamento);
+      const margem = 100 - totalCusto;
+      return { cat, avgFinanciamento, avgCiclo, totalCusto, margem, tir, peso: c?.pesoVendas || 0 };
+    }).filter(Boolean) as { cat: string; avgFinanciamento: number; avgCiclo: number; totalCusto: number; margem: number; tir: number; peso: number }[];
+  }, [allData, custos]);
+
+  const tirPonderada = useMemo(() => {
+    const totalPeso = tirByCategory.reduce((s, t) => s + t.peso, 0);
+    if (totalPeso === 0) return 0;
+    return tirByCategory.reduce((s, t) => s + t.tir * (t.peso / totalPeso), 0);
+  }, [tirByCategory]);
+
   return (
     <div className="space-y-4">
       {/* Description + editable button */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
           Ciclo de caixa por produto: dias entre pagamento das uvas e recebimento das faturas. 
-          Prazo de venda médio = 365 dias com distribuição sazonal por cor (brancos: verão, tintos: outono/inverno). 
-          Compra de vinho possível até 30 dias antes do engarrafamento.
+          Prazos externos (pagamentos/recebimentos) editáveis. TIR ponderada pelo peso de cada categoria nas vendas.
         </p>
-        <PrazosDialog configs={phaseConfigs} onUpdate={setPhaseConfigs} />
+        <PrazosDialog
+          phaseConfigs={phaseConfigs}
+          prazosExternos={prazosExternos}
+          custos={custos}
+          onUpdatePhases={setPhaseConfigs}
+          onUpdatePrazos={setPrazosExternos}
+          onUpdateCustos={setCustos}
+        />
       </div>
 
-      {/* Legend + seasonal info */}
+      {/* Legend */}
       <div className="flex items-center gap-3 flex-wrap">
         {PHASES_DISPLAY.map(p => (
           <div key={p.key} className="flex items-center gap-1">
@@ -235,39 +402,31 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
       </div>
 
       {/* Data grid */}
-      <ScrollArea className="rounded-md border" style={{ maxHeight: '520px' }}>
+      <ScrollArea className="rounded-md border" style={{ maxHeight: '480px' }}>
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 text-[10px]">
-              <TableHead className="font-semibold sticky left-0 bg-muted/50 z-10 min-w-[200px]">Produto</TableHead>
+              <TableHead className="font-semibold sticky left-0 bg-muted/50 z-10 min-w-[180px]">Produto</TableHead>
               <TableHead className="text-center font-medium">Tipo</TableHead>
               <TableHead className="text-center font-medium">Cat.</TableHead>
               {PHASES_DISPLAY.map(p => (
-                <TableHead key={p.key} className="text-center font-medium min-w-[60px]">
+                <TableHead key={p.key} className="text-center font-medium min-w-[55px]">
                   <div className="flex flex-col items-center gap-0.5">
                     <div className={`w-2 h-2 rounded-sm ${p.color}`} />
                     <span className="text-[9px]">{p.label}</span>
                   </div>
                 </TableHead>
               ))}
-              <TableHead className="text-center font-medium min-w-[50px]">
-                <span className="text-[9px]">Pgto Uvas</span>
+              <TableHead className="text-center font-medium min-w-[45px]"><span className="text-[9px]">Pgto Uvas</span></TableHead>
+              <TableHead className="text-center font-medium min-w-[45px]"><span className="text-[9px]">Pgto Secos</span></TableHead>
+              <TableHead className="text-center font-semibold min-w-[60px] bg-primary/10">
+                <div className="flex flex-col items-center"><Clock className="h-3 w-3 mb-0.5" /><span className="text-[9px]">Ciclo</span></div>
               </TableHead>
-              <TableHead className="text-center font-semibold min-w-[70px] bg-primary/10">
-                <div className="flex flex-col items-center">
-                  <Clock className="h-3 w-3 mb-0.5" />
-                  <span className="text-[9px]">Ciclo</span>
-                </div>
-              </TableHead>
-              <TableHead className="text-center font-semibold min-w-[70px] bg-destructive/10 text-destructive">
+              <TableHead className="text-center font-semibold min-w-[60px] bg-destructive/10 text-destructive">
                 <span className="text-[9px]">Dias Financ.</span>
               </TableHead>
-              <TableHead className="text-center font-medium min-w-[60px]">
-                <span className="text-[9px]">Sazonalidade</span>
-              </TableHead>
-              <TableHead className="font-medium min-w-[160px]">
-                <span className="text-[9px]">Timeline</span>
-              </TableHead>
+              <TableHead className="text-center font-medium min-w-[50px]"><span className="text-[9px]">Sazonal.</span></TableHead>
+              <TableHead className="font-medium min-w-[140px]"><span className="text-[9px]">Timeline</span></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -281,10 +440,9 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
                 { days: row.vendaMedia, color: 'bg-emerald-500' },
                 { days: row.prazoRecebimento, color: 'bg-orange-500' },
               ];
-
               return (
                 <TableRow key={row.produto} className={`${bgClass} text-xs hover:bg-accent/30`}>
-                  <TableCell className="font-medium sticky left-0 z-10 bg-inherit">{row.produto}</TableCell>
+                  <TableCell className="font-medium sticky left-0 z-10 bg-inherit text-[10px]">{row.produto}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant="outline" className={`text-[9px] px-1 py-0 ${
                       row.tipo === 'Tinto' ? 'border-red-300 text-red-700' :
@@ -298,22 +456,15 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
                       {(row as any)[p.key]}d
                     </TableCell>
                   ))}
-                  <TableCell className="text-center tabular-nums text-[10px] text-destructive font-medium">
-                    {row.pagamentoUvas}d
-                  </TableCell>
-                  <TableCell className="text-center font-semibold bg-primary/5 tabular-nums">
-                    {row.totalCiclo}d
-                  </TableCell>
+                  <TableCell className="text-center tabular-nums text-[10px] text-destructive font-medium">{row.pagamentoUvas}d</TableCell>
+                  <TableCell className="text-center tabular-nums text-[10px] text-muted-foreground">{row.pagamentoSecos}d</TableCell>
+                  <TableCell className="text-center font-semibold bg-primary/5 tabular-nums">{row.totalCiclo}d</TableCell>
                   <TableCell className={`text-center font-bold tabular-nums ${
                     row.diasFinanciamento > 700 ? 'text-destructive bg-destructive/5' :
                     row.diasFinanciamento > 500 ? 'text-amber-600 bg-amber-50' :
                     'text-emerald-600 bg-emerald-50'
-                  }`}>
-                    {row.diasFinanciamento}d
-                  </TableCell>
-                  <TableCell className="text-center text-[9px] text-muted-foreground">
-                    {row.seasonalLabel}
-                  </TableCell>
+                  }`}>{row.diasFinanciamento}d</TableCell>
+                  <TableCell className="text-center text-[9px] text-muted-foreground">{row.seasonalLabel}</TableCell>
                   <TableCell className="p-1">
                     <div className="flex h-4 rounded overflow-hidden" style={{ width: '100%' }}>
                       {segments.map((seg, i) => (
@@ -328,30 +479,45 @@ export function ImpactoFinanceiroView({ filterTipo, filterCategoria, filterRegia
         </Table>
       </ScrollArea>
 
-      {/* Summary by category */}
+      {/* Summary: TIR by category + weighted TIR */}
       <div className="p-3 bg-muted/40 rounded-lg border">
-        <h4 className="text-xs font-semibold mb-2 flex items-center gap-1">
-          <ArrowRight className="h-3 w-3" /> Resumo por Categoria
-        </h4>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs font-semibold flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" /> Resumo por Categoria & TIR
+          </h4>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">TIR Ponderada:</span>
+            <Badge className={`text-xs ${tirPonderada > 20 ? 'bg-emerald-600' : tirPonderada > 10 ? 'bg-amber-500' : 'bg-destructive'}`}>
+              {tirPonderada.toFixed(1)}%
+            </Badge>
+          </div>
+        </div>
         <div className="grid grid-cols-4 gap-3">
-          {wineCategorias.map(cat => {
-            const catData = allData.filter(r => r.categoria === cat);
-            if (catData.length === 0) return null;
-            const avgFinanciamento = Math.round(catData.reduce((s, r) => s + r.diasFinanciamento, 0) / catData.length);
-            const avgCiclo = Math.round(catData.reduce((s, r) => s + r.totalCiclo, 0) / catData.length);
-            const anos = (avgCiclo / 365).toFixed(1);
-            const config = phaseConfigs[cat];
-
+          {tirByCategory.map(t => {
+            const anos = (t.avgCiclo / 365).toFixed(1);
+            const prazos = prazosExternos[t.cat];
             return (
-              <div key={cat} className="bg-white rounded-md p-2.5 border">
-                <div className="text-[10px] font-semibold text-muted-foreground">{cat}</div>
-                <div className="text-lg font-bold mt-1">{avgFinanciamento}d</div>
+              <div key={t.cat} className="bg-white rounded-md p-2.5 border">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-muted-foreground">{t.cat}</span>
+                  <Badge variant="outline" className="text-[9px] px-1">{t.peso}% vendas</Badge>
+                </div>
+                <div className="text-lg font-bold mt-1">{t.avgFinanciamento}d</div>
                 <div className="text-[9px] text-muted-foreground">financiamento médio</div>
                 <div className="text-[10px] mt-1">
-                  Ciclo: <span className="font-semibold">{avgCiclo}d</span> ({anos} anos)
+                  Ciclo: <span className="font-semibold">{t.avgCiclo}d</span> ({anos} anos)
                 </div>
                 <div className="text-[10px]">
-                  Estágio: <span className="font-semibold">{config.estagio}d</span> · Receb: <span className="font-semibold">{config.prazoRecebimento}d</span>
+                  Margem: <span className="font-semibold">{t.margem.toFixed(1)}%</span> · Custos: <span className="font-semibold">{t.totalCusto.toFixed(1)}%</span>
+                </div>
+                <div className="text-[10px]">
+                  Receb: <span className="font-semibold">{prazos?.prazoRecebimento}d</span> · Pgto Uvas: <span className="font-semibold">{prazos?.pagamentoUvasCompradas}d</span>
+                </div>
+                <div className="mt-1 flex items-center gap-1">
+                  <span className="text-[9px] text-muted-foreground">TIR:</span>
+                  <span className={`text-xs font-bold ${t.tir > 20 ? 'text-emerald-600' : t.tir > 10 ? 'text-amber-600' : 'text-destructive'}`}>
+                    {t.tir.toFixed(1)}%
+                  </span>
                 </div>
               </div>
             );
