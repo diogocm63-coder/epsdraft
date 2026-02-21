@@ -35,6 +35,24 @@ const WINE_TYPES = [
   { value: "rose", label: "Rosé" },
 ];
 
+const REGIOES = [
+  { value: "todas", label: "Todas" },
+  { value: "douro", label: "Douro" },
+  { value: "alentejo", label: "Alentejo" },
+  { value: "dao", label: "Dão" },
+  { value: "vinhoverde", label: "Vinho Verde" },
+  { value: "lisboa", label: "Lisboa" },
+];
+
+// Region weight factors (share of total business)
+const regionWeights: Record<string, number> = {
+  douro: 0.35,
+  alentejo: 0.25,
+  dao: 0.15,
+  vinhoverde: 0.13,
+  lisboa: 0.12,
+};
+
 // Seasonal sales distribution by wine type (% per month)
 const salesSeasonality: Record<string, number[]> = {
   tinto:  [6, 5, 7, 7, 8, 8, 7, 6, 9, 12, 14, 11],
@@ -92,6 +110,9 @@ const formatK = (val: number): string => `${(val / 1000).toFixed(0)}K`;
 
 export const CashMapView = () => {
   const [wineType, setWineType] = useState("todos");
+  const [regiao, setRegiao] = useState("todas");
+
+  const regionFactor = regiao === "todas" ? 1 : (regionWeights[regiao] || 0.15);
 
   const cashData = useMemo(() => {
     const types = wineType === "todos" ? ["tinto", "branco", "rose"] : [wineType];
@@ -104,13 +125,13 @@ export const CashMapView = () => {
         const base = baseValues[t as keyof typeof baseValues];
         const salesPct = salesSeasonality[t as keyof typeof salesSeasonality][i] / 100;
         
-        vendas += base.vendas * salesPct;
-        custosFixos += base.custosFixos * (fixedCostDist[i] / 100);
-        vinho += base.vinho * (vinhoDist[i] / 100);
-        uva += base.uva * (uvaDist[i] / 100);
-        secos += base.secos * (secosDist[i] / 100);
-        marketing += marketingFollowsSales ? base.marketing * salesPct : base.marketing / 12;
-        vinha += base.vinha * (vinhaCampaign[i] / 100);
+        vendas += base.vendas * salesPct * regionFactor;
+        custosFixos += base.custosFixos * (fixedCostDist[i] / 100) * regionFactor;
+        vinho += base.vinho * (vinhoDist[i] / 100) * regionFactor;
+        uva += base.uva * (uvaDist[i] / 100) * regionFactor;
+        secos += base.secos * (secosDist[i] / 100) * regionFactor;
+        marketing += (marketingFollowsSales ? base.marketing * salesPct : base.marketing / 12) * regionFactor;
+        vinha += base.vinha * (vinhaCampaign[i] / 100) * regionFactor;
       });
 
       const totalEntradas = vendas;
@@ -122,7 +143,7 @@ export const CashMapView = () => {
     });
 
     return rows;
-  }, [wineType]);
+  }, [wineType, regionFactor]);
 
   const chartData = cashData.map(row => ({
     mes: row.mes,
@@ -169,19 +190,34 @@ export const CashMapView = () => {
   return (
     <div className="space-y-6">
       {/* Filter & summary */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground font-medium">Tipo de Vinho:</span>
-          <Select value={wineType} onValueChange={setWineType}>
-            <SelectTrigger className="w-32 h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {WINE_TYPES.map(t => (
-                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Tipo:</span>
+            <Select value={wineType} onValueChange={setWineType}>
+              <SelectTrigger className="w-28 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {WINE_TYPES.map(t => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Região:</span>
+            <Select value={regiao} onValueChange={setRegiao}>
+              <SelectTrigger className="w-32 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REGIOES.map(r => (
+                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <Card className="border-emerald-200 bg-emerald-50/50">
