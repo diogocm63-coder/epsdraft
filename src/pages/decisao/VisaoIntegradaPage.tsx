@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Filter, RotateCcw, ChevronRight, ChevronDown, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { wineProducts, wineRegioes } from '@/data/wineData';
+import { ImpactoFinanceiroDialog } from '@/components/decisao/ImpactoFinanceiroDialog';
 
 interface StockMasterRow {
   regiao: string;
@@ -279,6 +280,8 @@ export default function VisaoIntegradaPage() {
               {allColsExpanded ? 'Fechar' : 'Abrir'}
             </Button>
           </div>
+
+          <ImpactoFinanceiroDialog />
 
           <Button variant="ghost" size="sm" onClick={resetFilters} className="text-muted-foreground hover:text-foreground h-8 text-xs">
             <RotateCcw className="h-3 w-3 mr-1" /> Limpar
