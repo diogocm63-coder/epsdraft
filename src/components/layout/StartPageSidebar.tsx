@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   Settings,
   Link,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -119,6 +120,25 @@ export const StartPageSidebar = ({
                 </button>
               );
             })}
+
+            {/* Configuração Financeira */}
+            <div className="mt-2 border-t border-eps-border/30 pt-2">
+              <button
+                onClick={() => {
+                  onConfigItemChange?.("financeira");
+                  navigate("/configuracao/financeira");
+                }}
+                className={cn(
+                  "w-full flex items-center gap-3 pl-8 pr-4 py-2 text-xs transition-colors",
+                  activeConfigItem === "financeira"
+                    ? "bg-eps-primary/15 text-eps-accent"
+                    : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                )}
+              >
+                <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="flex-1 text-left">Config. Financeira</span>
+              </button>
+            </div>
 
             {/* Relation links */}
             <div className="mt-2 border-t border-eps-border/30 pt-2">

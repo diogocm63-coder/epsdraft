@@ -60,6 +60,7 @@ import SourcingMateriaPrimaPage from "./pages/configuracao/SourcingMateriaPrimaP
 import TransformacaoAdegasPage from "./pages/configuracao/TransformacaoAdegasPage";
 import ConfiguracaoPage from "./pages/configuracao/ConfiguracaoPage";
 import AgriculturaPage from "./pages/configuracao/AgriculturaPage";
+import ConfiguracaoFinanceiraPage from "./pages/configuracao/ConfiguracaoFinanceiraPage";
 
 const queryClient = new QueryClient();
 
@@ -129,6 +130,7 @@ const App = () => (
             <Route path="/configuracao/sourcing-materia-prima" element={<SourcingMateriaPrimaPage />} />
             <Route path="/configuracao/transformacao-adegas" element={<TransformacaoAdegasPage />} />
             <Route path="/configuracao/agricultura" element={<AgriculturaPage />} />
+            <Route path="/configuracao/financeira" element={<ConfiguracaoFinanceiraPage />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
