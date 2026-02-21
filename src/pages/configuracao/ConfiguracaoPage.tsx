@@ -8,7 +8,9 @@ import {
   Link,
   Calendar,
   Filter,
+  DollarSign,
 } from "lucide-react";
+import { ImpactoFinanceiroView } from "@/components/configuracao/ImpactoFinanceiroView";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
 import { EPSHeader } from "@/components/layout/EPSHeader";
 import { Settings } from "lucide-react";
@@ -145,7 +147,7 @@ const getVintageAtStage = (
   return results;
 };
 
-type ViewMode = "evolucao" | "orcamento";
+type ViewMode = "evolucao" | "orcamento" | "impacto";
 
 const ConfiguracaoPage = () => {
   const navigate = useNavigate();
@@ -262,9 +264,27 @@ const ConfiguracaoPage = () => {
                 >
                   Ano de Orçamento
                 </button>
+                <button
+                  onClick={() => setViewMode("impacto")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    viewMode === "impacto"
+                      ? "bg-eps-primary text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />Impacto Financeiro</span>
+                </button>
               </div>
             </div>
 
+            {viewMode === "impacto" ? (
+              <ImpactoFinanceiroView
+                filterTipo={filterTipo === "all" ? "all" : filterTipo}
+                filterCategoria={filterCategoria === "all" ? "all" : filterCategoria}
+                filterRegiao={filterRegiao === "all" ? "all" : filterRegiao}
+              />
+            ) : (
+            <>
             {/* Description */}
             <p className="text-xs text-muted-foreground mb-4">
               {viewMode === "evolucao"
@@ -411,6 +431,8 @@ const ConfiguracaoPage = () => {
                 </TableBody>
               </Table>
             </ScrollArea>
+            </>
+            )}
           </div>
         </main>
       </div>
