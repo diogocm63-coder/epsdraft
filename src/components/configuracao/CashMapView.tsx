@@ -20,7 +20,10 @@ import {
   ReferenceLine,
   Legend,
   Cell,
+  ComposedChart,
+  Line,
 } from "recharts";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowUp, ArrowDown, TrendingUp } from "lucide-react";
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -133,6 +136,22 @@ export const CashMapView = () => {
     Saldo: Math.round(row.saldo),
   }));
 
+  // Waterfall data: each bar starts where the previous ended
+  const waterfallData = useMemo(() => {
+    return cashData.map((row, i) => {
+      const prev = i > 0 ? cashData[i - 1].saldoAcumulado : 0;
+      const isPositive = row.saldo >= 0;
+      return {
+        mes: row.mes,
+        base: isPositive ? Math.round(prev) : Math.round(prev + row.saldo),
+        value: Math.round(Math.abs(row.saldo)),
+        saldo: Math.round(row.saldo),
+        acumulado: Math.round(row.saldoAcumulado),
+        isPositive,
+      };
+    });
+  }, [cashData]);
+
   const totalVendas = cashData.reduce((s, r) => s + r.vendas, 0);
   const totalSaidas = cashData.reduce((s, r) => s + r.totalSaidas, 0);
   const saldoFinal = cashData[cashData.length - 1]?.saldoAcumulado || 0;
@@ -195,29 +214,82 @@ export const CashMapView = () => {
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Chart with two views */}
       <Card>
         <CardContent className="p-4">
-          <p className="text-xs font-semibold text-foreground mb-3">Fluxo de Cash Mensal</p>
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={chartData} stackOffset="sign">
-              <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={formatK} />
-              <Tooltip
-                formatter={(value: number, name: string) => [formatCurrency(Math.abs(value)), name]}
-                contentStyle={{ fontSize: 11 }}
-              />
-              <Legend wrapperStyle={{ fontSize: 10 }} />
-              <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
-              <Bar dataKey="Vendas" stackId="stack" fill={categoryColors.Vendas} />
-              <Bar dataKey="Custos Fixos" stackId="stack" fill={categoryColors["Custos Fixos"]} />
-              <Bar dataKey="Uva" stackId="stack" fill={categoryColors.Uva} />
-              <Bar dataKey="Vinho" stackId="stack" fill={categoryColors.Vinho} />
-              <Bar dataKey="Secos" stackId="stack" fill={categoryColors.Secos} />
-              <Bar dataKey="Marketing" stackId="stack" fill={categoryColors.Marketing} />
-              <Bar dataKey="Vinha" stackId="stack" fill={categoryColors.Vinha} />
-            </BarChart>
-          </ResponsiveContainer>
+          <Tabs defaultValue="stacked">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-foreground">Fluxo de Cash Mensal</p>
+              <TabsList className="h-7">
+                <TabsTrigger value="stacked" className="text-[10px] px-2 h-6">Categorias</TabsTrigger>
+                <TabsTrigger value="waterfall" className="text-[10px] px-2 h-6">Waterfall</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="stacked" className="mt-0">
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={chartData} stackOffset="sign">
+                  <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={formatK} />
+                  <Tooltip
+                    formatter={(value: number, name: string) => [formatCurrency(Math.abs(value)), name]}
+                    contentStyle={{ fontSize: 11 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
+                  <Bar dataKey="Vendas" stackId="stack" fill={categoryColors.Vendas} />
+                  <Bar dataKey="Custos Fixos" stackId="stack" fill={categoryColors["Custos Fixos"]} />
+                  <Bar dataKey="Uva" stackId="stack" fill={categoryColors.Uva} />
+                  <Bar dataKey="Vinho" stackId="stack" fill={categoryColors.Vinho} />
+                  <Bar dataKey="Secos" stackId="stack" fill={categoryColors.Secos} />
+                  <Bar dataKey="Marketing" stackId="stack" fill={categoryColors.Marketing} />
+                  <Bar dataKey="Vinha" stackId="stack" fill={categoryColors.Vinha} />
+                </BarChart>
+              </ResponsiveContainer>
+            </TabsContent>
+
+            <TabsContent value="waterfall" className="mt-0">
+              <ResponsiveContainer width="100%" height={320}>
+                <ComposedChart data={waterfallData}>
+                  <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={formatK} />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0]?.payload;
+                      return (
+                        <div className="bg-background border rounded-lg px-3 py-2 shadow-xl text-xs space-y-1">
+                          <p className="font-semibold">{d.mes}</p>
+                          <p className={d.saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+                            Saldo: {formatCurrency(d.saldo)}
+                          </p>
+                          <p className="text-sky-700 font-medium">Acumulado: {formatCurrency(d.acumulado)}</p>
+                        </div>
+                      );
+                    }}
+                  />
+                  <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
+                  {/* Invisible base bar */}
+                  <Bar dataKey="base" stackId="waterfall" fill="transparent" />
+                  {/* Visible value bar with color per saldo */}
+                  <Bar dataKey="value" stackId="waterfall" radius={[3, 3, 0, 0]}>
+                    {waterfallData.map((entry, index) => (
+                      <Cell key={index} fill={entry.isPositive ? "#16a34a" : "#dc2626"} />
+                    ))}
+                  </Bar>
+                  {/* Accumulated line */}
+                  <Line
+                    type="monotone"
+                    dataKey="acumulado"
+                    stroke="#0284c7"
+                    strokeWidth={2.5}
+                    dot={{ r: 4, fill: "#0284c7", stroke: "#fff", strokeWidth: 2 }}
+                    name="Acumulado"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
