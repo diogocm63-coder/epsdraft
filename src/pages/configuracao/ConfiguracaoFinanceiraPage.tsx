@@ -3,36 +3,43 @@ import { useNavigate } from "react-router-dom";
 import { 
   Grape, FlaskConical, Wine, Package, Truck, 
   Factory, Briefcase, Megaphone, TrendingDown, Landmark, HelpCircle, ShoppingCart,
-  Settings, ArrowRight, Percent
+  Settings, ArrowRight, Percent, MousePointerClick
 } from "lucide-react";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
 import { EPSHeader } from "@/components/layout/EPSHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CostCenterDialog, type CostCenterAllocation, allCostCenters } from "@/components/configuracao/CostCenterDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// ========== Value Chain Areas (Production) ==========
+// ========== Volume unit per area ==========
+type VolumeUnit = "cx9L" | "L" | "Kg";
+
 interface AreaProducao {
   id: string;
   label: string;
   icon: React.ElementType;
   description: string;
   costPct: number;
+  volumeUnit: VolumeUnit;
+  volumeLabel: string;
+  defaultVolume: number;
 }
 
+const unitLabels: Record<VolumeUnit, string> = { cx9L: "Cx 9L", L: "Litros", Kg: "Kg" };
+
 const areasProducao: AreaProducao[] = [
-  { id: "agricultura", label: "Agricultura / Viticultura", icon: Grape, description: "Custos de vinha, cultivo, colheita", costPct: 22 },
-  { id: "vinificacao", label: "Vinificação", icon: FlaskConical, description: "Transformação de uva em vinho", costPct: 14 },
-  { id: "estagio", label: "Estágio / Envelhecimento", icon: Wine, description: "Cuba, barrica e garrafa", costPct: 7 },
-  { id: "engarrafamento", label: "Engarrafamento & Secos", icon: Package, description: "Embalagem, rotulagem, materiais secos", costPct: 10 },
-  { id: "distribuicao", label: "Distribuição & Logística", icon: Truck, description: "Transporte, armazenamento, expedição", costPct: 12 },
+  { id: "agricultura", label: "Agricultura / Viticultura", icon: Grape, description: "Custos de vinha, cultivo, colheita", costPct: 22, volumeUnit: "Kg", volumeLabel: "Produção (Kg)", defaultVolume: 2500000 },
+  { id: "vinificacao", label: "Vinificação", icon: FlaskConical, description: "Transformação de uva em vinho", costPct: 14, volumeUnit: "Kg", volumeLabel: "Uva entrada (Kg)", defaultVolume: 2500000 },
+  { id: "estagio", label: "Estágio / Envelhecimento", icon: Wine, description: "Cuba, barrica e garrafa", costPct: 7, volumeUnit: "L", volumeLabel: "Vinho em estágio (L)", defaultVolume: 1850000 },
+  { id: "engarrafamento", label: "Engarrafamento & Secos", icon: Package, description: "Embalagem, rotulagem, materiais secos", costPct: 10, volumeUnit: "L", volumeLabel: "Engarrafado (L)", defaultVolume: 1750000 },
+  { id: "distribuicao", label: "Distribuição & Logística", icon: Truck, description: "Transporte, armazenamento, expedição", costPct: 12, volumeUnit: "cx9L", volumeLabel: "Expedição (Cx 9L)", defaultVolume: 194000 },
 ];
 
-// ========== Transversal Areas (Overhead) ==========
 interface AreaTransversal {
   id: string;
   label: string;
@@ -51,7 +58,6 @@ const defaultTransversais: AreaTransversal[] = [
   { id: "outros", label: "Outros Custos Indirectos", icon: HelpCircle, description: "Diversos não classificados", costPct: 1 },
 ];
 
-// Distribution matrix: transversal area -> value chain area -> %
 type DistributionMatrix = Record<string, Record<string, number>>;
 
 const buildDefaultDistribution = (): DistributionMatrix => {
@@ -59,14 +65,18 @@ const buildDefaultDistribution = (): DistributionMatrix => {
   defaultTransversais.forEach(t => {
     matrix[t.id] = {};
     areasProducao.forEach(a => {
-      // Default even distribution
       matrix[t.id][a.id] = Math.round(100 / areasProducao.length);
     });
-    // Adjust last to reach 100
     const sum = Object.values(matrix[t.id]).reduce((s, v) => s + v, 0);
     matrix[t.id][areasProducao[areasProducao.length - 1].id] += (100 - sum);
   });
   return matrix;
+};
+
+const formatVolume = (val: number): string => {
+  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+  if (val >= 1_000) return `${(val / 1_000).toFixed(0)}K`;
+  return val.toFixed(0);
 };
 
 const ConfiguracaoFinanceiraPage = () => {
@@ -78,6 +88,13 @@ const ConfiguracaoFinanceiraPage = () => {
     () => Object.fromEntries(defaultTransversais.map(t => [t.id, t.costPct]))
   );
   const [distribution, setDistribution] = useState<DistributionMatrix>(buildDefaultDistribution);
+  const [volumes, setVolumes] = useState<Record<string, number>>(
+    () => Object.fromEntries(areasProducao.map(a => [a.id, a.defaultVolume]))
+  );
+
+  // Cost center allocations per area (production + transversal)
+  const [ccAllocations, setCcAllocations] = useState<Record<string, CostCenterAllocation[]>>({});
+  const [dialogOpen, setDialogOpen] = useState<string | null>(null);
 
   const totalProducao = Object.values(producaoCosts).reduce((s, v) => s + v, 0);
   const totalTransversais = Object.values(transversaisCosts).reduce((s, v) => s + v, 0);
@@ -90,7 +107,6 @@ const ConfiguracaoFinanceiraPage = () => {
     }));
   };
 
-  // Calculate total cost per value chain area (direct + allocated transversal)
   const totalByArea = areasProducao.map(area => {
     const direct = producaoCosts[area.id] || 0;
     const allocated = defaultTransversais.reduce((sum, t) => {
@@ -101,214 +117,385 @@ const ConfiguracaoFinanceiraPage = () => {
     return { ...area, direct, allocated: +allocated.toFixed(2), total: +(direct + allocated).toFixed(2) };
   });
 
+  const getCcCount = (areaId: string) => (ccAllocations[areaId] || []).length;
+  const getCcValid = (areaId: string) => {
+    const allocs = ccAllocations[areaId] || [];
+    if (allocs.length === 0) return null; // not configured
+    const total = allocs.reduce((s, a) => s + a.pct, 0);
+    return Math.abs(total - 100) < 0.5;
+  };
+
+  const openDialog = dialogOpen
+    ? [...areasProducao.map(a => ({ id: a.id, label: a.label, icon: a.icon })),
+       ...defaultTransversais.map(t => ({ id: t.id, label: t.label, icon: t.icon }))
+      ].find(x => x.id === dialogOpen)
+    : null;
+
   return (
-    <div className="min-h-screen flex w-full bg-eps-background">
-      <StartPageSidebar
-        activeTab="configuracao"
-        onTabChange={() => navigate("/")}
-        activeConfigItem="financeira"
-        onConfigItemChange={() => {}}
-      />
-      <div className="flex-1 flex flex-col min-h-screen">
-        <EPSHeader title="Configuração Financeira" icon={<Settings className="w-4 h-4" />} />
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Tabs defaultValue="areas" className="space-y-6">
-            <TabsList className="h-9">
-              <TabsTrigger value="areas" className="text-xs">Áreas & Centros de Custo</TabsTrigger>
-              <TabsTrigger value="distribuicao" className="text-xs">Distribuição de Custos Transversais</TabsTrigger>
-            </TabsList>
+    <TooltipProvider>
+      <div className="min-h-screen flex w-full bg-eps-background">
+        <StartPageSidebar
+          activeTab="configuracao"
+          onTabChange={() => navigate("/")}
+          activeConfigItem="financeira"
+          onConfigItemChange={() => {}}
+        />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <EPSHeader title="Configuração Financeira" icon={<Settings className="w-4 h-4" />} />
+          <main className="flex-1 p-6 overflow-y-auto">
+            <Tabs defaultValue="areas" className="space-y-6">
+              <TabsList className="h-9">
+                <TabsTrigger value="areas" className="text-xs">Áreas & Centros de Custo</TabsTrigger>
+                <TabsTrigger value="distribuicao" className="text-xs">Distribuição de Custos Transversais</TabsTrigger>
+                <TabsTrigger value="volumes" className="text-xs">Custos & Volumes</TabsTrigger>
+              </TabsList>
 
-            {/* ============= TAB 1: Areas ============= */}
-            <TabsContent value="areas" className="space-y-6">
-              {/* Summary banner */}
-              <div className="grid grid-cols-3 gap-4">
-                <Card className="border-emerald-200 bg-emerald-50/50">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-xs text-muted-foreground">Custos Produção</p>
-                    <p className="text-2xl font-bold text-emerald-700">{totalProducao.toFixed(1)}%</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-amber-200 bg-amber-50/50">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-xs text-muted-foreground">Custos Transversais</p>
-                    <p className="text-2xl font-bold text-amber-700">{totalTransversais.toFixed(1)}%</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-sky-200 bg-sky-50/50">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-xs text-muted-foreground">Cash Livre % Vendas</p>
-                    <p className={`text-2xl font-bold ${cashLivre >= 20 ? 'text-sky-700' : cashLivre >= 10 ? 'text-amber-700' : 'text-destructive'}`}>
-                      {cashLivre.toFixed(1)}%
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* ============= TAB 1: Areas ============= */}
+              <TabsContent value="areas" className="space-y-6">
+                {/* Summary banner */}
+                <div className="grid grid-cols-3 gap-4">
+                  <Card className="border-emerald-200 bg-emerald-50/50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-muted-foreground">Custos Produção</p>
+                      <p className="text-2xl font-bold text-emerald-700">{totalProducao.toFixed(1)}%</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-amber-200 bg-amber-50/50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-muted-foreground">Custos Transversais</p>
+                      <p className="text-2xl font-bold text-amber-700">{totalTransversais.toFixed(1)}%</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-sky-200 bg-sky-50/50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-muted-foreground">Cash Livre % Vendas</p>
+                      <p className={`text-2xl font-bold ${cashLivre >= 20 ? 'text-sky-700' : cashLivre >= 10 ? 'text-amber-700' : 'text-destructive'}`}>
+                        {cashLivre.toFixed(1)}%
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
 
-              {/* Value Chain Areas */}
-              <div>
-                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <ArrowRight className="h-4 w-4 text-eps-primary" />
-                  Áreas da Cadeia de Valor (Custos Directos)
-                </h3>
-                <div className="grid grid-cols-5 gap-3">
-                  {areasProducao.map(area => {
+                {/* Value Chain Areas — clickable for cost centers */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <ArrowRight className="h-4 w-4 text-eps-primary" />
+                    Áreas da Cadeia de Valor (Custos Directos)
+                    <span className="text-[10px] text-muted-foreground ml-2 flex items-center gap-1">
+                      <MousePointerClick className="w-3 h-3" /> Clique para associar centros de custo
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {areasProducao.map(area => {
+                      const Icon = area.icon;
+                      const ccCount = getCcCount(area.id);
+                      const ccValid = getCcValid(area.id);
+                      return (
+                        <Card
+                          key={area.id}
+                          className="hover:shadow-md transition-shadow cursor-pointer group"
+                          onClick={() => setDialogOpen(area.id)}
+                        >
+                          <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="w-12 h-12 rounded-full bg-eps-primary/10 flex items-center justify-center group-hover:bg-eps-primary/20 transition-colors">
+                              <Icon className="w-6 h-6 text-eps-primary" />
+                            </div>
+                            <span className="text-xs font-semibold">{area.label}</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">{area.description}</span>
+                            <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                              <Input
+                                type="number"
+                                value={producaoCosts[area.id]}
+                                onChange={e => setProducaoCosts(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
+                                className="w-16 h-7 text-xs text-center"
+                                min={0} step={0.5}
+                              />
+                              <span className="text-[10px] text-muted-foreground">%</span>
+                            </div>
+                            {/* CC indicator */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant={ccValid === true ? "default" : ccValid === false ? "destructive" : "outline"}
+                                  className="text-[9px] mt-1"
+                                >
+                                  {ccCount} CC {ccValid === true ? '✓' : ccValid === false ? '≠100%' : '—'}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs">
+                                {ccCount === 0
+                                  ? "Sem centros de custo associados"
+                                  : `${ccCount} centro(s) de custo — ${ccValid ? '100% distribuído' : 'distribuição incompleta'}`}
+                              </TooltipContent>
+                            </Tooltip>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Transversal Areas — clickable */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Percent className="h-4 w-4 text-amber-600" />
+                    Áreas Transversais (Custos Indirectos % Vendas)
+                    <span className="text-[10px] text-muted-foreground ml-2 flex items-center gap-1">
+                      <MousePointerClick className="w-3 h-3" /> Clique para associar centros de custo
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-4 gap-3">
+                    {defaultTransversais.map(area => {
+                      const Icon = area.icon;
+                      const ccCount = getCcCount(area.id);
+                      const ccValid = getCcValid(area.id);
+                      return (
+                        <Card
+                          key={area.id}
+                          className="hover:shadow-md transition-shadow border-amber-100 cursor-pointer group"
+                          onClick={() => setDialogOpen(area.id)}
+                        >
+                          <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                              <Icon className="w-5 h-5 text-amber-700" />
+                            </div>
+                            <span className="text-xs font-semibold">{area.label}</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">{area.description}</span>
+                            <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                              <Input
+                                type="number"
+                                value={transversaisCosts[area.id]}
+                                onChange={e => setTransversaisCosts(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
+                                className="w-16 h-7 text-xs text-center"
+                                min={0} step={0.5}
+                              />
+                              <span className="text-[10px] text-muted-foreground">%</span>
+                            </div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant={ccValid === true ? "default" : ccValid === false ? "destructive" : "outline"}
+                                  className="text-[9px] mt-1"
+                                >
+                                  {ccCount} CC {ccValid === true ? '✓' : ccValid === false ? '≠100%' : '—'}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs">
+                                {ccCount === 0
+                                  ? "Sem centros de custo associados"
+                                  : `${ccCount} centro(s) de custo — ${ccValid ? '100% distribuído' : 'distribuição incompleta'}`}
+                              </TooltipContent>
+                            </Tooltip>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* ============= TAB 2: Distribution Matrix ============= */}
+              <TabsContent value="distribuicao" className="space-y-6">
+                <p className="text-xs text-muted-foreground">
+                  Defina como cada custo transversal é distribuído pelas áreas da cadeia de valor (em %). O total de cada linha deve somar 100%.
+                </p>
+
+                <ScrollArea className="rounded-md border" style={{ maxHeight: "500px" }}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-xs font-semibold min-w-[200px]">Custo Transversal</TableHead>
+                        <TableHead className="text-xs font-semibold text-center">% Vendas</TableHead>
+                        {areasProducao.map(a => {
+                          const Icon = a.icon;
+                          return (
+                            <TableHead key={a.id} className="text-center">
+                              <div className="flex flex-col items-center gap-1">
+                                <Icon className="w-4 h-4 text-eps-primary" />
+                                <span className="text-[10px] font-medium leading-tight">{a.label.split(' ')[0]}</span>
+                              </div>
+                            </TableHead>
+                          );
+                        })}
+                        <TableHead className="text-xs font-semibold text-center">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {defaultTransversais.map(t => {
+                        const Icon = t.icon;
+                        const rowSum = areasProducao.reduce((s, a) => s + (distribution[t.id]?.[a.id] || 0), 0);
+                        const isValid = Math.abs(rowSum - 100) < 0.5;
+                        return (
+                          <TableRow key={t.id} className="text-xs">
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                  <Icon className="w-3.5 h-3.5 text-amber-700" />
+                                </div>
+                                <span className="font-medium">{t.label}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="outline" className="text-[10px]">{transversaisCosts[t.id]}%</Badge>
+                            </TableCell>
+                            {areasProducao.map(a => (
+                              <TableCell key={a.id} className="text-center p-1">
+                                <Input
+                                  type="number"
+                                  value={distribution[t.id]?.[a.id] ?? 0}
+                                  onChange={e => handleDistChange(t.id, a.id, e.target.value)}
+                                  className="w-14 h-7 text-xs text-center mx-auto"
+                                  min={0} max={100} step={5}
+                                />
+                              </TableCell>
+                            ))}
+                            <TableCell className="text-center">
+                              <span className={`text-xs font-semibold ${isValid ? 'text-emerald-600' : 'text-destructive'}`}>
+                                {rowSum.toFixed(0)}%
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+
+                {/* Result: Total cost per value chain area */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">Custo Total por Área (Directo + Alocado)</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {totalByArea.map(area => {
+                      const Icon = area.icon;
+                      return (
+                        <Card key={area.id} className="border-eps-primary/20">
+                          <CardContent className="p-4 flex flex-col items-center text-center gap-1.5">
+                            <div className="w-10 h-10 rounded-full bg-eps-primary/10 flex items-center justify-center">
+                              <Icon className="w-5 h-5 text-eps-primary" />
+                            </div>
+                            <span className="text-xs font-semibold">{area.label.split(' ')[0]}</span>
+                            <div className="text-[10px] text-muted-foreground space-y-0.5">
+                              <div>Directo: <span className="font-medium text-foreground">{area.direct}%</span></div>
+                              <div>Alocado: <span className="font-medium text-amber-600">{area.allocated}%</span></div>
+                            </div>
+                            <Badge className="mt-1 text-xs">{area.total}%</Badge>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* ============= TAB 3: Custos & Volumes ============= */}
+              <TabsContent value="volumes" className="space-y-6">
+                <p className="text-xs text-muted-foreground">
+                  Custos totais por área com indicadores de volume. Cada área utiliza a unidade de medida relevante.
+                </p>
+
+                <div className="grid grid-cols-5 gap-4">
+                  {totalByArea.map(area => {
                     const Icon = area.icon;
+                    const areaData = areasProducao.find(a => a.id === area.id)!;
+                    const vol = volumes[area.id] || 0;
                     return (
-                      <Card key={area.id} className="hover:shadow-md transition-shadow">
+                      <Card key={area.id} className="border-eps-primary/20 hover:shadow-md transition-shadow">
                         <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                           <div className="w-12 h-12 rounded-full bg-eps-primary/10 flex items-center justify-center">
                             <Icon className="w-6 h-6 text-eps-primary" />
                           </div>
                           <span className="text-xs font-semibold">{area.label}</span>
-                          <span className="text-[10px] text-muted-foreground leading-tight">{area.description}</span>
-                          <div className="flex items-center gap-1 mt-1">
+
+                          {/* Unit badge */}
+                          <Badge variant="outline" className="text-[9px]">
+                            {unitLabels[areaData.volumeUnit]}
+                          </Badge>
+
+                          {/* Volume input */}
+                          <div className="w-full space-y-1" onClick={e => e.stopPropagation()}>
+                            <label className="text-[10px] text-muted-foreground">{areaData.volumeLabel}</label>
                             <Input
                               type="number"
-                              value={producaoCosts[area.id]}
-                              onChange={e => setProducaoCosts(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
-                              className="w-16 h-7 text-xs text-center"
-                              min={0} step={0.5}
+                              value={vol}
+                              onChange={e => setVolumes(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
+                              className="h-7 text-xs text-center"
+                              min={0} step={1000}
                             />
-                            <span className="text-[10px] text-muted-foreground">%</span>
+                            <p className="text-[10px] text-muted-foreground">{formatVolume(vol)} {unitLabels[areaData.volumeUnit]}</p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
 
-              {/* Transversal Areas */}
-              <div>
-                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <Percent className="h-4 w-4 text-amber-600" />
-                  Áreas Transversais (Custos Indirectos % Vendas)
-                </h3>
-                <div className="grid grid-cols-4 gap-3">
-                  {defaultTransversais.map(area => {
-                    const Icon = area.icon;
-                    return (
-                      <Card key={area.id} className="hover:shadow-md transition-shadow border-amber-100">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                            <Icon className="w-5 h-5 text-amber-700" />
-                          </div>
-                          <span className="text-xs font-semibold">{area.label}</span>
-                          <span className="text-[10px] text-muted-foreground leading-tight">{area.description}</span>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Input
-                              type="number"
-                              value={transversaisCosts[area.id]}
-                              onChange={e => setTransversaisCosts(prev => ({ ...prev, [area.id]: parseFloat(e.target.value) || 0 }))}
-                              className="w-16 h-7 text-xs text-center"
-                              min={0} step={0.5}
-                            />
-                            <span className="text-[10px] text-muted-foreground">%</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* ============= TAB 2: Distribution Matrix ============= */}
-            <TabsContent value="distribuicao" className="space-y-6">
-              <p className="text-xs text-muted-foreground">
-                Defina como cada custo transversal é distribuído pelas áreas da cadeia de valor (em %). O total de cada linha deve somar 100%.
-              </p>
-
-              <ScrollArea className="rounded-md border" style={{ maxHeight: "500px" }}>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="text-xs font-semibold min-w-[200px]">Custo Transversal</TableHead>
-                      <TableHead className="text-xs font-semibold text-center">% Vendas</TableHead>
-                      {areasProducao.map(a => {
-                        const Icon = a.icon;
-                        return (
-                          <TableHead key={a.id} className="text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              <Icon className="w-4 h-4 text-eps-primary" />
-                              <span className="text-[10px] font-medium leading-tight">{a.label.split(' ')[0]}</span>
+                          {/* Cost summary */}
+                          <div className="w-full border-t pt-2 mt-1 space-y-1">
+                            <div className="flex justify-between text-[10px]">
+                              <span className="text-muted-foreground">Custo %</span>
+                              <span className="font-semibold">{area.total}%</span>
                             </div>
-                          </TableHead>
-                        );
-                      })}
-                      <TableHead className="text-xs font-semibold text-center">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {defaultTransversais.map(t => {
-                      const Icon = t.icon;
-                      const rowSum = areasProducao.reduce((s, a) => s + (distribution[t.id]?.[a.id] || 0), 0);
-                      const isValid = Math.abs(rowSum - 100) < 0.5;
-                      return (
-                        <TableRow key={t.id} className="text-xs">
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                <Icon className="w-3.5 h-3.5 text-amber-700" />
-                              </div>
-                              <span className="font-medium">{t.label}</span>
+                            <div className="flex justify-between text-[10px]">
+                              <span className="text-muted-foreground">Directo</span>
+                              <span className="font-medium">{area.direct}%</span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className="text-[10px]">{transversaisCosts[t.id]}%</Badge>
-                          </TableCell>
-                          {areasProducao.map(a => (
-                            <TableCell key={a.id} className="text-center p-1">
-                              <Input
-                                type="number"
-                                value={distribution[t.id]?.[a.id] ?? 0}
-                                onChange={e => handleDistChange(t.id, a.id, e.target.value)}
-                                className="w-14 h-7 text-xs text-center mx-auto"
-                                min={0} max={100} step={5}
-                              />
-                            </TableCell>
-                          ))}
-                          <TableCell className="text-center">
-                            <span className={`text-xs font-semibold ${isValid ? 'text-emerald-600' : 'text-destructive'}`}>
-                              {rowSum.toFixed(0)}%
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
+                            <div className="flex justify-between text-[10px]">
+                              <span className="text-muted-foreground">Alocado</span>
+                              <span className="font-medium text-amber-600">{area.allocated}%</span>
+                            </div>
+                          </div>
 
-              {/* Result: Total cost per value chain area */}
-              <div>
-                <h3 className="text-sm font-semibold mb-3">Custo Total por Área (Directo + Alocado)</h3>
-                <div className="grid grid-cols-5 gap-3">
-                  {totalByArea.map(area => {
-                    const Icon = area.icon;
-                    return (
-                      <Card key={area.id} className="border-eps-primary/20">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-1.5">
-                          <div className="w-10 h-10 rounded-full bg-eps-primary/10 flex items-center justify-center">
-                            <Icon className="w-5 h-5 text-eps-primary" />
-                          </div>
-                          <span className="text-xs font-semibold">{area.label.split(' ')[0]}</span>
-                          <div className="text-[10px] text-muted-foreground space-y-0.5">
-                            <div>Directo: <span className="font-medium text-foreground">{area.direct}%</span></div>
-                            <div>Alocado: <span className="font-medium text-amber-600">{area.allocated}%</span></div>
-                          </div>
-                          <Badge className="mt-1 text-xs">{area.total}%</Badge>
+                          {/* CC count */}
+                          {getCcCount(area.id) > 0 && (
+                            <Badge variant="secondary" className="text-[9px]">
+                              {getCcCount(area.id)} CC associados
+                            </Badge>
+                          )}
                         </CardContent>
                       </Card>
                     );
                   })}
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </main>
+
+                {/* Global summary */}
+                <Card className="border-sky-200 bg-sky-50/30">
+                  <CardContent className="p-4">
+                    <h4 className="text-xs font-semibold mb-3">Resumo Global de Volumes</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <p className="text-[10px] text-muted-foreground">Volume Global</p>
+                        <p className="text-lg font-bold text-foreground">
+                          {formatVolume((volumes["distribuicao"] || 0))} <span className="text-xs font-normal text-muted-foreground">Cx 9L</span>
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] text-muted-foreground">Engarrafamento</p>
+                        <p className="text-lg font-bold text-foreground">
+                          {formatVolume((volumes["engarrafamento"] || 0))} <span className="text-xs font-normal text-muted-foreground">Litros</span>
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] text-muted-foreground">Agricultura & Vinificação</p>
+                        <p className="text-lg font-bold text-foreground">
+                          {formatVolume((volumes["agricultura"] || 0))} <span className="text-xs font-normal text-muted-foreground">Kg</span>
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </main>
+        </div>
+
+        {/* Cost Center Dialog */}
+        {openDialog && (
+          <CostCenterDialog
+            open={!!dialogOpen}
+            onOpenChange={(v) => { if (!v) setDialogOpen(null); }}
+            areaLabel={openDialog.label}
+            areaIcon={openDialog.icon}
+            allocations={ccAllocations[openDialog.id] || []}
+            onAllocationsChange={(allocs) => setCcAllocations(prev => ({ ...prev, [openDialog.id]: allocs }))}
+          />
+        )}
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
