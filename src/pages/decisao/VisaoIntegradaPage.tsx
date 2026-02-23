@@ -93,8 +93,8 @@ const generateData = (): StockMasterRow[] => {
       nec2024: Math.floor(base * 0.6 + seededRandom(seed + 19) * base * 0.4),
       stockNova: Math.floor(seededRandom(seed + 20) * 200000),
       excessoStock: seededRandom(seed + 21) > 0.7 ? Math.floor(seededRandom(seed + 22) * 5000) : 0,
-      inicioVenda: `${15 + Math.floor(seededRandom(seed + 23) * 15)}-${['03', '10', '12'][Math.floor(seededRandom(seed + 24) * 3)]}-202${5 + Math.floor(seededRandom(seed + 25) * 2)}`,
-      fimVenda: `${15 + Math.floor(seededRandom(seed + 26) * 15)}-${['03', '10', '12'][Math.floor(seededRandom(seed + 27) * 3)]}-202${5 + Math.floor(seededRandom(seed + 28) * 2)}`,
+      inicioVenda: `2025-${String(1 + Math.floor(seededRandom(seed + 23) * 12)).padStart(2, '0')}-${String(1 + Math.floor(seededRandom(seed + 24) * 28)).padStart(2, '0')}`,
+      fimVenda: `2026-${String(1 + Math.floor(seededRandom(seed + 26) * 12)).padStart(2, '0')}-${String(1 + Math.floor(seededRandom(seed + 27) * 28)).padStart(2, '0')}`,
     });
   });
 
@@ -124,13 +124,29 @@ const formatNum = (n: number) => n === 0 ? '' : n.toLocaleString('pt-PT');
 
 // Column group definitions
 const COL_GROUPS = [
-  { id: 'stockERP', label: 'Stock ERP', cols: ['stockDtAntes', 'tmsfMarcas', 'stock'] },
-  { id: 'previsao', label: 'Previsão', cols: ['prevUvas'] },
-  { id: 'vendas', label: 'Vendas', cols: ['yoy2024', 'yoy2025', 'budget2026'] },
-  { id: 'vinificacao', label: 'Vinificação', cols: ['dtUvas', 'vinifDouro', 'vinifAlentejo', 'vinifDao', 'vinifVinhoVerde', 'vinifLisboa', 'vinifPortugal', 'totalVinif'] },
-  { id: 'compras', label: 'Compras/Transf.', cols: ['transfVinhos2024', 'necIdeCompra2025', 'transfVinhos2025', 'retifGrau', 'totalCompras'] },
-  { id: 'resultado', label: 'Resultado', cols: ['nec2024', 'stockNova', 'excessoStock', 'inicioVenda', 'fimVenda'] },
+  { id: 'stockERP', label: 'Stock ERP', cols: ['stockDtAntes', 'tmsfMarcas', 'stock'], summaryCol: 'stock' },
+  { id: 'previsao', label: 'Previsão', cols: ['prevUvas'], summaryCol: 'prevUvas' },
+  { id: 'vendas', label: 'Vendas', cols: ['yoy2024', 'yoy2025', 'budget2026'], summaryCol: '_vendasAvg' },
+  { id: 'vinificacao', label: 'Vinificação', cols: ['dtUvas', 'vinifDouro', 'vinifAlentejo', 'vinifDao', 'vinifVinhoVerde', 'vinifLisboa', 'vinifPortugal', 'totalVinif'], summaryCol: 'totalVinif' },
+  { id: 'compras', label: 'Compras/Transf.', cols: ['transfVinhos2024', 'necIdeCompra2025', 'transfVinhos2025', 'retifGrau', 'totalCompras'], summaryCol: 'totalCompras' },
+  { id: 'resultado', label: 'Resultado', cols: ['nec2024', 'stockNova', 'excessoStock', 'inicioVenda', 'fimVenda'], summaryCol: null, noCollapse: true },
 ] as const;
+
+const getSummaryValue = (row: StockMasterRow, groupId: string): string => {
+  if (groupId === '_vendasAvg') {
+    const avg = Math.round((row.yoy2024 + row.yoy2025 + row.budget2026) / 3);
+    return formatNum(avg);
+  }
+  const col = COL_GROUPS.find(g => g.summaryCol === groupId)?.summaryCol;
+  if (col && col in row) return formatNum((row as any)[col]);
+  return '';
+};
+
+const getGroupSummary = (row: StockMasterRow, group: typeof COL_GROUPS[number]): string => {
+  if (group.summaryCol === '_vendasAvg') return getSummaryValue(row, '_vendasAvg');
+  if (group.summaryCol && group.summaryCol in row) return formatNum((row as any)[group.summaryCol]);
+  return '';
+};
 
 type ColGroupId = typeof COL_GROUPS[number]['id'];
 
@@ -169,6 +185,7 @@ export default function VisaoIntegradaPage() {
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(() => new Set(wineRegioes));
   const [expandedCols, setExpandedCols] = useState<Set<ColGroupId>>(() => new Set(COL_GROUPS.map(g => g.id)));
+  const [editDates, setEditDates] = useState<Record<string, { inicioVenda: string; fimVenda: string }>>({});
 
   const toggleRow = useCallback((regiao: string) => {
     setExpandedRows(prev => {
@@ -182,6 +199,8 @@ export default function VisaoIntegradaPage() {
   const collapseAllRows = useCallback(() => setExpandedRows(new Set()), []);
 
   const toggleCol = useCallback((id: ColGroupId) => {
+    const group = COL_GROUPS.find(g => g.id === id);
+    if (group && 'noCollapse' in group && group.noCollapse) return;
     setExpandedCols(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -190,7 +209,16 @@ export default function VisaoIntegradaPage() {
   }, []);
 
   const expandAllCols = useCallback(() => setExpandedCols(new Set(COL_GROUPS.map(g => g.id))), []);
-  const collapseAllCols = useCallback(() => setExpandedCols(new Set()), []);
+  const collapseAllCols = useCallback(() => {
+    setExpandedCols(new Set(COL_GROUPS.filter(g => 'noCollapse' in g && g.noCollapse).map(g => g.id)));
+  }, []);
+
+  const handleDateChange = useCallback((rowKey: string, field: 'inicioVenda' | 'fimVenda', value: string) => {
+    setEditDates(prev => ({
+      ...prev,
+      [rowKey]: { ...prev[rowKey], inicioVenda: prev[rowKey]?.inicioVenda || '', fimVenda: prev[rowKey]?.fimVenda || '', [field]: value },
+    }));
+  }, []);
 
   const filteredData = useMemo(() => {
     return allData.filter(r => {
@@ -303,13 +331,17 @@ export default function VisaoIntegradaPage() {
                                         g.id === 'resultado' ? 'bg-accent/50' : 'bg-muted';
                       return (
                         <th key={g.id} colSpan={colSpan} className={`border border-border px-1 py-1 text-center font-semibold ${specialBg}`}>
-                          <button
-                            onClick={() => toggleCol(g.id)}
-                            className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity"
-                          >
-                            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                          {g.id === 'resultado' ? (
                             <span className="text-[10px]">{g.label}</span>
-                          </button>
+                          ) : (
+                            <button
+                              onClick={() => toggleCol(g.id)}
+                              className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity"
+                            >
+                              {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                              <span className="text-[10px]">{g.label}</span>
+                            </button>
+                          )}
                         </th>
                       );
                     })}
@@ -319,9 +351,13 @@ export default function VisaoIntegradaPage() {
                     <th className="border border-border px-2 py-1 text-left font-semibold sticky left-[80px] bg-muted/50 z-10 min-w-[200px]">Submarca</th>
                     {visibleColGroups.map(g => {
                       if (!expandedCols.has(g.id)) {
+                        const group = COL_GROUPS.find(cg => cg.id === g.id)!;
+                        const label = group.summaryCol === '_vendasAvg' ? 'Média' :
+                                     group.summaryCol === 'totalVinif' || group.summaryCol === 'totalCompras' ? 'Total' :
+                                     group.summaryCol === 'stock' ? 'Stock' : group.label;
                         return (
-                          <th key={g.id} className="border border-border px-2 py-1 text-center font-medium min-w-[40px] bg-muted/30">
-                            <span className="text-[9px] text-muted-foreground">···</span>
+                          <th key={g.id} className="border border-border px-2 py-1 text-center font-medium min-w-[70px] bg-muted/30">
+                            <span className="text-[9px] text-muted-foreground">{label}</span>
                           </th>
                         );
                       }
@@ -363,22 +399,38 @@ export default function VisaoIntegradaPage() {
                         </td>
                         {visibleColGroups.map(g => {
                           if (!expandedCols.has(g.id)) {
+                            const summary = getGroupSummary(row, COL_GROUPS.find(cg => cg.id === g.id)!);
+                            const isNeg = summary.startsWith('-');
                             return (
-                              <td key={g.id} className="border border-border px-1 py-1 text-center bg-muted/10">
-                                <span className="text-[9px] text-muted-foreground">···</span>
+                              <td key={g.id} className={`border border-border px-2 py-1 text-right bg-muted/10 ${isNeg ? 'text-destructive' : ''}`}>
+                                <span className="text-[10px] font-medium">{summary}</span>
                               </td>
                             );
                           }
                           return g.cols.map(col => {
                             const h = COL_HEADERS[col];
-                            const val = (row as any)[col];
                             const isDate = col === 'inicioVenda' || col === 'fimVenda';
+                            const rowKey = `${row.regiao}-${row.submarca}`;
+                            const val = isDate && editDates[rowKey]?.[col] !== undefined ? editDates[rowKey][col] : (row as any)[col];
                             const isNeg = typeof val === 'number' && val < 0;
                             const isExcesso = col === 'excessoStock' && val > 0;
                             const specialClass = h.special === 'budget' ? 'bg-accent/10' :
                                                 h.special === 'accent' ? 'bg-accent/10' : '';
                             const textClass = isNeg || isExcesso ? 'text-destructive font-medium' : '';
                             const fontClass = col === 'stock' || col === 'totalVinif' || col === 'totalCompras' ? 'font-semibold' : '';
+
+                            if (isDate && !isTotalRow) {
+                              return (
+                                <td key={col} className={`border border-border px-1 py-0.5 ${specialClass}`}>
+                                  <input
+                                    type="date"
+                                    value={val || ''}
+                                    onChange={(e) => handleDateChange(rowKey, col as 'inicioVenda' | 'fimVenda', e.target.value)}
+                                    className="w-full bg-transparent text-[10px] text-foreground border-none outline-none focus:ring-1 focus:ring-primary/30 rounded px-1"
+                                  />
+                                </td>
+                              );
+                            }
 
                             return (
                               <td key={col} className={`border border-border px-2 py-1 text-${h.align} ${specialClass} ${textClass} ${fontClass} ${isDate ? 'text-[10px]' : ''}`}>
