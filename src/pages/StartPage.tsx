@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Sprout,
   Link,
+  Settings2,
 } from "lucide-react";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
 import { BudgetScenarioGrid } from "@/components/start/BudgetScenarioGrid";
@@ -56,6 +57,14 @@ const modules = [
     description: "Suporte à Tomada de Decisão Estratégica",
     icon: Brain,
     path: "/decisao",
+  },
+  {
+    id: "operacoes",
+    step: 6,
+    title: "Operações",
+    description: "Gestão Operacional: Custos, Produção e Atividades",
+    icon: Settings2,
+    path: "/operacoes",
   },
 ];
 

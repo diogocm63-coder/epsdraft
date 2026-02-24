@@ -7,6 +7,7 @@ const navItems = [
   { label: "Produção e Procura", path: "/producao-procura" },
   { label: "Controlo", path: "/controlo" },
   { label: "Decisão", path: "/decisao" },
+  { label: "Operações", path: "/operacoes" },
 ];
 
 interface EPSHeaderProps {
