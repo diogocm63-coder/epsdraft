@@ -113,6 +113,7 @@ const App = () => (
             <Route path="/flexbudget/demonstracao/analise-contas" element={<AnaliseContasPage />} />
             
             {/* Operações */}
+            <Route path="/operacoes" element={<PainelGeralPage />} />
             <Route path="/operacoes/painel-geral" element={<PainelGeralPage />} />
             <Route path="/operacoes/controlo-producao" element={<ControloProducaoPage />} />
             <Route path="/operacoes/analise-custos" element={<AnaliseCustosPage />} />
