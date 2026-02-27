@@ -61,6 +61,7 @@ import TransformacaoAdegasPage from "./pages/configuracao/TransformacaoAdegasPag
 import ConfiguracaoPage from "./pages/configuracao/ConfiguracaoPage";
 import AgriculturaPage from "./pages/configuracao/AgriculturaPage";
 import ConfiguracaoFinanceiraPage from "./pages/configuracao/ConfiguracaoFinanceiraPage";
+import TradeNavigatorPage from "./pages/TradeNavigatorPage";
 
 const queryClient = new QueryClient();
 
