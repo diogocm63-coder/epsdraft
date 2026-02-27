@@ -99,6 +99,17 @@ const StartPage = () => {
       <main className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
         {activeTab === "gestao" ? (
           <>
+            {/* Trade Navigator Button */}
+            <div className="w-full max-w-6xl px-4 flex justify-end mb-4">
+              <button
+                onClick={() => navigate("/trade-navigator")}
+                className="group flex items-center gap-2 px-5 py-2.5 rounded-xl bg-eps-primary text-white font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <Compass className="w-5 h-5" />
+                <span>Trade Navigator</span>
+              </button>
+            </div>
+
             {/* Logo */}
             <div className="w-20 h-20 rounded-2xl bg-eps-primary flex items-center justify-center mb-6 shadow-lg">
               <span className="text-white text-3xl font-serif font-bold">E</span>

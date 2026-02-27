@@ -134,6 +134,9 @@ const App = () => (
             <Route path="/configuracao/agricultura" element={<AgriculturaPage />} />
             <Route path="/configuracao/financeira" element={<ConfiguracaoFinanceiraPage />} />
 
+            {/* Trade Navigator */}
+            <Route path="/trade-navigator" element={<TradeNavigatorPage />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
