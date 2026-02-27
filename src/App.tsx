@@ -61,6 +61,7 @@ import TransformacaoAdegasPage from "./pages/configuracao/TransformacaoAdegasPag
 import ConfiguracaoPage from "./pages/configuracao/ConfiguracaoPage";
 import AgriculturaPage from "./pages/configuracao/AgriculturaPage";
 import ConfiguracaoFinanceiraPage from "./pages/configuracao/ConfiguracaoFinanceiraPage";
+import TradeNavigatorPage from "./pages/TradeNavigatorPage";
 
 const queryClient = new QueryClient();
 
@@ -132,6 +133,9 @@ const App = () => (
             <Route path="/configuracao/transformacao-adegas" element={<TransformacaoAdegasPage />} />
             <Route path="/configuracao/agricultura" element={<AgriculturaPage />} />
             <Route path="/configuracao/financeira" element={<ConfiguracaoFinanceiraPage />} />
+
+            {/* Trade Navigator */}
+            <Route path="/trade-navigator" element={<TradeNavigatorPage />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
