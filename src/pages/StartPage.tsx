@@ -13,6 +13,7 @@ import {
   Sprout,
   Link,
   Settings2,
+  Compass,
 } from "lucide-react";
 import { StartPageSidebar } from "@/components/layout/StartPageSidebar";
 import { BudgetScenarioGrid } from "@/components/start/BudgetScenarioGrid";
