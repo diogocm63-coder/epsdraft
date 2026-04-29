@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const ORIGENS = ['Selout', 'Selin', 'Rotalagem', 'Engarrafamento', 'Transformação', 'Vendima'] as const;
+ const ORIGENS = ['Selout', 'Selin', 'Rotalagem', 'Engarrafamento', 'Transformação', 'Vindima'] as const;
 type Origem = typeof ORIGENS[number];
 type Tipo = 'Modelo' | 'Real' | 'Orçamento' | 'Cenário';
 
@@ -54,7 +54,7 @@ const initialEntries: BudgetEntry[] = [
       Rotalagem: { origem: 'Selin', tipo: 'Cenário', ano: 2026 },
       Engarrafamento: { origem: 'sel1', tipo: 'Cenário', ano: 2026 },
       Transformação: { origem: 'ENG', tipo: 'Cenário', ano: 2026 },
-      Vendima: { origem: 'Vendima', tipo: 'Real', ano: 2025 },
+       Vindima: { origem: 'Vindima', tipo: 'Real', ano: 2025 },
     },
   },
   {
@@ -65,7 +65,7 @@ const initialEntries: BudgetEntry[] = [
       Rotalagem: { origem: 'Rotalagem', tipo: 'Orçamento', ano: 2026 },
       Engarrafamento: { origem: 'ENG', tipo: 'Orçamento', ano: 2026 },
       Transformação: { origem: 'Transf', tipo: 'Orçamento', ano: 2026 },
-      Vendima: { origem: 'Vendima', tipo: 'Modelo', ano: 2026 },
+       Vindima: { origem: 'Vindima', tipo: 'Modelo', ano: 2026 },
     },
   },
   {
@@ -76,7 +76,7 @@ const initialEntries: BudgetEntry[] = [
       Rotalagem: { origem: 'Rotalagem', tipo: 'Modelo', ano: 2026 },
       Engarrafamento: { origem: 'ENG', tipo: 'Cenário', ano: 2026 },
       Transformação: { origem: 'Transf', tipo: 'Cenário', ano: 2026 },
-      Vendima: { origem: 'Vendima', tipo: 'Cenário', ano: 2026 },
+       Vindima: { origem: 'Vindima', tipo: 'Cenário', ano: 2026 },
     },
   },
   {
@@ -87,7 +87,7 @@ const initialEntries: BudgetEntry[] = [
       Rotalagem: { origem: 'Rotalagem', tipo: 'Real', ano: 2025 },
       Engarrafamento: { origem: 'ENG', tipo: 'Real', ano: 2025 },
       Transformação: { origem: 'Transf', tipo: 'Real', ano: 2025 },
-      Vendima: { origem: 'Vendima', tipo: 'Real', ano: 2025 },
+       Vindima: { origem: 'Vindima', tipo: 'Real', ano: 2025 },
     },
   },
 ];
